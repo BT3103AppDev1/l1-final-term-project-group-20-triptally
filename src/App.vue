@@ -1,17 +1,23 @@
 <template>
   <div id ="app">
-    <NavBar/>
+    <!-- <NavBar/> -->
+    <preNavigationBar />
+    <!-- <NavigationBar /> -->
   </div>
   <router-view></router-view>
   </template>
 
 <script>
-  import NavBar from '@/views/NavBar.vue'
+  import NavBar from '@/components/NavBar.vue'
+  import NavigationBar from '@/components/topnavbar.vue'
+  import preNavigationBar from '@/components/prenavbar.vue'
 
   export default {
     name: 'App',
     components: {
-      NavBar
+      NavBar,
+      NavigationBar,
+      preNavigationBar
     }
   }
 </script>
