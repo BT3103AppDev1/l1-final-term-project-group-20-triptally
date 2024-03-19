@@ -1,25 +1,28 @@
 <template>
-  <div id ="app">
-    <!-- <NavBar/> -->
-    <preNavigationBar />
-    <!-- <NavigationBar /> -->
+  <div id="app">
+    <NavBar v-if="route.name === 'LoginPage'" />
+    <TopNavBar v-else />
+
   </div>
   <router-view></router-view>
-  </template>
+</template>
 
 <script>
-  import NavBar from '@/components/NavBar.vue'
-  import NavigationBar from '@/components/topnavbar.vue'
-  import preNavigationBar from '@/components/prenavbar.vue'
+import { useRoute } from 'vue-router';
+import NavBar from '@/components/NavBar.vue';
+import TopNavBar from './components/topnavbar.vue';
 
-  export default {
-    name: 'App',
-    components: {
-      NavBar,
-      NavigationBar,
-      preNavigationBar
-    }
-  }
+export default {
+  name: 'App',
+  components: {
+    NavBar,
+    TopNavBar,
+  },
+  setup() {
+    const route = useRoute();
+    return { route };
+  },
+};
 </script>
 
 <style>
