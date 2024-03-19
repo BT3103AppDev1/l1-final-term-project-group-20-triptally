@@ -5,6 +5,7 @@
       <input type="email" placeholder="Email" />
       <input type="password" placeholder="Password" />
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
+      <!-- <router-link to="/analytics" class="analytics page">Analytics</router-link> -->
       <button type="submit">Let's Tally!</button>
     </form>
   </div>

@@ -33,13 +33,13 @@
         height: 3vw;
     }
     
-    .login-button, .signup-button {
+    /* .login-button, .signup-button {
         padding: 10px 20px;
         font-size: 1.5vw;
         border: none;
         cursor: pointer;
         margin-left: auto;
-    }
+    } */
 
 
     .nav-link-login {
