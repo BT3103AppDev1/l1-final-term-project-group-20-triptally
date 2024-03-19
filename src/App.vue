@@ -22,7 +22,7 @@
   }
 </script>
 
-<style>
+<style scoped>
 @font-face {
   font-family: 'MontserratRegular';
   src: url('~@/assets/fonts/Montserrat-Regular.ttf') format('truetype');
@@ -34,4 +34,5 @@
   src: url('~@/assets/fonts/Montserrat-Bold.ttf') format('truetype');
   font-style: normal;
 }
+
 </style>
