@@ -1,7 +1,9 @@
 <template>
-  <div class="container">
-    <h1>Analytics & Reports</h1>
-    <div class="wrapper">
+  <div class="main-container">
+    <SideNavBar></SideNavBar>
+    <div class="content-container">
+      <h1>Analytics & Reports</h1>
+      <div class="wrapper">
       <div class="budgetExpenseWrapper">
         <div class="budgetTot">
           <h3>Total Budget</h3>
@@ -17,51 +19,72 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
-
 <script>
+import { ref, onMounted } from 'vue';
+import SideNavBar from './SideNavBar.vue';
 import { auth, db } from '@/firebase';
-import { ref, onMounted } from "vue"; 
-import { collection, doc, getDoc } from "firebase/firestore";
+import { getDoc, doc } from 'firebase/firestore';
 
-const currency = ref("");
-onMounted(async () => {
-  const currentUser = auth.currentUser;
-  if (currentUser) {
-
-    const userID = currentUser.uid;
-    const currencyDoc = await getDoc(doc(db, "Currency", userID));
-    if (currencyDoc.exists()) {
-      currency.value = currencyDoc.data().SelectedCurrency;
-    }
-
-    totalBudget.value = 1500;
-    totalExpense.value = 999;
-  }
-});
 
 export default {
-  name: 'AnalyticsPage'
+  components: {
+    SideNavBar
+  },
+  name: 'AnalyticsPage',
+  setup() {
+    const currency = ref("");
+    const totalBudget = ref(0);
+    const totalExpense = ref(0);
+    const tripName = ref(""); 
+
+    onMounted(async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userID = currentUser.uid;
+        const currencyDoc = await getDoc(doc(db, "Currency", userID));
+        if (currencyDoc.exists()) {
+          currency.value = currencyDoc.data().SelectedCurrency;
+        }
+
+        // Dummy values for budget and expense, adjust as necessary
+        totalBudget.value = 1500;
+        totalExpense.value = 999;
+      }
+    });
+
+    return {
+      currency,
+      totalBudget,
+      totalExpense,
+      tripName
+    };
+  }
+};
+</script>
+
+
+<style scoped>
+.main-container {
+  display: flex;
+  
 }
 
-</script>
-<style scoped>
-.container {
-  width: 100vw;
-  height: 100vh;
+.content-container {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  padding: 2rem;
   align-items: center;
   justify-content: flex-start;
-  background-image: none;
-  background-color: #EDE7E3;
 }
 
 h1 {
 
   color: black;
-  /* margin-left: 5vw; */
+  
 }
 
 h3 {
@@ -72,7 +95,9 @@ h3 {
 
 .wrapper {
   display: flex;
-  flex-direction: row; /* Changed from column to row */
+  flex-direction: row; 
+  justify-content: space-around;
+  margin-top: 2rem;
 }
 
 .budgetExpenseWrapper {
