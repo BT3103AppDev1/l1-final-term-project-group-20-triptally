@@ -2,8 +2,9 @@
   <div class="navbar">
 
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
+    <router-link to="/">
     <img src="@/assets/home.png" class="home_logo" alt="Home">
-
+    </router-link>
     <div class="username" v-if="userName"> {{ userName }} </div>
     <div class="profile" v-if="userName">
       <div class="profile-placeholder"> {{ generateInitials(userName) }} </div>
