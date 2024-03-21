@@ -1,8 +1,8 @@
 <template>
-  <div id ="app">
-    <!-- <NavBar/> -->
-    <preNavigationBar />
-    <!-- <NavigationBar /> -->
+  <div id="app">
+    <NavBar v-if="route.name === 'LoginPage'" />
+    <TopNavBar v-else />
+
   </div>
   <router-view></router-view>
   </template>

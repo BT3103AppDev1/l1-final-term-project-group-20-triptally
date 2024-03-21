@@ -3,7 +3,7 @@
     <img src="@/assets/globe.png" alt="triptally logo" style="width: 40px; height: 40px;" />
     <div>
         <router-link to="/" class="nav-link-login">Log In</router-link>
-        <router-link to="/" class="nav-link-signup">Sign Up</router-link>
+        <router-link to="/signup" class="nav-link-signup">Sign Up</router-link>
     </div>
     </nav>
 </template>
@@ -32,6 +32,7 @@
   .nav-link-login {
     margin-right: 15px;
     color: #fff; 
+    text-decoration: none; 
   }
   
   .nav-link-signup {
@@ -39,6 +40,7 @@
     background-color: #84C0CB;
     color: #fff;
     border-radius: 20px;
+    text-decoration: none; 
   }
 
   </style>
