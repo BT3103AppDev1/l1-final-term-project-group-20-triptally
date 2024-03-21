@@ -1,21 +1,43 @@
 <template>
-  <div class="login-card"> <!-- Apply .login-card class here -->
+  <div class="login-card">
     <h1>Log In</h1>
-    <form>
-      <input type="email" placeholder="Email" />
-      <input type="password" placeholder="Password" />
+    <form @submit.prevent="login">
+      <input type="email" placeholder="Email" v-model="email" />
+      <input type="password" placeholder="Password" v-model="password" />
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
-      <router-link to="/homepage" class="login-button">Let's Tally!</router-link>
+      <button type="submit">Let's Tally!</button>
+
     </form>
   </div>
 </template>
 
-
 <script>
-  export default {
-    name: 'LoginPage'
+import { auth } from '@/firebase'; // Make sure this path is correct
+
+export default {
+  name: 'LoginPage',
+  data() {
+    return {
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    async login() {
+      console.log("Attempting login with", this.email, this.password); // Ensure you're getting the correct input values
+      try {
+        const result = await auth.signInWithEmailAndPassword(this.email, this.password);
+        console.log("Login result:", result); // Check what Firebase returns
+        this.$router.push({ path: '/homepage' });
+      } catch (error) {
+        console.error("Login failed:", error);
+        alert('Login failed. Please check your email and password.');
+      }
+    }
   }
+}
 </script>
+
 
 <style>
 /* Use a full-screen background image */
