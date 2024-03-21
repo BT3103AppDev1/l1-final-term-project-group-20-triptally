@@ -5,24 +5,27 @@
 
   </div>
   <router-view></router-view>
-  </template>
+</template>
 
 <script>
-  import NavBar from '@/components/NavBar.vue'
-  import NavigationBar from '@/components/topnavbar.vue'
-  import preNavigationBar from '@/components/prenavbar.vue'
+import { useRoute } from 'vue-router';
+import NavBar from '@/components/NavBar.vue';
+import TopNavBar from './components/topnavbar.vue';
 
-  export default {
-    name: 'App',
-    components: {
-      NavBar,
-      NavigationBar,
-      preNavigationBar
-    }
-  }
+export default {
+  name: 'App',
+  components: {
+    NavBar,
+    TopNavBar,
+  },
+  setup() {
+    const route = useRoute();
+    return { route };
+  },
+};
 </script>
 
-<style scoped>
+<style>
 @font-face {
   font-family: 'MontserratRegular';
   src: url('~@/assets/fonts/Montserrat-Regular.ttf') format('truetype');
@@ -34,5 +37,4 @@
   src: url('~@/assets/fonts/Montserrat-Bold.ttf') format('truetype');
   font-style: normal;
 }
-
 </style>
