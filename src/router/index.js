@@ -8,6 +8,7 @@ import AnalyticsPage from '@/views/GroupPage/AnalyticsPage.vue';
 import BudgetsPage from '@/views/GroupPage/BudgetsPage.vue';
 import MembersPage from '@/views/GroupPage/MembersPage.vue';
 import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
+import ProfilePage from '@/views/ProfilePage.vue';
 
 const routes = [
     {
@@ -29,6 +30,11 @@ const routes = [
       path: '/homepage',
       name: 'HomePage',
       component: HomePage
+    },
+    {
+      path: '/profilepage',
+      name: 'ProfilePage',
+      component: ProfilePage
     },
     {
       path: '/group/:tripName', 
@@ -59,7 +65,7 @@ const routes = [
       name: 'SettingsPage',
       component: SettingsPage,
       props: true
-    }
+    },
   ]
 
 const router = createRouter({
