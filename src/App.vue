@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <NavBar v-if="route.name === 'LoginPage'" />
+    <NavBar v-if="route.name === 'LoginPage' || route.name === 'SignupPage'" />
     <TopNavBar v-else />
 
   </div>
