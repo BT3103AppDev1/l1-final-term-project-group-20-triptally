@@ -5,8 +5,7 @@
       <input type="email" placeholder="Email" />
       <input type="password" placeholder="Password" />
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
-      <!-- <router-link to="/analytics" class="analytics page">Analytics</router-link> -->
-      <button type="submit">Let's Tally!</button>
+      <router-link to="/homepage" class="login-button">Let's Tally!</router-link>
     </form>
   </div>
 </template>
@@ -18,7 +17,7 @@
   }
 </script>
 
-<style scoped>
+<style>
 /* Use a full-screen background image */
 body, html {
   height: 100%;
@@ -58,7 +57,7 @@ input[type="email"], input[type="password"] {
 }
 
 /* Button styling */
-button {
+.login-button {
   width: 140px;
   padding: 15px;
   border: none;
@@ -68,10 +67,12 @@ button {
   font-weight: 700;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   margin-top: 40px;
+  text-align: center;
+  text-decoration: none;
 }
 
 
-button:hover {
+.login-button:hover {
   background-color: #607994;
 }
 
