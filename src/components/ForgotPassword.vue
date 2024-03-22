@@ -12,7 +12,8 @@
 </template>
   
 <script>
-import { auth } from '@/firebase'; // Make sure this path is correct
+import { auth } from '@/firebase'; // Importing auth instance
+import { sendPasswordResetEmail } from "firebase/auth"; // Importing sendPasswordResetEmail directly from Firebase Auth
 
 export default {
   name: 'ForgotPassword',
@@ -22,14 +23,16 @@ export default {
     };
   },
   methods: {
-    async submitPasswordReset() {
-      try {
-        await auth.sendPasswordResetEmail(this.email);
-        alert('A password reset email has been sent. Please check your inbox.');
-      } catch (error) {
-        console.error("Error sending password reset email:", error);
-        alert('Failed to send password reset email. Please try again.');
-      }
+    submitPasswordReset() {
+      sendPasswordResetEmail(auth, this.email)
+        .then(() => {
+          alert('A password reset email has been sent. Please check your inbox.');
+          this.email = ''; // Optionally clear the email input after sending
+        })
+        .catch((error) => {
+          console.error("Error sending password reset email:", error);
+          alert(`Failed to send password reset email. Please try again. Error: ${error.message}`);
+        });
     }
   }
 }

@@ -35,6 +35,7 @@ import {createUserWithEmailAndPassword} from "firebase/auth";
 import { auth, db } from '@/firebase';
 import {ref} from "vue"; 
 import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from 'vue-router'; // Import useRouter
 
 const email = ref(""); 
 const password = ref("");
@@ -43,6 +44,8 @@ const lastName = ref("");
 const firstName = ref("")
 const username = ref(""); 
 var UID = '';
+
+const router = useRouter(); // Use the useRouter hook
 
 async function submitHandler() { 
   console.log("submitHandler function called");
@@ -53,6 +56,8 @@ async function submitHandler() {
       UID = data.user.uid; 
       // call the next method, which will write the rest of the user details into database 
       writeUserData(UID, email.value, username.value, currency.value, firstName.value, lastName.value);
+      // Navigate to the login page after successful signup
+      router.push('/'); // Use the route name from your router setup
     })
     .catch((error) => {
       // handle error

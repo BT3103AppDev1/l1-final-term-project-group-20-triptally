@@ -5,14 +5,13 @@
       <input type="email" placeholder="Email" v-model="email" />
       <input type="password" placeholder="Password" v-model="password" />
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
-      <button type="submit">Let's Tally!</button>
-
+      <button type="button" @click="login">Let's Tally!</button>
     </form>
   </div>
 </template>
 
 <script>
-import { auth } from '@/firebase'; // Make sure this path is correct
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default {
   name: 'LoginPage',
@@ -20,17 +19,19 @@ export default {
     return {
       email: '',
       password: '',
+      error: '', // Optional: for displaying login errors
     };
   },
-  methods: {
+  methods: { 
     async login() {
-      console.log("Attempting login with", this.email, this.password); // Ensure you're getting the correct input values
+      const auth = getAuth();
       try {
-        const result = await auth.signInWithEmailAndPassword(this.email, this.password);
-        console.log("Login result:", result); // Check what Firebase returns
+        await signInWithEmailAndPassword(auth, this.email, this.password);
+        console.log("Login successful");
         this.$router.push({ path: '/homepage' });
       } catch (error) {
         console.error("Login failed:", error);
+        this.error = error.message; // Update to show Firebase error messages
         alert('Login failed. Please check your email and password.');
       }
     }
