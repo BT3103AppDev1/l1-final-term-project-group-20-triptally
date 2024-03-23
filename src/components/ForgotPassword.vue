@@ -1,20 +1,43 @@
+
 <template>
-    <div class="login-card"> <!-- Apply .login-card class here -->
-      <h1>Forgot Password</h1>
-      <text>Enter the email address associated with your account and click the button below to receive an email to reset this account’s password. </text>
-      <form>
-        <input type="email" placeholder="Enter Email" />
-        <button type="submit">Reset My Password</button>
-        <router-link to="/" class="go-login-link">← Back to Login.</router-link>
-      </form>
-    </div>
-  </template>
+  <div class="login-card">
+    <h1>Forgot Password</h1>
+    <text>Enter the email address associated with your account and click the button below to receive an email to reset this account’s password.</text>
+    <form @submit.prevent="submitPasswordReset">
+      <input type="email" placeholder="Enter Email" v-model="email" />
+      <button type="submit">Reset My Password</button>
+      <router-link to="/" class="go-login-link">← Back to Login.</router-link>
+    </form>
+  </div>
+</template>
   
 <script>
-  export default {
-    name: 'ForgotPassword'
+import { auth } from '@/firebase'; // Importing auth instance
+import { sendPasswordResetEmail } from "firebase/auth"; // Importing sendPasswordResetEmail directly from Firebase Auth
+
+export default {
+  name: 'ForgotPassword',
+  data() {
+    return {
+      email: '',
+    };
+  },
+  methods: {
+    submitPasswordReset() {
+      sendPasswordResetEmail(auth, this.email)
+        .then(() => {
+          alert('A password reset email has been sent. Please check your inbox.');
+          this.email = ''; // Optionally clear the email input after sending
+        })
+        .catch((error) => {
+          console.error("Error sending password reset email:", error);
+          alert(`Failed to send password reset email. Please try again. Error: ${error.message}`);
+        });
+    }
   }
+}
 </script>
+  
   
 <style>
 /* Centered card layout */

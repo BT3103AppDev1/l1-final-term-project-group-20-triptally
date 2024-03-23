@@ -1,7 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import LoginPage from '@/views/LoginPage.vue'
-import ForgotPassword from '@/components/ForgotPassword.vue'
-import SignupPage from '@/views/SignupPage.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { getCurrentUser } from '@/authState';
+import LoginPage from '@/views/LoginPage.vue';
+import ForgotPassword from '@/components/ForgotPassword.vue';
+import SignupPage from '@/views/SignupPage.vue';
 import HomePage from '@/views/Homepage/HomePage.vue';
 import GroupPage from '@/views/GroupPage/GroupPage.vue';
 import AnalyticsPage from '@/views/GroupPage/AnalyticsPage.vue';
@@ -14,51 +15,60 @@ const routes = [
     {
       path: '/',
       name: 'LoginPage',
-      component: LoginPage
+      component: LoginPage,
+      meta: { requiresNoAuth: true }
     },
     {
       path: '/forgot-password',
       name: 'ForgotPassword',
-      component: ForgotPassword
+      component: ForgotPassword,
+      meta: { requiresNoAuth: true }
     }, 
     {
       path: '/signup', 
       name: 'SignupPage',
-      component: SignupPage
+      component: SignupPage,
+      meta: { requiresNoAuth: true }
     },
     {
       path: '/homepage',
       name: 'HomePage',
-      component: HomePage
+      component: HomePage,
+      meta: { requiresAuth: true }
     },
     {
       path: '/profilepage',
       name: 'ProfilePage',
-      component: ProfilePage
+      component: ProfilePage,
+      meta: { requiresAuth: true }
     },
     {
       path: '/group/:tripName', 
       name: 'GroupPage',
       component: GroupPage,
-      props: true 
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/group/:tripName/analytics', 
       name: 'AnalyticsPage',
       component: AnalyticsPage,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/group/:tripName/budgets', 
       name: 'BudgetsPage',
       component: BudgetsPage,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/group/:tripName/members', 
       name: 'MembersPage',
       component: MembersPage,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/group/:tripName/settings', 
