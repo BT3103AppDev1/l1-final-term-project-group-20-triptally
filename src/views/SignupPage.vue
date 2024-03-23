@@ -69,7 +69,6 @@ async function writeUserData(userID, email, username, currency, firstName, lastN
     FirstName: firstName, 
     LastName: lastName
   })
-
 }
 
 </script>

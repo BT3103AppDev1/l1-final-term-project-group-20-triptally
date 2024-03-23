@@ -71,6 +71,7 @@ export default {
   align-items: center;
   margin-left: 1vw;
   margin-right: 1vw;
+  text-decoration: none; 
 }
 
 .profile-placeholder {
