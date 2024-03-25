@@ -9,19 +9,19 @@
       <input id="username" type="text" v-model="username" placeholder="Username" required/>
       <select v-model="currency">
         <option value="" disabled selected hidden>Select Default Currency</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-        <option value="JPY">JPY</option>
-        <option value="GBP">GBP</option>
+        <option value="SGD">SGD</option>
         <option value="AUD">AUD</option>
         <option value="CAD">CAD</option>
         <option value="CHF">CHF</option>
         <option value="CNY">CNY</option>
-        <option value="SEK">SEK</option>
-        <option value="NZD">NZD</option>
-        <option value="SGD">SGD</option>
-        <option value="MYR">MYR</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
         <option value="KRW">KRW</option>
+        <option value="MYR">MYR</option>
+        <option value="NZD">NZD</option>
+        <option value="SEK">SEK</option>
+        <option value="USD">USD</option>  
       </select>
       <button type="submit">Let's Tally!</button>
     </form>
