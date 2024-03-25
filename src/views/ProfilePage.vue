@@ -18,13 +18,19 @@
           <div class="form-group">
             <label for="currency">Default Currency:</label>
             <select id="currency" v-model="profile.currency">
-              <option>SGD</option>
-              <option>USD</option>
-              <option>JPY</option>
-              <option>EUR</option>
-              <option>KRW</option>
-              <option>AUD</option>
-              <option>NZD</option>
+              <option value="SGD">SGD</option>
+              <option value="AUD">AUD</option>
+              <option value="CAD">CAD</option>
+              <option value="CHF">CHF</option>
+              <option value="CNY">CNY</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="JPY">JPY</option>
+              <option value="KRW">KRW</option>
+              <option value="MYR">MYR</option>
+              <option value="NZD">NZD</option>
+              <option value="SEK">SEK</option>
+              <option value="USD">USD</option> 
             </select>
           </div>
         </form>
@@ -95,7 +101,6 @@
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-size: small;
   margin-bottom: 0.1rem;
-  
 }
 
 select {
@@ -105,7 +110,14 @@ select {
   border-radius: 6px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-size: small;
+}
 
+input[readonly] {
+  background-color: #ccc;
+}
+
+input[readonly]:focus {
+  outline: none;
 }
 
 button {
@@ -119,18 +131,16 @@ button {
   width:130px;
   float: right;
   font-size: small; 
-  
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 
 button:hover {
-  background-color: #cc8400; /* Darker shade for hover effect */
+  background-color: #cc8400; 
 }
 
 h1 {
-  color: #333; /* Dark grey color for the heading */
+  color: #333; 
   text-align: left;
   margin-bottom: 2rem;
 }
-
-/* Add additional styles if necessary */
 </style>
