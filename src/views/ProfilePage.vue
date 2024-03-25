@@ -100,7 +100,7 @@
   border-radius: 6px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-size: small;
-  margin-bottom: 0.1rem; 
+  margin-bottom: 0.1rem;
 }
 
 select {
@@ -132,7 +132,6 @@ button {
   float: right;
   font-size: small; 
   font-family: 'MontserratRegular', Montserrat, sans-serif;
-
 }
 
 button:hover {
@@ -144,6 +143,4 @@ h1 {
   text-align: left;
   margin-bottom: 2rem;
 }
-
-
 </style>

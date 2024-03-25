@@ -1,24 +1,46 @@
 <template>
-  <div class="login-card"> <!-- Apply .login-card class here -->
+  <div class="login-card">
     <h1>Log In</h1>
-    <form>
-      <input type="email" placeholder="Email" />
-      <input type="password" placeholder="Password" />
+    <form @submit.prevent="login">
+      <input type="email" placeholder="Email" v-model="email" />
+      <input type="password" placeholder="Password" v-model="password" />
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
-      <!-- <router-link to="/analytics" class="analytics page">Analytics</router-link> -->
-      <button type="submit">Let's Tally!</button>
+      <button type="button" @click="login">Let's Tally!</button>
     </form>
   </div>
 </template>
 
-
 <script>
-  export default {
-    name: 'LoginPage'
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
+export default {
+  name: 'LoginPage',
+  data() {
+    return {
+      email: '',
+      password: '',
+      error: '', // Optional: for displaying login errors
+    };
+  },
+  methods: { 
+    async login() {
+      const auth = getAuth();
+      try {
+        await signInWithEmailAndPassword(auth, this.email, this.password);
+        console.log("Login successful");
+        this.$router.push({ path: '/homepage' });
+      } catch (error) {
+        console.error("Login failed:", error);
+        this.error = error.message; // Update to show Firebase error messages
+        alert('Login failed. Please check your email and password.');
+      }
+    }
   }
+}
 </script>
 
-<style scoped>
+
+<style>
 /* Use a full-screen background image */
 body, html {
   height: 100%;
@@ -58,7 +80,7 @@ input[type="email"], input[type="password"] {
 }
 
 /* Button styling */
-button {
+.login-button {
   width: 140px;
   padding: 15px;
   border: none;
@@ -68,10 +90,12 @@ button {
   font-weight: 700;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   margin-top: 40px;
+  text-align: center;
+  text-decoration: none;
 }
 
 
-button:hover {
+.login-button:hover {
   background-color: #607994;
 }
 
