@@ -1,8 +1,7 @@
 <template>
   <div id="app">
-    <NavBar v-if="route.name === 'LoginPage' || route.name === 'SignupPage'" />
-    <TopNavBar v-else />
-
+    <TopNavBar v-if="user"/>
+    <NavBar v-else />
   </div>
   <router-view></router-view>
 </template>
@@ -11,9 +10,16 @@
 import { useRoute } from 'vue-router';
 import NavBar from '@/components/NavBar.vue';
 import TopNavBar from './components/topnavbar.vue';
+import { doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: 'App',
+  data() { 
+    return { 
+      user: false, 
+    }
+  },
   components: {
     NavBar,
     TopNavBar,
@@ -21,7 +27,16 @@ export default {
   setup() {
     const route = useRoute();
     return { route };
-  },
+  }, 
+  mounted() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
+        console.log(user); 
+      }
+    })
+  }
 };
 </script>
 

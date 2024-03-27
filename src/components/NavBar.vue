@@ -6,9 +6,14 @@
         <router-link to="/signup" class="nav-link-signup">Sign Up</router-link>
     </div>
     </nav>
+
 </template>
   
   <script>
+  import { ref } from 'vue';
+  import { auth, db } from '@/firebase';
+  import { doc, getDoc } from "firebase/firestore";
+  import { getAuth, onAuthStateChanged } from "firebase/auth";
   export default {
     name: 'NavBar'
   }

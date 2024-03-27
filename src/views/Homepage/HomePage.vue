@@ -1,5 +1,5 @@
 <template>
-    <div class="trip-container">
+    <div v-if="user" class="trip-container">
        <h1>My Trips</h1>
        <div class="trip-grid">
          <!-- Trip Cards -->
@@ -20,6 +20,11 @@
          </button>
        </div>
    </div>
+   <div v-else> 
+    <h1>
+      You must be logged in to view this! 
+    </h1>
+    </div>
  </template>
  
  <script>
@@ -27,11 +32,14 @@
  import winterExchangeImage from './GroupImages/winter-exchange.png';
  import baliTripImage from './GroupImages/bali-trip.png';
  import weekendKLImage from './GroupImages/weekend-in-kl.png';
- 
+import { doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
  export default {
-   name: 'TripList',
-   data() {
+  name: 'TripList',
+  data() {
      return {
+      user: false,
        trips: [
          { id: 1, name: 'Grad Trip <3', image: gradTripImage },
          { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
@@ -41,11 +49,19 @@
        ]
      };
    },
-   methods: {
+  methods: {
      addNewTrip() {
        // Logic to add new trip
      }
-   }
+   },
+  mounted() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
+      }
+    })
+  }
  }
  </script>
   
@@ -53,64 +69,64 @@
   .app-container {
     font-family: 'Arial', sans-serif;
   }
-  
+
   .trip-container {
-    padding: 20px;  
+    padding: 20px;
     padding-bottom: 70px;
-    min-height: 100vh; 
+    min-height: 100vh;
   }
-  
+
   .trip-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 20px;
     margin-top: 20px;
   }
-  
+
   .trip-card {
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     padding: 10px;
     text-align: center;
     text-decoration: none;
     color: black;
   }
-  
+
   .trip-image {
     width: 100%;
     height: 300px;
     object-fit: cover;
     border-radius: 4px;
   }
-  
+
   .trip-name {
     margin-top: 10px;
   }
-  
+
   .add-trip-button {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 50px;  
-    height: 50px; 
+    width: 50px;
+    height: 50px;
     background-color: #ffcc00;
     border: none;
-    border-radius: 50%; 
+    border-radius: 50%;
     font-size: 24px;
     color: #fff;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
-}
+  }
 
-.add-trip-button:hover {
-  background-color: #e6b800;
-}
+  .add-trip-button:hover {
+    background-color: #e6b800;
+  }
 
-  </style>
+</style>
   
   
