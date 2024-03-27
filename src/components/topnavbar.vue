@@ -1,5 +1,5 @@
 <template> 
-  <div class="navbar">
+  <div class="navbar" v-if="user">
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
@@ -24,16 +24,20 @@
     </div>
   </div>
   </div>
+
 </template>
 <script>
+import NavBar from './NavBar.vue';
 import { ref } from 'vue';
 import { auth, db } from '@/firebase';
 import { doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: 'NavigationBar',
   data() {
     return {
+      user: false, 
       Username: 'No Authenticated User',
       FirstName: '',
       LastName: '',
@@ -64,12 +68,23 @@ export default {
     generateInitials(FirstName, LastName) {
       return FirstName[0] + LastName[0];
     },
-    logout() {
+    logout($event) {
       console.log("Logging out...");
       this.showLogoutPopup = false;
+      event.preventDefault(); 
+      auth.signOut().then(() => { 
+        console.log("User is logged out!");
+        window.location.href = '/';
+      })
     }    
   },
   mounted() {
+    const auth = getAuth(); 
+    onAuthStateChanged(auth, (user) => { 
+      if (user) { 
+        this.user = user; 
+      }
+    })
     this.fetchUserData();
   }
 }
@@ -153,6 +168,7 @@ export default {
   text-decoration: none;
   display: block;
   color: white;
+  cursor: pointer;
 }
 .dropdown-item:hover {
   background-color: #1a7086;
@@ -180,6 +196,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .logout-popup-content button {
@@ -189,16 +206,19 @@ export default {
   border-top: 1px solid rgb(244, 243, 243);
   border-radius: 0%;
   width: 330px;
+  cursor: pointer; 
 }
 
 .logoutbutton {
   color: rgb(189, 1, 1);
   height:5px;
+  cursor: pointer;
 }
 
 .cancelbutton {
   color: black;
   height:5px;
+  cursor: pointer;
 
 }
 </style>

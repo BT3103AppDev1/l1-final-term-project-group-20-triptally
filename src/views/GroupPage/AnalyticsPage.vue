@@ -1,8 +1,9 @@
 <template>
   <!-- <div class="main-container"> -->
-    <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
+  <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
+
     <SideNavBar></SideNavBar>
-    <!-- <div class="content-container">
+  <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>
       <div class="wrapper">
       <div class="budgetExpenseWrapper">
@@ -28,9 +29,15 @@ import { ref, onMounted } from 'vue';
 import SideNavBar from './SideNavBar.vue';
 import { auth, db } from '@/firebase';
 import { getDoc, doc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: 'AnalyticsPage',
+  data() { 
+    return { 
+      user: false, 
+    }
+  },
   setup() {
     const currency = ref("");
     const totalBudget = ref(0);
@@ -63,15 +70,22 @@ export default {
   },
   components: {
     SideNavBar
+  }, 
+  mounted() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
+      }
+    })
   }
 };
 </script>
 
 
 <style scoped>
-.main-container {
-  display: flex;
-  
+.main-container { 
+  display:flex;
 }
 
 .content-container {

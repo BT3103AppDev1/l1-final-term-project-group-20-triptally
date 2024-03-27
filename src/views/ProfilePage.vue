@@ -1,7 +1,7 @@
 <template>
-    <div class="profile-container">
+    <div v-if="user" class="profile-container">
       <div class="profile-content">
-        <h1>Profile</h1>
+        <h1 class="profile-text">Profile</h1>
         <form class="profile-form">
           <div class="form-group">
             <label for="name">Name:</label>
@@ -37,17 +37,23 @@
         <button type="button" @click="saveChanges">Save Changes</button>
       </div>
     </div>
+    <div v-else>
+      <h1 class="msg">You must be logged in to view this!</h1>
+    </div>
 </template>
 
 
 <script>
 import { auth, db } from '@/firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 export default {
   name: 'ProfileForm',
   data() {
     return {
+      user: false, 
       profile: {
         name: 'No Authenticated User',
         email: 'invalid@email',
@@ -112,11 +118,23 @@ export default {
       },
       mounted() {
         this.fetchUserData();
+        const auth = getAuth(); 
+        onAuthStateChanged(auth, (user) => { 
+          if (user) { 
+            this.user = user; 
+          }
+        })
       }
     };
 </script>
   
 <style scoped>
+.msg {
+  text-align: center;
+  color: #16697a;
+  margin-bottom: 40px;
+}
+
 .profile-container {
   display: flex;
   align-items: center;
@@ -195,7 +213,7 @@ button:hover {
   background-color: #cc8400; 
 }
 
-h1 {
+.profile-text {
   color: #333; 
   text-align: left;
   margin-bottom: 2rem;
