@@ -5,7 +5,7 @@
         <form class="profile-form">
           <div class="form-group">
             <label for="name">Name:</label>
-            <input type="text" id="name" v-model="profile.name" />
+            <input type="text" id="name" v-model="profile.name" readonly/>
           </div>
           <div class="form-group">
             <label for="email">Email:</label>
@@ -13,11 +13,11 @@
           </div>
           <div class="form-group">
             <label for="username">Username:</label>
-            <input type="text" id="username" v-model="profile.username" readonly/>
+            <input type="text" id="username" v-model="profile.username" />
           </div>
           <div class="form-group">
             <label for="currency">Default Currency:</label>
-            <select id="currency" v-model="profile.currency">
+            <select id="currency" v-model="profile.currency" >
               <option value="SGD">SGD</option>
               <option value="AUD">AUD</option>
               <option value="CAD">CAD</option>
@@ -34,30 +34,87 @@
             </select>
           </div>
         </form>
-      <button type="button" @click="saveChanges">Save Changes</button>
+        <button type="button" @click="saveChanges">Save Changes</button>
       </div>
     </div>
 </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        profile: {
-          name: 'Petrine Pang',
-          email: 'petrinepang@gmail.com',
-          username: 'petrine0123',
-          currency: 'SGD',
-        },
-      };
+
+
+<script>
+import { auth, db } from '@/firebase';
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+
+export default {
+  name: 'ProfileForm',
+  data() {
+    return {
+      profile: {
+        name: 'No Authenticated User',
+        email: 'invalid@email',
+        username: 'xxxxxxxx',
+        currency: 'SGD'
+      }
+    };
+  },
+  methods: {
+    async updateCurrency() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Currency: this.profile.Currency
+          });
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
     },
-    methods: {
-      saveChanges() {
-        // Logic to save changes
+    async updateUsername() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Username: this.profile.Username
+          });
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
+    },
+    async saveChanges() {
+      await this.updateCurrency();
+      await this.updateUsername();
+    },
+    async fetchUserData() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          const userDoc = await getDoc(docRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            this.profile.name = userData.FirstName + ' ' + userData.LastName; 
+            this.profile.email = userData.Email; 
+            this.profile.username = userData.Username; 
+            this.profile.currency = userData.Currency; 
+          } else {
+            console.error("User document does not exist.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        console.error("No user is currently authenticated.");
+      }
+    }
       },
-    },
-  };
-  </script>
+      mounted() {
+        this.fetchUserData();
+      }
+    };
+</script>
   
 <style scoped>
 .profile-container {

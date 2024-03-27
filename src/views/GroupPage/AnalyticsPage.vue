@@ -1,7 +1,8 @@
 <template>
-  <div class="main-container">
+  <!-- <div class="main-container"> -->
+    <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
     <SideNavBar></SideNavBar>
-    <div class="content-container">
+    <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>
       <div class="wrapper">
       <div class="budgetExpenseWrapper">
@@ -18,8 +19,8 @@
         <h3>Spending This Trip</h3>
       </div>
     </div>
-  </div>
-  </div>
+  </div> -->
+  <!-- </div> -->
 </template>
 
 <script>
@@ -28,18 +29,13 @@ import SideNavBar from './SideNavBar.vue';
 import { auth, db } from '@/firebase';
 import { getDoc, doc } from 'firebase/firestore';
 
-
 export default {
-  components: {
-    SideNavBar
-  },
   name: 'AnalyticsPage',
   setup() {
     const currency = ref("");
     const totalBudget = ref(0);
     const totalExpense = ref(0);
-    const tripName = ref(""); 
-
+    const tripName = ref("");
     onMounted(async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
@@ -48,10 +44,13 @@ export default {
         if (currencyDoc.exists()) {
           currency.value = currencyDoc.data().SelectedCurrency;
         }
-
         // Dummy values for budget and expense, adjust as necessary
         totalBudget.value = 1500;
         totalExpense.value = 999;
+        tripName.value = "dummy until we implement trip collection";
+        //there was no issue with the formatting, the trip name was just hardcoded 
+        //so it disappeared on this page bc it extracts info from firebase.
+
       }
     });
 
@@ -61,6 +60,9 @@ export default {
       totalExpense,
       tripName
     };
+  },
+  components: {
+    SideNavBar
   }
 };
 </script>
