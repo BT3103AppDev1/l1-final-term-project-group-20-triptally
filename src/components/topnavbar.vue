@@ -34,7 +34,7 @@ export default {
   name: 'NavigationBar',
   data() {
     return {
-      Username: 'Vanessa Koh',
+      Username: 'No Authenticated User',
       FirstName: '',
       LastName: '',
       isDropdownOpen: false,
@@ -46,9 +46,9 @@ export default {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, "Users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
+        const userDoc = await getDoc(docRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
           this.Username = userData.Username; 
           this.FirstName = userData.FirstName; 
           this.LastName = userData.LastName; 

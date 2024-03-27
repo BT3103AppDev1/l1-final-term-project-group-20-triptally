@@ -49,9 +49,9 @@ export default {
   data() {
     return {
       profile: {
-        name: 'Vanessa Koh',
-        email: 'vanessakkoh@gmail.com',
-        username: 'vanessakohh',
+        name: 'No Authenticated User',
+        email: 'invalid@email',
+        username: 'xxxxxxxx',
         currency: 'SGD'
       }
     };
@@ -63,7 +63,7 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            currency: this.profile.currency
+            Currency: this.profile.Currency
           });
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -76,7 +76,7 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            username: this.profile.username
+            Username: this.profile.Username
           });
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -91,21 +91,29 @@ export default {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, "Users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          this.profile.name = userData.name; 
-          this.profile.email = userData.email; 
-          this.profile.username = userData.username; 
-          this.profile.currency = userData.currency; 
+        try {
+          const userDoc = await getDoc(docRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            this.profile.name = userData.FirstName + ' ' + userData.LastName; 
+            this.profile.email = userData.Email; 
+            this.profile.username = userData.Username; 
+            this.profile.currency = userData.Currency; 
+          } else {
+            console.error("User document does not exist.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
+      } else {
+        console.error("No user is currently authenticated.");
       }
     }
-  },
-  mounted() {
-    this.fetchUserData();
-  }
-};
+      },
+      mounted() {
+        this.fetchUserData();
+      }
+    };
 </script>
   
 <style scoped>

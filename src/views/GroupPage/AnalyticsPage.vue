@@ -1,7 +1,8 @@
 <template>
-  <div class="main-container">
-    <SideNavBar :tripName="tripName"></SideNavBar>
-    <div class="content-container">
+  <!-- <div class="main-container"> -->
+    <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
+    <SideNavBar></SideNavBar>
+    <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>
       <div class="wrapper">
       <div class="budgetExpenseWrapper">
@@ -18,8 +19,8 @@
         <h3>Spending This Trip</h3>
       </div>
     </div>
-  </div>
-  </div>
+  </div> -->
+  <!-- </div> -->
 </template>
 
 <script>
