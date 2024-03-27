@@ -75,8 +75,6 @@ export default {
 }
 </script>
 
-
-
 <style scoped>
 .navbar {
   display: flex;
@@ -113,18 +111,20 @@ export default {
   font-size: 1.2vw;
   cursor: pointer;
   margin-right: 0.5vw;
-  margin-top: 0.31vw;
+  margin-top: 1vw;
+  margin-right: 1vw;
 }
 
 .profile {
-  width: 70px;
+  width: 55px;
   height: 55px;
   border-radius: 50%;
   background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 5vw;
+  margin-right: 1vw;
+
 }
 
 .profile-placeholder {
