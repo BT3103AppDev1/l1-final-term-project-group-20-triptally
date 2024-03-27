@@ -5,9 +5,9 @@
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
     <div class="navbar-item">
-      <div class="username">{{ userName }}</div>
-      <div class="profile" v-if="userName">
-        <div class="profile-placeholder">{{ generateInitials(userName) }}</div>
+      <div class="username">{{ Username }}</div>
+      <div class="profile" v-if="Username">
+        <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
       </div>
     <i class="fa fa-caret-down"></i>
     <div class="dropdown-menu">
@@ -25,35 +25,57 @@
   </div>
   </div>
 </template>
-
 <script>
+import { ref } from 'vue';
+import { auth, db } from '@/firebase';
+import { doc, getDoc } from "firebase/firestore";
+
 export default {
   name: 'NavigationBar',
   data() {
     return {
-      userName: 'Vanessa Koh',
+      Username: 'Vanessa Koh',
+      FirstName: '',
+      LastName: '',
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
   },
   methods: {
+    async fetchUserData() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          this.Username = userData.Username; 
+          this.FirstName = userData.FirstName; 
+          this.LastName = userData.LastName; 
+        }
+      }
+    },
     toggleDropdown() {
       this.isDropdownOpen = true;
     },
     closeDropdown() {
       this.isDropdownOpen = false;
     },
-    generateInitials(name) {
-      return name.split(' ').map(n => n[0]).join('');
+    generateInitials(FirstName, LastName) {
+      return FirstName[0] + LastName[0];
     },
     logout() {
-      //logout logic 
       console.log("Logging out...");
       this.showLogoutPopup = false;
-    }
+    }    
+  },
+  mounted() {
+    this.fetchUserData();
   }
 }
 </script>
+
+
 
 <style scoped>
 .navbar {
@@ -95,14 +117,14 @@ export default {
 }
 
 .profile {
-  width: 2.2vw;
-  height: 2.2vw;
+  width: 70px;
+  height: 55px;
   border-radius: 50%;
   background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 1vw;
+  margin-right: 5vw;
 }
 
 .profile-placeholder {
