@@ -1,13 +1,13 @@
 <template> 
-  <div class="navbar">
+  <div class="navbar" v-if="user">
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
     <div class="navbar-item">
-      <div class="username">{{ userName }}</div>
-      <div class="profile" v-if="userName">
-        <div class="profile-placeholder">{{ generateInitials(userName) }}</div>
+      <div class="username">{{ Username }}</div>
+      <div class="profile" v-if="Username">
+        <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
       </div>
     <i class="fa fa-caret-down"></i>
     <div class="dropdown-menu">
@@ -24,33 +24,68 @@
     </div>
   </div>
   </div>
-</template>
 
+</template>
 <script>
+import NavBar from './NavBar.vue';
+import { ref } from 'vue';
+import { auth, db } from '@/firebase';
+import { doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 export default {
   name: 'NavigationBar',
   data() {
     return {
-      userName: 'Vanessa Koh',
+      user: false, 
+      Username: 'No Authenticated User',
+      FirstName: '',
+      LastName: '',
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
   },
   methods: {
+    async fetchUserData() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        const userDoc = await getDoc(docRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          this.Username = userData.Username; 
+          this.FirstName = userData.FirstName; 
+          this.LastName = userData.LastName; 
+        }
+      }
+    },
     toggleDropdown() {
       this.isDropdownOpen = true;
     },
     closeDropdown() {
       this.isDropdownOpen = false;
     },
-    generateInitials(name) {
-      return name.split(' ').map(n => n[0]).join('');
+    generateInitials(FirstName, LastName) {
+      return FirstName[0] + LastName[0];
     },
-    logout() {
-      //logout logic 
+    logout($event) {
       console.log("Logging out...");
       this.showLogoutPopup = false;
-    }
+      event.preventDefault(); 
+      auth.signOut().then(() => { 
+        console.log("User is logged out!");
+        window.location.href = '/';
+      })
+    }    
+  },
+  mounted() {
+    const auth = getAuth(); 
+    onAuthStateChanged(auth, (user) => { 
+      if (user) { 
+        this.user = user; 
+      }
+    })
+    this.fetchUserData();
   }
 }
 </script>
@@ -91,18 +126,20 @@ export default {
   font-size: 1.2vw;
   cursor: pointer;
   margin-right: 0.5vw;
-  margin-top: 0.31vw;
+  margin-top: 1vw;
+  margin-right: 1vw;
 }
 
 .profile {
-  width: 2.2vw;
-  height: 2.2vw;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-right: 1vw;
+
 }
 
 .profile-placeholder {
@@ -131,6 +168,7 @@ export default {
   text-decoration: none;
   display: block;
   color: white;
+  cursor: pointer;
 }
 .dropdown-item:hover {
   background-color: #1a7086;
@@ -158,6 +196,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .logout-popup-content button {
@@ -167,16 +206,19 @@ export default {
   border-top: 1px solid rgb(244, 243, 243);
   border-radius: 0%;
   width: 330px;
+  cursor: pointer; 
 }
 
 .logoutbutton {
   color: rgb(189, 1, 1);
   height:5px;
+  cursor: pointer;
 }
 
 .cancelbutton {
   color: black;
   height:5px;
+  cursor: pointer;
 
 }
 </style>
