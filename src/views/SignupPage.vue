@@ -2,26 +2,27 @@
   <div class="signup-card"> <!-- Apply .login-card class here -->
     <h1>Sign Up</h1>
     <form @submit.prevent="submitHandler">
-      <input id="email" type="email" v-model="email" placeholder="Email" required/>
-      <input id="password" type="password" v-model="password" placeholder="Password" required />
       <input id="firstName" type="text" v-model="firstName" placeholder="First Name" required/>
       <input id="lastName" type="text" v-model="lastName" placeholder="Last Name" /> 
+      <input id="email" type="email" v-model="email" placeholder="Email" required/>
+      <h2 v-show="emailError">Hi</h2>
+      <input id="password" type="password" v-model="password" placeholder="Password" required />
       <input id="username" type="text" v-model="username" placeholder="Username" required/>
       <select v-model="currency">
         <option value="" disabled selected hidden>Select Default Currency</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-        <option value="JPY">JPY</option>
-        <option value="GBP">GBP</option>
+        <option value="SGD">SGD</option>
         <option value="AUD">AUD</option>
         <option value="CAD">CAD</option>
         <option value="CHF">CHF</option>
         <option value="CNY">CNY</option>
-        <option value="SEK">SEK</option>
-        <option value="NZD">NZD</option>
-        <option value="SGD">SGD</option>
-        <option value="MYR">MYR</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
         <option value="KRW">KRW</option>
+        <option value="MYR">MYR</option>
+        <option value="NZD">NZD</option>
+        <option value="SEK">SEK</option>
+        <option value="USD">USD</option>  
       </select>
       <button type="submit">Let's Tally!</button>
     </form>
@@ -43,6 +44,7 @@ const currency = ref("");
 const lastName = ref(""); 
 const firstName = ref("")
 const username = ref(""); 
+var emailError = false;
 var UID = '';
 
 const router = useRouter(); // Use the useRouter hook
@@ -61,7 +63,13 @@ async function submitHandler() {
     })
     .catch((error) => {
       // handle error
-      console.log(error)
+      console.log(error.code)
+      if (error.code === "auth/email-already-in-use") { 
+        alert("Email already in use. Please use another email!")
+      } else if (error.code === "auth/weak-password") { 
+        alert("Password must be at least 6 characters long.")
+      }
+      // also need to check if username is unique....
     });
 }
 
@@ -85,6 +93,10 @@ body, html {
   background: url('src/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
   background-color: rgba(88, 85, 79, 0.2);
+}
+
+button { 
+  cursor: pointer;
 }
 
 /* Centered card layout */
