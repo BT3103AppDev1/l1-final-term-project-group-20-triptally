@@ -63,6 +63,7 @@ export default {
     };
   },
   methods: {
+    //check
     async updateCurrency() {
       const user = auth.currentUser;
       if (user) {
