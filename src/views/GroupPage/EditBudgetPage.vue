@@ -10,7 +10,7 @@
       </div>
       <div class="budget-fields">
         <div class="field" v-for="(value, name) in budget" :key="name">
-          <label :for="name">{{ name }}:</label>
+          <label :for="name">{{ name }}: </label>
           <input type="number" :id="name" v-model.number="budget[name]"/>
         </div>
       </div>
@@ -65,14 +65,16 @@ export default {
 
 h1 {
   color: white;
+  font-size:x-large;
 }
+
 /* Centered card layout */
 .edit-budget-card {
-  background: rgba(27, 94, 121, 0.768); /* semi-transparent white background */
+  background: #307A8D; 
   border-radius: 15px;
-  width: 600px; /* Adjust width as needed */
+  width: 700px; /* Adjust width as needed */
   margin: 0 auto; /* Center the card horizontally */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* subtle shadow */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
 }
@@ -92,6 +94,11 @@ h1 {
   font-size: small;
   border-radius: 10px;
   width: 100px;
+  margin-right: 2cap;
+}
+
+.save-button:hover {
+  background-color: #e3be43; /* A slightly darker shade for hover state */
 }
 
 .budget-page-link {
@@ -100,11 +107,15 @@ h1 {
   font-weight: 1000;
   font-size:larger;
   text-decoration: none;
+  margin-left: 2cap;
 }
 .budget-fields {
   display: flex;
   flex-direction: column;
-  /* Style your form */
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  font-weight: 700;
+  color: white;
+  margin-left: 8cap;
 }
 
 .field {
@@ -117,6 +128,6 @@ label {
 }
 
 input[type="number"] {
-  /* Style your inputs */
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 </style>
