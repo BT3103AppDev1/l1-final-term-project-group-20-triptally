@@ -10,6 +10,7 @@ import BudgetsPage from '@/views/GroupPage/BudgetsPage.vue';
 import MembersPage from '@/views/GroupPage/MembersPage.vue';
 import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
+import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
 
 const routes = [
     {
@@ -61,6 +62,12 @@ const routes = [
       path: '/group/:tripName/budgets', 
       name: 'BudgetsPage',
       component: BudgetsPage,
+      props: true
+    },
+    {
+      path: '/group/:tripName/editbudget', 
+      name: 'EditBudgetPage',
+      component: EditBudgetPage,
       props: true
     },
     {
