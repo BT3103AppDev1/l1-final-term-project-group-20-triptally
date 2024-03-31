@@ -27,6 +27,7 @@
  import winterExchangeImage from './GroupImages/winter-exchange.png';
  import baliTripImage from './GroupImages/bali-trip.png';
  import weekendKLImage from './GroupImages/weekend-in-kl.png';
+ import { getCurrentUser } from "@/authState";
  
  export default {
    name: 'TripList',
@@ -45,7 +46,14 @@
      addNewTrip() {
        // Logic to add new trip
      }
-   }
+   },
+   name: "HomePage",
+    mounted() {
+    const user = getCurrentUser().value;
+    if (!user) {
+      this.$router.push({ name: 'LoginPage' });
+    }
+  }, 
  }
  </script>
   
