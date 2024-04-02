@@ -63,13 +63,14 @@ export default {
     };
   },
   methods: {
+    //check
     async updateCurrency() {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            Currency: this.profile.Currency
+            Currency: this.profile.currency
           });
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -82,7 +83,7 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            Username: this.profile.Username
+            Username: this.profile.username
           });
         } catch (error) {
           console.error("Error updating currency:", error);
