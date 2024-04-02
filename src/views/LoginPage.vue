@@ -40,7 +40,7 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 /* Use a full-screen background image */
 body, html {
   height: 100%;
@@ -65,6 +65,10 @@ body, html {
   align-items: center; /* Centers flex children horizontally */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(50%);
+}
+
+button { 
+  cursor: pointer; 
 }
 
 /* Input styling */
@@ -92,6 +96,7 @@ input[type="email"], input[type="password"] {
   margin-top: 40px;
   text-align: center;
   text-decoration: none;
+  cursor: pointer; 
 }
 
 
