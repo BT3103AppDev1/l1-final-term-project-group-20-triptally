@@ -69,7 +69,7 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            Currency: this.profile.Currency
+            Currency: this.profile.currency
           });
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -82,7 +82,7 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            Username: this.profile.Username
+            Username: this.profile.username
           });
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -95,6 +95,7 @@ export default {
     },
     async fetchUserData() {
       const user = auth.currentUser;
+      console.log(user); 
       if (user) {
         const docRef = doc(db, "Users", user.uid);
         try {
@@ -105,6 +106,7 @@ export default {
             this.profile.email = userData.Email; 
             this.profile.username = userData.Username; 
             this.profile.currency = userData.Currency; 
+            
           } else {
             console.error("User document does not exist.");
           }

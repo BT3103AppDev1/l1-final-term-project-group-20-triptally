@@ -13,7 +13,6 @@
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-
 export default {
   data() { 
     return { 
