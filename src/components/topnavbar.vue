@@ -24,6 +24,9 @@
     </div>
   </div>
   </div>
+  <div v-else>
+    <NavBar/>
+  </div>
 
 </template>
 <script>
@@ -44,6 +47,9 @@ export default {
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
+  },
+  components: { 
+    NavBar,
   },
   methods: {
     async fetchUserData() {

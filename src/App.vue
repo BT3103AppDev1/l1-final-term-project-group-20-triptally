@@ -1,7 +1,11 @@
 <template>
   <div id="app">
-    <TopNavBar v-if="user"/>
-    <NavBar v-else />
+    <div v-if="user && route.name!=='LoginPage' && route.name!=='SignupPage'">
+      <TopNavBar />
+    </div>
+    <div v-else>
+      <NavBar />
+    </div>
   </div>
   <router-view></router-view>
 </template>
@@ -33,6 +37,7 @@ export default {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
+        console.log("User logged in");
         console.log(user); 
       }
     })
