@@ -65,7 +65,7 @@ import { db } from '@/firebase';
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
-        // retrieve relevant trips from firestore database 
+        // retrieve user's relevant trips from firestore database 
       }
     })
 
