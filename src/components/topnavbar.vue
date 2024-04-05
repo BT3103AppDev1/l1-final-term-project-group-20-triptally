@@ -148,7 +148,7 @@ export default {
 }
 
 .profile-placeholder {
-  font-size: 12px;
+  font-size: 13px;
   color: rgb(72, 159, 181);
   text-transform: uppercase;
 }
