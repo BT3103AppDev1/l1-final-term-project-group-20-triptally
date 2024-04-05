@@ -72,6 +72,7 @@ export default {
           await updateDoc(docRef, {
             Currency: this.profile.currency
           });
+          // window.location.reload();
         } catch (error) {
           console.error("Error updating currency:", error);
         }
@@ -85,6 +86,7 @@ export default {
           await updateDoc(docRef, {
             Username: this.profile.username
           });
+          window.location.reload();
         } catch (error) {
           console.error("Error updating currency:", error);
         }
@@ -122,9 +124,10 @@ export default {
       mounted() {
         this.fetchUserData();
         const auth = getAuth(); 
-        onAuthStateChanged(auth, (user) => { 
+        onAuthStateChanged(auth, async (user) => { 
           if (user) { 
             this.user = user; 
+            await this.fetchUserData();
           }
         })
       }

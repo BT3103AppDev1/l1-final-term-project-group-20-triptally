@@ -1,12 +1,14 @@
 <template> 
   <div class="navbar" v-if="user">
-    <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     <router-link to="/homepage">
+      <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
+    </router-link>
+      <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
     <div class="navbar-item">
       <div class="username">{{ Username }}</div>
-      <div class="profile" v-if="Username">
+      <div class="profile">
         <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
       </div>
     <i class="fa fa-caret-down"></i>
@@ -42,7 +44,7 @@ export default {
   data() {
     return {
       user: false, 
-      Username: 'No Authenticated User',
+      Username: ref('No Authenticated User'),
       FirstName: '',
       LastName: '',
       isDropdownOpen: false,
@@ -60,7 +62,7 @@ export default {
         const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          this.Username = userData.Username; 
+          this.Username= userData.Username; 
           this.FirstName = userData.FirstName; 
           this.LastName = userData.LastName; 
         }
