@@ -17,7 +17,7 @@ export default {
   name: 'App',
   data() { 
     return { 
-      user: false, 
+      user: null, 
     }
   },
   components: {
@@ -32,10 +32,15 @@ export default {
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        // If there's a user, set the user data
         this.user = user;
-        console.log(user); 
+        console.log("User logged in:", user); 
+      } else {
+        // If there's no user, set user to null
+        this.user = null;
+        console.log("No user logged in");
       }
-    })
+    });
   }
 };
 </script>
