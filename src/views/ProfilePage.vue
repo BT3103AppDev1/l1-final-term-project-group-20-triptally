@@ -54,6 +54,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
 export default {
+<<<<<<< HEAD
 name: 'ProfileForm',
 data() {
   return {
@@ -93,6 +94,88 @@ methods: {
         window.location.reload();
       } catch (error) {
         console.error("Error updating currency:", error);
+=======
+  name: 'ProfileForm',
+  data() {
+    return {
+      user: false, 
+      profile: {
+        name: 'No Authenticated User',
+        email: 'invalid@email',
+        username: 'xxxxxxxx',
+        currency: 'SGD'
+      }
+    };
+  },
+  methods: {
+    //check
+    async updateCurrency() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Currency: this.profile.currency
+          });
+          // window.location.reload();
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
+    },
+    async updateUsername() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Username: this.profile.username
+          });
+          window.location.reload();
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
+    },
+    async saveChanges() {
+      await this.updateCurrency();
+      await this.updateUsername();
+    },
+    async fetchUserData() {
+      const user = auth.currentUser;
+      console.log(user); 
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          const userDoc = await getDoc(docRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            this.profile.name = userData.FirstName + ' ' + userData.LastName; 
+            this.profile.email = userData.Email; 
+            this.profile.username = userData.Username; 
+            this.profile.currency = userData.Currency; 
+            
+          } else {
+            console.error("User document does not exist.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        console.error("No user is currently authenticated.");
+      }
+    }
+      },
+      mounted() {
+        this.fetchUserData();
+        const auth = getAuth(); 
+        onAuthStateChanged(auth, async (user) => { 
+          if (user) { 
+            this.user = user; 
+            await this.fetchUserData();
+          }
+        })
+>>>>>>> 0fb10f0aa2bc5450d95cec26e08673379d3d4363
       }
     }
   },

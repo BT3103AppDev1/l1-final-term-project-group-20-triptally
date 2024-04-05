@@ -1,6 +1,9 @@
 <template>
   <div class="navbar" v-if="user">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 0fb10f0aa2bc5450d95cec26e08673379d3d4363
     <router-link to="/homepage">
       <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     </router-link>
@@ -49,7 +52,11 @@ export default {
   name: 'NavigationBar',
   data() {
     return {
+<<<<<<< HEAD
       user: false,
+=======
+      user: false, 
+>>>>>>> 0fb10f0aa2bc5450d95cec26e08673379d3d4363
       Username: ref('No Authenticated User'),
       FirstName: '',
       LastName: '',
@@ -69,9 +76,15 @@ export default {
         const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
+<<<<<<< HEAD
           this.Username= userData.Username;
           this.FirstName = userData.FirstName;
           this.LastName = userData.LastName;
+=======
+          this.Username= userData.Username; 
+          this.FirstName = userData.FirstName; 
+          this.LastName = userData.LastName; 
+>>>>>>> 0fb10f0aa2bc5450d95cec26e08673379d3d4363
         }
       }
     },
