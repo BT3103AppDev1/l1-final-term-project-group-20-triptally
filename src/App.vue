@@ -1,11 +1,7 @@
 <template>
   <div id="app">
-    <div v-if="user && route.name!=='LoginPage' && route.name!=='SignupPage'">
-      <TopNavBar />
-    </div>
-    <div v-else>
-      <NavBar />
-    </div>
+    <TopNavBar v-if="user"/>
+    <NavBar v-else />
   </div>
   <router-view></router-view>
 </template>
@@ -21,7 +17,7 @@ export default {
   name: 'App',
   data() { 
     return { 
-      user: false, 
+      user: null, 
     }
   },
   components: {
@@ -36,11 +32,15 @@ export default {
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        // If there's a user, set the user data
         this.user = user;
-        console.log("User logged in");
-        console.log(user); 
+        console.log("User logged in:", user); 
+      } else {
+        // If there's no user, set user to null
+        this.user = null;
+        console.log("No user logged in");
       }
-    })
+    });
   }
 };
 </script>
