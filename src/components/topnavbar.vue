@@ -24,6 +24,9 @@
     </div>
   </div>
   </div>
+  <div v-else>
+    <NavBar/>
+  </div>
 
 </template>
 <script>
@@ -45,6 +48,9 @@ export default {
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
+  },
+  components: { 
+    NavBar,
   },
   methods: {
     async fetchUserData() {
@@ -138,7 +144,7 @@ export default {
   justify-content: center;
   align-items: center;
   margin-right: 1vw;
-
+  text-decoration: none; 
 }
 
 .profile-placeholder {
@@ -150,10 +156,9 @@ export default {
 .dropdown-menu {
   display:none;
   position: absolute;
-  right: 10px;
-  top: 50px;
+  top: 63px;
   background-color: #489FB5;
-  min-width: 160px;
+  width: 300px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
 }

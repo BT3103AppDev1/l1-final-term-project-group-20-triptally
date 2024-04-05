@@ -1,8 +1,9 @@
 <template>
   <!-- <div class="main-container"> -->
   <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
-
+  <div v-if="user">
     <SideNavBar></SideNavBar>
+  </div>
   <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>
       <div class="wrapper">
@@ -57,7 +58,6 @@ export default {
         tripName.value = "dummy until we implement trip collection";
         //there was no issue with the formatting, the trip name was just hardcoded 
         //so it disappeared on this page bc it extracts info from firebase.
-
       }
     });
 
