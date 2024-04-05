@@ -1,11 +1,11 @@
 <template>
-    <div class="profile-container">
+    <div v-if="user" class="profile-container">
       <div class="profile-content">
-        <h1>Profile</h1>
+        <h1 class="profile-text">Profile</h1>
         <form class="profile-form">
           <div class="form-group">
             <label for="name">Name:</label>
-            <input type="text" id="name" v-model="profile.name" />
+            <input type="text" id="name" v-model="profile.name" readonly/>
           </div>
           <div class="form-group">
             <label for="email">Email:</label>
@@ -13,47 +13,128 @@
           </div>
           <div class="form-group">
             <label for="username">Username:</label>
-            <input type="text" id="username" v-model="profile.username" readonly/>
+            <input type="text" id="username" v-model="profile.username" />
           </div>
           <div class="form-group">
             <label for="currency">Default Currency:</label>
-            <select id="currency" v-model="profile.currency">
-              <option>SGD</option>
-              <option>USD</option>
-              <option>JPY</option>
-              <option>EUR</option>
-              <option>KRW</option>
-              <option>AUD</option>
-              <option>NZD</option>
+            <select id="currency" v-model="profile.currency" >
+              <option value="SGD">SGD</option>
+              <option value="AUD">AUD</option>
+              <option value="CAD">CAD</option>
+              <option value="CHF">CHF</option>
+              <option value="CNY">CNY</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="JPY">JPY</option>
+              <option value="KRW">KRW</option>
+              <option value="MYR">MYR</option>
+              <option value="NZD">NZD</option>
+              <option value="SEK">SEK</option>
+              <option value="USD">USD</option> 
             </select>
           </div>
         </form>
-      <button type="button" @click="saveChanges">Save Changes</button>
+        <button type="button" @click="saveChanges">Save Changes</button>
       </div>
     </div>
+    <div v-else>
+      <h1 class="msg">You must be logged in to view this!</h1>
+    </div>
 </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        profile: {
-          name: 'Petrine Pang',
-          email: 'petrinepang@gmail.com',
-          username: 'petrine0123',
-          currency: 'SGD',
-        },
-      };
+
+
+<script>
+import { auth, db } from '@/firebase';
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+
+export default {
+  name: 'ProfileForm',
+  data() {
+    return {
+      user: false, 
+      profile: {
+        name: 'No Authenticated User',
+        email: 'invalid@email',
+        username: 'xxxxxxxx',
+        currency: 'SGD'
+      }
+    };
+  },
+  methods: {
+    async updateCurrency() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Currency: this.profile.Currency
+          });
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
     },
-    methods: {
-      saveChanges() {
-        // Logic to save changes
+    async updateUsername() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Username: this.profile.Username
+          });
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
+    },
+    async saveChanges() {
+      await this.updateCurrency();
+      await this.updateUsername();
+    },
+    async fetchUserData() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          const userDoc = await getDoc(docRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            this.profile.name = userData.FirstName + ' ' + userData.LastName; 
+            this.profile.email = userData.Email; 
+            this.profile.username = userData.Username; 
+            this.profile.currency = userData.Currency; 
+          } else {
+            console.error("User document does not exist.");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        console.error("No user is currently authenticated.");
+      }
+    }
       },
-    },
-  };
-  </script>
+      mounted() {
+        this.fetchUserData();
+        const auth = getAuth(); 
+        onAuthStateChanged(auth, (user) => { 
+          if (user) { 
+            this.user = user; 
+          }
+        })
+      }
+    };
+</script>
   
 <style scoped>
+.msg {
+  text-align: center;
+  color: #16697a;
+  margin-bottom: 40px;
+}
+
 .profile-container {
   display: flex;
   align-items: center;
@@ -95,7 +176,6 @@
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-size: small;
   margin-bottom: 0.1rem;
-  
 }
 
 select {
@@ -105,7 +185,14 @@ select {
   border-radius: 6px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-size: small;
+}
 
+input[readonly] {
+  background-color: #ccc;
+}
+
+input[readonly]:focus {
+  outline: none;
 }
 
 button {
@@ -119,18 +206,16 @@ button {
   width:130px;
   float: right;
   font-size: small; 
-  
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 
 button:hover {
-  background-color: #cc8400; /* Darker shade for hover effect */
+  background-color: #cc8400; 
 }
 
-h1 {
-  color: #333; /* Dark grey color for the heading */
+.profile-text {
+  color: #333; 
   text-align: left;
   margin-bottom: 2rem;
 }
-
-/* Add additional styles if necessary */
 </style>
