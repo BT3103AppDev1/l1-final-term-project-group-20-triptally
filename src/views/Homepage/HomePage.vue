@@ -1,46 +1,48 @@
 <template>
-    <div v-if="user" class="trip-container">
-       <h1>My Trips</h1>
-       <div class="trip-grid">
-         <!-- Trip Cards -->
-         <router-link 
-           v-for="trip in trips" 
-           :key="trip.name" 
-           :to="{ name: 'GroupPage', params: { tripName: trip.name }}" 
-           tag="div" 
-           class="trip-card"
-         >
-           <img :src="trip.image" :alt="trip.name" class="trip-image">
-           <div class="trip-name">{{ trip.name }}</div>
-         </router-link>
-         
-         <!-- Add New Trip Button -->
-         <button class="add-trip-button" @click="addNewTrip">
-           <span>+</span>
-         </button>
-       </div>
-   </div>
-   <div v-else> 
-    <h1>
-      You must be logged in to view this! 
-    </h1>
+  <div v-if="user" class="trip-container">
+    <h1>My Trips</h1>
+    <div class="trip-grid">
+      <!-- Trip Cards -->
+      <router-link v-for="trip in trips" :key="trip.id" :to="{ name: 'GroupPage', params: { tripName: trip.name } }"
+        custom v-slot="{ navigate }">
+        <div class="trip-card" @click="navigate">
+          <img :src="trip.image" :alt="trip.name" class="trip-image">
+          <div class="trip-name">{{ trip.name }}</div>
+        </div>
+      </router-link>
+
+      <!-- Add New Trip Button -->
+      <button class="add-trip-button" @click="showModal = true">
+        <span>+</span>
+      </button>
+
+      <AddNewTripModal :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
     </div>
- </template>
+  </div>
+  <div v-else>
+    <h1>
+      You must be logged in to view this!
+    </h1>
+  </div>
+</template>
  
  <script>
  import gradTripImage from './GroupImages/grad-trip.png';
  import winterExchangeImage from './GroupImages/winter-exchange.png';
  import baliTripImage from './GroupImages/bali-trip.png';
  import weekendKLImage from './GroupImages/weekend-in-kl.png';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, setDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import AddNewTripModal from './AddNewTripModal.vue'
+import { db } from '@/firebase';
 
  export default {
   name: 'TripList',
   data() {
      return {
       user: false,
-       trips: [
+      showModal: false, 
+      trips: [
          { id: 1, name: 'Grad Trip <3', image: gradTripImage },
          { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
          { id: 3, name: 'Bali Trip', image: baliTripImage },
@@ -49,9 +51,13 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
        ]
      };
    },
+  components: { 
+    AddNewTripModal
+  },
   methods: {
      addNewTrip() {
        // Logic to add new trip
+       this.isPopupVisible = !this.isPopupVisible
      }
    },
   mounted() {
@@ -59,9 +65,13 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
+        // retrieve relevant trips from firestore database 
       }
     })
-  }
+
+    // 
+  }, 
+
  }
  </script>
   
@@ -74,6 +84,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
     padding: 20px;
     padding-bottom: 70px;
     min-height: 100vh;
+    text-align: center;
   }
 
   .trip-grid {
@@ -120,7 +131,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
     justify-content: center;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
   }
 
   .add-trip-button:hover {
