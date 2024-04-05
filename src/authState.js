@@ -1,4 +1,4 @@
-import { onAuthStateChanged, getAuth } from "firebase/auth";
+import { onAuthStateChanged, getAuth, signOut } from "firebase/auth";
 
 function getCurrentUser() {
   const auth = getAuth();
@@ -7,5 +7,17 @@ function getCurrentUser() {
   return user; // This will return null if no user is logged in
 }
 
-export { getCurrentUser };
+// Reusable logout function
+function logoutUser() {
+  const auth = getAuth();
+  return signOut(auth).then(() => {
+    // User is logged out
+    console.log("User is logged out");
+    // You might want to use Vue Router to change the location
+    // but do not change `window.location.href` directly here
+    // as it's not recommended to mix Vue Router with direct DOM manipulations
+  });
+}
+
+export { getCurrentUser, logoutUser };
 
