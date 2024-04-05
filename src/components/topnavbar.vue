@@ -1,12 +1,14 @@
-<template> 
+<template>
   <div class="navbar" v-if="user">
-    <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     <router-link to="/homepage">
+      <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
+    </router-link>
+      <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
     <div class="navbar-item">
       <div class="username">{{ Username }}</div>
-      <div class="profile" v-if="Username">
+      <div class="profile">
         <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
       </div>
     <i class="fa fa-caret-down"></i>
@@ -14,6 +16,7 @@
       <router-link to="/profilepage" class="dropdown-item">Profile</router-link>
       <div class="dropdown-item" @click="showLogoutPopup = true">Log out</div>    
     </div>
+
 
     <div class="logout-popup" v-if="showLogoutPopup">
       <div class="logout-popup-content">
@@ -24,6 +27,10 @@
     </div>
   </div>
   </div>
+  <div v-else>
+    <NavBar/>
+  </div>
+
 
 </template>
 <script>
@@ -32,18 +39,23 @@ import { ref } from 'vue';
 import { auth, db } from '@/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { logoutUser } from '@/authState';
+
 
 export default {
   name: 'NavigationBar',
   data() {
     return {
-      user: false, 
-      Username: 'No Authenticated User',
+      user: false,
+      Username: ref('No Authenticated User'),
       FirstName: '',
       LastName: '',
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
+  },
+  components: {
+    NavBar,
   },
   methods: {
     async fetchUserData() {
@@ -53,9 +65,9 @@ export default {
         const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          this.Username = userData.Username; 
-          this.FirstName = userData.FirstName; 
-          this.LastName = userData.LastName; 
+          this.Username= userData.Username;
+          this.FirstName = userData.FirstName;
+          this.LastName = userData.LastName;
         }
       }
     },
@@ -68,21 +80,19 @@ export default {
     generateInitials(FirstName, LastName) {
       return FirstName[0] + LastName[0];
     },
-    logout($event) {
-      console.log("Logging out...");
-      this.showLogoutPopup = false;
-      event.preventDefault(); 
-      auth.signOut().then(() => { 
+    logout(event) {
+      event.preventDefault();
+      logoutUser().then(() => {
         console.log("User is logged out!");
-        window.location.href = '/';
-      })
+        this.$router.push('/login'); // Redirect using Vue Router
+      });
     }    
   },
   mounted() {
-    const auth = getAuth(); 
-    onAuthStateChanged(auth, (user) => { 
-      if (user) { 
-        this.user = user; 
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
       }
     })
     this.fetchUserData();
@@ -90,21 +100,23 @@ export default {
 }
 </script>
 
+
 <style scoped>
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgb(72, 159, 181); 
+  background-color: rgb(72, 159, 181);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 56px;
   padding: 5px;
 }
 
+
 .tt_logo {
   height: 5vw;
 }
-    
+   
 .home_logo {
   width: 2.2vw;
   height: 1.8vw;
@@ -116,10 +128,12 @@ export default {
   padding-bottom: 4px;
 }
 
+
 .navbar-item {
   display: flex;
   padding-left: 10px;
 }
+
 
 .username {
   color: white;
@@ -130,6 +144,7 @@ export default {
   margin-right: 1vw;
 }
 
+
 .profile {
   width: 55px;
   height: 55px;
@@ -139,8 +154,9 @@ export default {
   justify-content: center;
   align-items: center;
   margin-right: 1vw;
-
+  text-decoration: none;
 }
+
 
 .profile-placeholder {
   font-size: 1vw;
@@ -148,20 +164,22 @@ export default {
   text-transform: uppercase;
 }
 
+
 .dropdown-menu {
   display:none;
   position: absolute;
-  right: 10px;
-  top: 50px;
+  top: 63px;
   background-color: #489FB5;
-  min-width: 160px;
+  width: 300px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
 }
 
+
 .navbar-item:hover .dropdown-menu {
   display: block;
 }
+
 
 .dropdown-item {
   padding: 12px 16px;
@@ -178,6 +196,7 @@ export default {
   color: rgb(72, 159, 181);
   text-transform: uppercase;
 }
+
 
 .logout-popup {
   position: fixed;
@@ -199,6 +218,7 @@ export default {
   cursor: pointer;
 }
 
+
 .logout-popup-content button {
   border: none;
   background-color: rgb(237, 234, 234);
@@ -206,8 +226,9 @@ export default {
   border-top: 1px solid rgb(244, 243, 243);
   border-radius: 0%;
   width: 330px;
-  cursor: pointer; 
+  cursor: pointer;
 }
+
 
 .logoutbutton {
   color: rgb(189, 1, 1);
@@ -215,10 +236,12 @@ export default {
   cursor: pointer;
 }
 
+
 .cancelbutton {
   color: black;
   height:5px;
   cursor: pointer;
+
 
 }
 </style>
