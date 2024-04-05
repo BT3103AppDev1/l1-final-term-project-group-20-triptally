@@ -12,6 +12,8 @@
     "axios": "^1.6.8",
     "firebase": "^10.9.0",
     "vue": "^3.4.21",
+    "vue-multiselect": "^2.1.9",
+    "vue-resource": "^1.5.3",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {

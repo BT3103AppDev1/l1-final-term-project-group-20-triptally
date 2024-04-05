@@ -35,7 +35,7 @@
 import {createUserWithEmailAndPassword} from "firebase/auth";
 import { auth, db } from '@/firebase';
 import {ref} from "vue"; 
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection } from "firebase/firestore";
 import { useRouter } from 'vue-router'; // Import useRouter
 
 const email = ref(""); 
@@ -46,31 +46,90 @@ const firstName = ref("")
 const username = ref(""); 
 var emailError = false;
 var UID = '';
+var usernameTaken = false; 
 
 const router = useRouter(); // Use the useRouter hook
 
+function containsSpecialCharacters(str) {
+  // This regex matches any character that is not a letter (a-zA-Z) or a number (0-9)
+  const specialCharactersRegex = /[^a-zA-Z0-9]/;
+  return specialCharactersRegex.test(str);
+}
+
+function checkUpperLowerCase(password) {
+  const containsUppercase = /[A-Z]/.test(password);
+  const containsLowercase = /[a-z]/.test(password);
+
+  if (containsUppercase && containsLowercase) {
+    return true;
+  } else { 
+    return false; 
+  }
+}
+
+function containsNumber(password) {
+  // This regex matches any digit from 0 to 9
+  const numberRegex = /\d/;
+  return numberRegex.test(password);
+}
+
 async function submitHandler() { 
   console.log("submitHandler function called");
-  // user signup through firebase authentication 
-  await createUserWithEmailAndPassword(auth, email.value, password.value)
-    .then(function(data){
-      console.log('uid',data.user.uid)
-      UID = data.user.uid; 
-      // call the next method, which will write the rest of the user details into database 
-      writeUserData(UID, email.value, username.value, currency.value, firstName.value, lastName.value);
-      // Navigate to the login page after successful signup
-      router.push('/'); // Use the route name from your router setup
-    })
-    .catch((error) => {
-      // handle error
-      console.log(error.code)
-      if (error.code === "auth/email-already-in-use") { 
-        alert("Email already in use. Please use another email!")
-      } else if (error.code === "auth/weak-password") { 
-        alert("Password must be at least 6 characters long.")
-      }
-      // also need to check if username is unique....
+  // check if username is unique first! if yes, then proceed w the following code
+  // Create a reference to the document in "Usernames" collection
+  const usernameDocRef = doc(db, "Usernames", username.value);
+  
+  // Check if the document (username) exists
+  try {
+    const docSnap = await getDoc(usernameDocRef);
+    if (docSnap.exists()) { 
+      console.log("Username exists"); 
+      usernameTaken = true; 
+    }
+    // rest of your code...
+  } catch (error) {
+    console.error("Failed to check username uniqueness", error);
+    // handle the error appropriately
+  }
+
+  if (usernameTaken) {
+    // Username already exists
+    alert("Username already taken. Please choose another one!");
+  } else { 
+    await createUserWithEmailAndPassword(auth, email.value, password.value)
+      .then(function (data) {
+        console.log('uid', data.user.uid)
+        UID = data.user.uid;
+
+        // call the next method, which will write the rest of the user details into database 
+        writeUserData(UID, email.value, username.value, currency.value, firstName.value, lastName.value);
+        // Navigate to the login page after successful signup
+        router.push('/'); // Use the route name from your router setup
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error.code)
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email already in use. Please use another email!")
+        } else if (error.code === "auth/weak-password") {
+          alert("Password must be at least 6 characters long.")
+        } else if (!containsSpecialCharacters(password.value)) {
+          alert("Password must contain at least 1 special character!")
+        } else if (!checkUpperLowerCase(password.value)) {
+          alert("Password must contain at least 1 uppercase and lowercase letter!")
+        } else if (!containsNumber(password.value)) {
+          alert("Password must contain at least 1 number!")
+        }
+        // also need to check if username is unique....gg i'll do this another time....
+      });
+
+    // add the username to the firebase collection
+    await setDoc(doc(db, "Usernames", username.value), {
+      UID: UID // Link username to the user's UID for reference
     });
+  }
+
+  
 }
 
 async function writeUserData(userID, email, username, currency, firstName, lastName) { 
@@ -80,9 +139,9 @@ async function writeUserData(userID, email, username, currency, firstName, lastN
     Username: username, 
     Currency: currency, 
     FirstName: firstName, 
-    LastName: lastName
+    LastName: lastName, 
+    GroupTrips: []
   })
-
 }
 
 </script>

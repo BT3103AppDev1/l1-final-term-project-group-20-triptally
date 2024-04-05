@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getCurrentUser } from '@/authState';
+import { getCurrentUser, logoutUser } from '@/authState';
 import LoginPage from '@/views/LoginPage.vue';
 import ForgotPassword from '@/components/ForgotPassword.vue';
 import SignupPage from '@/views/SignupPage.vue';
@@ -90,21 +90,20 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isLogged = !!getCurrentUser(); // Ensure this returns false for unauthenticated users
+  const isLogged = !!getCurrentUser(); // Ensure this checks if the user is authenticated
 
-  console.log("Attempting to navigate to:", to.name, "| Logged in:", isLogged);
-
-  if (!isLogged && to.meta.requiresAuth) {
-    console.log("Redirecting to Login: Not logged in and trying to access a protected route");
+  if (isLogged && to.name === 'LoginPage') {
+    // If the user is already logged in and tries to access the login page, log them out
+    logoutUser().then(() => {
+      next('/login'); // Proceed to login after logging out
+    });
+  } else if (!isLogged && to.meta.requiresAuth) {
+    // If not logged in and trying to access a protected route
     next({ name: 'LoginPage' });
-  } else if (isLogged && to.meta.disallowAuthed) {
-    console.log("Redirecting to HomePage: Logged in and trying to access a disallowed route");
-    next({ name: 'HomePage' });
   } else {
-    console.log("Proceeding to:", to.name);
+    // No specific rules apply, proceed
     next();
   }
 });
-
 
 export default router 
