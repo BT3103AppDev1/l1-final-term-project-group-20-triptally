@@ -35,6 +35,7 @@ import { ref } from 'vue';
 import { auth, db } from '@/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { logoutUser } from '@/authState';
 
 export default {
   name: 'NavigationBar',
@@ -74,14 +75,12 @@ export default {
     generateInitials(FirstName, LastName) {
       return FirstName[0] + LastName[0];
     },
-    logout($event) {
-      console.log("Logging out...");
-      this.showLogoutPopup = false;
+    logout(event) {
       event.preventDefault(); 
-      auth.signOut().then(() => { 
+      logoutUser().then(() => {
         console.log("User is logged out!");
-        window.location.href = '/';
-      })
+        this.$router.push('/login'); // Redirect using Vue Router
+      });
     }    
   },
   mounted() {
