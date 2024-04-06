@@ -101,7 +101,7 @@ export default {
       const user = auth.currentUser;
       console.log(user);
       if (user) {
-        const docRef = doc(db, "Users", this.userID);
+        const docRef = doc(db, "Users", user.uid);
         try {
           const userDoc = await getDoc(docRef);
           if (userDoc.exists()) {
