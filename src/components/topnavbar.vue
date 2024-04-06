@@ -1,12 +1,14 @@
-<template> 
+<template>
   <div class="navbar" v-if="user">
-    <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
-    <div class="navbar-item">
-      <router-link to="/homepage">
+    <router-link to="/homepage">
+      <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
+    </router-link>
+    <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
+    <div class="navbar-item">
       <div class="username">{{ Username }}</div>
-      <div class="profile" v-if="Username">
+      <div class="profile">
         <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
       </div>
     <i class="fa fa-caret-down"></i>
@@ -37,19 +39,20 @@ import { doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { logoutUser } from '@/authState';
 
+
 export default {
   name: 'NavigationBar',
   data() {
     return {
-      user: false, 
-      Username: 'No Authenticated User',
+      user: false,
+      Username: ref('No Authenticated User'),
       FirstName: '',
       LastName: '',
       isDropdownOpen: false,
       showLogoutPopup: false,
     };
   },
-  components: { 
+  components: {
     NavBar,
   },
   methods: {
@@ -60,9 +63,9 @@ export default {
         const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          this.Username = userData.Username; 
-          this.FirstName = userData.FirstName; 
-          this.LastName = userData.LastName; 
+          this.Username= userData.Username;
+          this.FirstName = userData.FirstName;
+          this.LastName = userData.LastName;
         }
       }
     },
@@ -76,7 +79,7 @@ export default {
       return FirstName[0] + LastName[0];
     },
     logout(event) {
-      event.preventDefault(); 
+      event.preventDefault();
       logoutUser().then(() => {
         console.log("User is logged out!");
         this.$router.push('/login'); // Redirect using Vue Router
@@ -84,10 +87,10 @@ export default {
     }    
   },
   mounted() {
-    const auth = getAuth(); 
-    onAuthStateChanged(auth, (user) => { 
-      if (user) { 
-        this.user = user; 
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
       }
     })
     this.fetchUserData();
@@ -98,20 +101,22 @@ export default {
 <style scoped>
 .navbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  background-color: rgb(72, 159, 181); 
+  background-color: rgb(72, 159, 181);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 56px;
   padding: 5px;
 }
 
 .tt_logo {
-  height: 80px;
+  height: 5vw;
 }
-    
+   
 .home_logo {
-  width: 26px;
-  height: 22px;
+  width: 2.2vw;
+  height: 1.8vw;
+  margin-left: 75vw;
   margin-top: 1.5px;
   border-right: 1px solid white;
   padding-right: 8px;
@@ -121,23 +126,21 @@ export default {
 
 .navbar-item {
   display: flex;
-  margin-right: 10px;
   padding-left: 10px;
-  margin-left: auto;
 }
 
 .username {
   color: white;
-  font-size: 15px;
+  font-size: 18px;
   cursor: pointer;
   padding-left: 8px;
-  margin-top: 8px;
-  margin-right: 8px;
+  margin-top: 13px;
+  margin-right: 12px;
 }
 
 .profile {
-  width: 30px;
-  height: 30px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background-color: white;
   display: flex;
@@ -177,6 +180,11 @@ export default {
 .dropdown-item:hover {
   background-color: #1a7086;
 }
+.profile-placeholder {
+  font-size: 1vw;
+  color: rgb(72, 159, 181);
+  text-transform: uppercase;
+}
 
 
 .logout-popup {
@@ -206,7 +214,7 @@ export default {
   border-top: 1px solid rgb(244, 243, 243);
   border-radius: 0%;
   width: 330px;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
 .logoutbutton {
