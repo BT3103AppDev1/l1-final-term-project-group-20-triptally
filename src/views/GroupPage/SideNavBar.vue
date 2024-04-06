@@ -84,8 +84,6 @@ export default {
   font-weight: bold;
 }
 
-
-
 .nav-item {
   display: flex;
   background-color: #84C0CB;
