@@ -52,7 +52,8 @@ export default {
         // retrieve relevant trips from firestore database 
       }
     })
-  }
+  }, 
+
 };
 </script>
 
