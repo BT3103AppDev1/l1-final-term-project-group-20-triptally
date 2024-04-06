@@ -3,7 +3,7 @@
     <router-link to="/homepage">
       <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     </router-link>
-      <router-link to="/homepage">
+    <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
     <div class="navbar-item">
@@ -131,16 +131,16 @@ export default {
 
 .username {
   color: white;
-  font-size: 15px;
+  font-size: 18px;
   cursor: pointer;
   padding-left: 8px;
-  margin-top: 8px;
-  margin-right: 8px;
+  margin-top: 13px;
+  margin-right: 12px;
 }
 
 .profile {
-  width: 30px;
-  height: 30px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background-color: white;
   display: flex;
