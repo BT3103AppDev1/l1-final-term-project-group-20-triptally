@@ -186,8 +186,8 @@ export default {
 }
 
 select {
-  width: 200px;
-  height: 30px;
+  width: 250px;
+  height: 40px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
