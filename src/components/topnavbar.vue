@@ -1,10 +1,10 @@
 <template> 
   <div class="navbar" v-if="user">
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
-    <router-link to="/homepage">
+    <div class="navbar-item">
+      <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
-    <div class="navbar-item">
       <div class="username">{{ Username }}</div>
       <div class="profile" v-if="Username">
         <div class="profile-placeholder">{{ generateInitials(FirstName, LastName) }}</div>
@@ -98,7 +98,6 @@ export default {
 <style scoped>
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   background-color: rgb(72, 159, 181); 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -107,48 +106,49 @@ export default {
 }
 
 .tt_logo {
-  height: 5vw;
+  height: 80px;
 }
     
 .home_logo {
-  width: 2.2vw;
-  height: 1.8vw;
-  margin-left: 75vw;
+  width: 26px;
+  height: 22px;
   margin-top: 1.5px;
   border-right: 1px solid white;
-  padding-right: 15px;
+  padding-right: 8px;
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
 .navbar-item {
   display: flex;
+  margin-right: 10px;
   padding-left: 10px;
+  margin-left: auto;
 }
 
 .username {
   color: white;
-  font-size: 1.2vw;
+  font-size: 15px;
   cursor: pointer;
-  margin-right: 0.5vw;
-  margin-top: 1vw;
-  margin-right: 1vw;
+  padding-left: 8px;
+  margin-top: 8px;
+  margin-right: 8px;
 }
 
 .profile {
-  width: 55px;
-  height: 55px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 1vw;
-  text-decoration: none; 
+  margin-right: 8px;
+  margin-top: 1.5px;
 }
 
 .profile-placeholder {
-  font-size: 1vw;
+  font-size: 13px;
   color: rgb(72, 159, 181);
   text-transform: uppercase;
 }
@@ -177,11 +177,7 @@ export default {
 .dropdown-item:hover {
   background-color: #1a7086;
 }
-.profile-placeholder {
-  font-size: 1vw;
-  color: rgb(72, 159, 181);
-  text-transform: uppercase;
-}
+
 
 .logout-popup {
   position: fixed;
