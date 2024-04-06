@@ -101,7 +101,7 @@ export default {
       const user = auth.currentUser;
       console.log(user);
       if (user) {
-        const docRef = doc(db, "Users", this.userID);
+        const docRef = doc(db, "Users", user.uid);
         try {
           const userDoc = await getDoc(docRef);
           if (userDoc.exists()) {
@@ -186,8 +186,8 @@ export default {
 }
 
 select {
-  width: 200px;
-  height: 30px;
+  width: 250px;
+  height: 40px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
