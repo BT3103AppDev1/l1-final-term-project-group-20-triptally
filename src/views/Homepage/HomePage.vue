@@ -1,29 +1,32 @@
 <template>
   <div v-if="user" class="trip-container">
     <h1>My Trips</h1>
-    <div class="trip-grid">
+    <div class="trip-grid" v-if="tripLength > 0">
       <!-- Trip Cards -->
-      <router-link v-for="trip in trips" :key="trip.UID" :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }"
-        custom v-slot="{ navigate }">
+      <router-link v-for="trip in trips" :key="trip.UID"
+        :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }" custom v-slot="{ navigate }">
         <div class="trip-card" @click="navigate">
           <img :src="trip.image" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
       </router-link>
-
-      <!-- Add New Trip Button -->
-      <button class="add-trip-button" @click="showModal = true">
-        <span>+</span>
-      </button>
-
-      <AddNewTripModal :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
     </div>
+    <div v-else>
+      <h1>You have no trips right now. Hop on one now! </h1>
+    </div>
+
+    <!-- Add New Trip Button -->
+    <button class="add-trip-button" @click="showModal = true">
+      <span>+</span>
+    </button>
+
+    <AddNewTripModal :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
-  <div v-else>
-    <h1>
-      You must be logged in to view this!
-    </h1>
-  </div>
+    <div v-else>
+      <h1>
+        You must be logged in to view this!
+      </h1>
+    </div>
 </template>
  
  <script>
@@ -44,7 +47,7 @@ import { db, auth } from '@/firebase';
       userID: "",
       showModal: false, 
       trips: [], 
-      newTrips: [],
+      tripLength: 0,
         //  { id: 1, name: 'Grad Trip <3', image: gradTripImage },
         //  { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
         //  { id: 3, name: 'Bali Trip', image: baliTripImage },
@@ -86,7 +89,7 @@ import { db, auth } from '@/firebase';
                 console.error("Error retrieving trip ", error);
               }
             }
-            
+            this.tripLength = this.trips.length;
           } else {
             console.error("User document does not exist.");
           }
