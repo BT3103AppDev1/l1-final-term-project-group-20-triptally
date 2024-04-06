@@ -1,7 +1,7 @@
 <template>
   <div v-if="user" class="trip-container">
     <h1>My Trips</h1>
-    <div class="trip-grid" v-if="tripLength > 0">
+    <div class="trip-grid">
       <!-- Trip Cards -->
       <router-link v-for="trip in trips" :key="trip.UID"
         :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }" custom v-slot="{ navigate }">
@@ -11,16 +11,12 @@
         </div>
       </router-link>
     </div>
-    <div v-else>
-      <h1>You have no trips right now. Hop on one now! </h1>
-    </div>
-
     <!-- Add New Trip Button -->
     <button class="add-trip-button" @click="showModal = true">
       <span>+</span>
     </button>
 
-    <AddNewTripModal :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
+    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
     <div v-else>
       <h1>
@@ -63,6 +59,21 @@ import { db, auth } from '@/firebase';
        // Logic to add new trip
        this.isPopupVisible = !this.isPopupVisible
      }, 
+    async fetchUserTrips(newTripID) { 
+
+      const tripDocRef = doc(db, "Trips", newTripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trips.push( { 
+          Currency: docSnap.data().Currency, 
+          Members: docSnap.data().Members, 
+          TripName: docSnap.data().TripName,
+          UID: newTripID
+        })
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
     async fetchUserData() {
       const user = auth.currentUser;
       console.log(user);
@@ -107,11 +118,8 @@ import { db, auth } from '@/firebase';
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
-        // retrieve user's relevant trips from firestore database 
       }
     })
-
-    // 
   }, 
 
  }
@@ -131,7 +139,7 @@ import { db, auth } from '@/firebase';
 
   .trip-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-gap: 20px;
     margin-top: 20px;
   }
@@ -143,6 +151,7 @@ import { db, auth } from '@/firebase';
     padding: 10px;
     text-align: center;
     text-decoration: none;
+    cursor: pointer;
     color: black;
     cursor: pointer;
   }

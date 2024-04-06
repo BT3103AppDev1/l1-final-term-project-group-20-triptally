@@ -13,7 +13,7 @@
         </div>
         <div class="form-group">
           <label for="username">Username:</label>
-          <input type="text" id="username" v-model="profile.username" />
+          <input type="text" id="username" v-model="enteredUsername" />
         </div>
         <div class="form-group">
           <label for="currency">Default Currency:</label>
@@ -45,7 +45,7 @@
 
 <script>
 import { auth, db } from '@/firebase';
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -55,6 +55,8 @@ export default {
   data() {
     return {
       user: false,
+      userID: "",
+      enteredUsername: "",
       profile: {
         name: 'No Authenticated User',
         email: 'invalid@email',
@@ -83,10 +85,19 @@ export default {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, "Users", user.uid);
+
         try {
           await updateDoc(docRef, {
-            Username: this.profile.username
+            Username: this.enteredUsername
           });
+
+          // delete document in "Usernames" collection with original username 
+          await deleteDoc(doc(db, "Usernames", this.profile.username)); 
+          // create new document in "Usernames" collection with new username, setting UID as userID 
+          await setDoc(doc(db, "Usernames", this.enteredUsername), { 
+            UID: this.userID
+          })
+
           window.location.reload();
         } catch (error) {
           console.error("Error updating currency:", error);
@@ -101,6 +112,7 @@ export default {
       const user = auth.currentUser;
       console.log(user);
       if (user) {
+        this.userID = user.uid; 
         const docRef = doc(db, "Users", user.uid);
         try {
           const userDoc = await getDoc(docRef);
@@ -110,6 +122,7 @@ export default {
             this.profile.email = userData.Email;
             this.profile.username = userData.Username;
             this.profile.currency = userData.Currency;
+            this.enteredUsername = userData.Username; 
            
           } else {
             console.error("User document does not exist.");
