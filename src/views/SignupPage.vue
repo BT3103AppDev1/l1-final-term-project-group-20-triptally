@@ -95,6 +95,12 @@ async function submitHandler() {
   if (usernameTaken) {
     // Username already exists
     alert("Username already taken. Please choose another one!");
+  } if (!containsSpecialCharacters(password.value)) { 
+    alert("Password must contain at least 1 special character!")
+  } else if (!checkUpperLowerCase(password.value)) { 
+    alert("Password must contain at least 1 uppercase and lowercase letter!")
+  } else if (!containsNumber(password.value)) { 
+    alert("Password must contain at least 1 number!")
   } else { 
     await createUserWithEmailAndPassword(auth, email.value, password.value)
       .then(function (data) {
@@ -103,8 +109,7 @@ async function submitHandler() {
 
         // call the next method, which will write the rest of the user details into database 
         writeUserData(UID, email.value, username.value, currency.value, firstName.value, lastName.value);
-        // Navigate to the login page after successful signup
-        router.push('/'); // Use the route name from your router setup
+        
       })
       .catch((error) => {
         // handle error
@@ -113,12 +118,8 @@ async function submitHandler() {
           alert("Email already in use. Please use another email!")
         } else if (error.code === "auth/weak-password") {
           alert("Password must be at least 6 characters long.")
-        } else if (!containsSpecialCharacters(password.value)) {
-          alert("Password must contain at least 1 special character!")
-        } else if (!checkUpperLowerCase(password.value)) {
-          alert("Password must contain at least 1 uppercase and lowercase letter!")
-        } else if (!containsNumber(password.value)) {
-          alert("Password must contain at least 1 number!")
+        } else { 
+
         }
         // also need to check if username is unique....gg i'll do this another time....
       });
@@ -133,15 +134,16 @@ async function submitHandler() {
 }
 
 async function writeUserData(userID, email, username, currency, firstName, lastName) { 
-  console.log("writeUserData function called");
-  await setDoc(doc(db, "Users", userID), { 
-    Email: email, 
-    Username: username, 
-    Currency: currency, 
-    FirstName: firstName, 
-    LastName: lastName, 
-    GroupTrips: []
-  })
+    await setDoc(doc(db, "Users", userID), { 
+      Email: email, 
+      Username: username, 
+      Currency: currency, 
+      FirstName: firstName, 
+      LastName: lastName, 
+      GroupTrips: []
+    })
+    // Navigate to the login page after successful signup
+    router.push('/');
 }
 
 </script>
