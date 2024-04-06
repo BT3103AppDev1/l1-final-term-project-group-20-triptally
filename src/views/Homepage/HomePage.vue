@@ -128,7 +128,7 @@ import { db, auth } from '@/firebase';
 
   .trip-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-gap: 20px;
     margin-top: 20px;
   }
@@ -140,6 +140,7 @@ import { db, auth } from '@/firebase';
     padding: 10px;
     text-align: center;
     text-decoration: none;
+    cursor: pointer;
     color: black;
     cursor: pointer;
   }

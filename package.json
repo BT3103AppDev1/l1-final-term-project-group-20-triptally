@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueform/multiselect": "^2.6.7",
     "axios": "^1.6.8",
     "firebase": "^10.6.0",
     "vue": "^3.4.21",
