@@ -224,7 +224,7 @@ select {
 
 /* Centered card layout */
 .signup-card {
-  background: rgba(238, 238, 238, 0.7); /* semi-transparent white background */
+  background: rgba(244, 244, 244, 0.7); /* semi-transparent white background */
   padding: 20px;
   border-radius: 15px;
   width: 60%; /* Adjust width as needed */
@@ -252,7 +252,7 @@ input[type="email"], input[type="password"], input[placeholder="First Name"], in
 
 /* Button styling */
 button {
-  width: 140px;
+  width: 260px;
   padding: 15px;
   border: none;
   border-radius: 35px;
@@ -271,6 +271,7 @@ button:hover {
 
 .error-message {
   color: rgb(166, 2, 2);
+  width: 60%;
   text-align: center;
   margin-top: -10px;
   margin-bottom: 10px;
