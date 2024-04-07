@@ -4,10 +4,14 @@
     <form @submit.prevent="submitHandler">
       <input id="firstName" type="text" v-model="firstName" placeholder="First Name" required/>
       <input id="lastName" type="text" v-model="lastName" placeholder="Last Name" /> 
-      <input id="email" type="email" v-model="email" placeholder="Email" required/>
-      <h2 v-show="emailError">Hi</h2>
-      <input id="password" type="password" v-model="password" placeholder="Password" required />
-      <input id="username" type="text" v-model="username" placeholder="Username" required/>
+      <input id="email" type="email" v-model="email" @input="debouncedCheckEmail" placeholder="Email" required/>
+      <div v-show="emailTaken" class="error-message">Email already in use. Please login.</div>
+      <input id="password" type="password" v-model="password" @input="checkPassword" placeholder="Password" required />
+      <div v-show="passwordError" class="error-message">
+        {{ passwordErrorMessage }}
+      </div>
+      <input id="username" type="text" v-model="username" @input="debouncedCheckUsername" placeholder="Username" required/>
+      <div v-show="usernameTaken" class="error-message">Username already taken. Please choose another one!</div>
       <select v-model="currency">
         <option value="" disabled selected hidden>Select Default Currency</option>
         <option value="SGD">SGD</option>
@@ -35,8 +39,9 @@
 import {createUserWithEmailAndPassword} from "firebase/auth";
 import { auth, db } from '@/firebase';
 import {ref} from "vue"; 
-import { doc, setDoc, getDoc, collection } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { useRouter } from 'vue-router'; // Import useRouter
+import _ from 'lodash';
 
 const email = ref(""); 
 const password = ref("");
@@ -44,11 +49,67 @@ const currency = ref("");
 const lastName = ref(""); 
 const firstName = ref("")
 const username = ref(""); 
-var emailError = false;
-var UID = '';
-var usernameTaken = false; 
+const usernameTaken = ref(false);
+const emailTaken = ref(false);
+const passwordError = ref(false);
+const passwordErrorMessage = ref("");
+const UID = ref('');
 
 const router = useRouter(); // Use the useRouter hook
+
+const checkUsername = async () => {
+  usernameTaken.value = false;
+
+  const usernameDocRef = doc(db, "Usernames", username.value);
+
+  try {
+    const docSnap = await getDoc(usernameDocRef);
+    usernameTaken.value = docSnap.exists();
+  } catch (error) {
+    console.error("Error checking username uniqueness:", error);
+  }
+};
+
+const debouncedCheckUsername = _.debounce(checkUsername, 500);
+
+const checkEmail = async () => {
+  emailTaken.value = false; // Reset the state before checking
+  console.log("Checking email:", email.value);
+
+  const usersRef = collection(db, "Users");
+  const q = query(usersRef, where("Email", "==", email.value)); // Define the query
+
+  try {
+    const querySnapshot = await getDocs(q);
+    emailTaken.value = !querySnapshot.empty;
+    console.log("Is email taken:", emailTaken.value);
+  } catch (error) {
+    console.error("Error checking email uniqueness:", error);
+  }
+};
+
+
+// Debounce the checkEmail function to avoid too many calls
+const debouncedCheckEmail = _.debounce(checkEmail, 500);
+
+
+function checkPassword() {
+  passwordError.value = false; // Reset the error state
+  if (password.value.length < 6) {
+    passwordError.value = true;
+    passwordErrorMessage.value = "Password must be at least 6 characters long.";
+  } else if (!containsSpecialCharacters(password.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = "Password must contain at least 1 number, 1 uppercase and lowercase letter, 1 special character.";
+  } else if (!checkUpperLowerCase(password.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = "Password must contain at least 1 number, 1 uppercase and lowercase letter, 1 special character.";
+} else if (!containsNumber(password.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = "Password must contain at least 1 number, 1 uppercase and lowercase letter, 1 special character.";
+  }
+}
+
 
 function containsSpecialCharacters(str) {
   // This regex matches any character that is not a letter (a-zA-Z) or a number (0-9)
@@ -75,65 +136,62 @@ function containsNumber(password) {
 
 async function submitHandler() { 
   console.log("submitHandler function called");
-  // check if username is unique first! if yes, then proceed w the following code
-  // Create a reference to the document in "Usernames" collection
-  const usernameDocRef = doc(db, "Usernames", username.value);
-  
-  // Check if the document (username) exists
+  usernameTaken.value = false;
+  emailTaken.value = false;
+  passwordError.value = false;
+
+  // Check if email is unique
+  await debouncedCheckEmail();
+  if (emailTaken.value) {
+    // If the email is taken, don't proceed with form submission
+    return;
+  }
+
+  // Check if the username is unique
+  await debouncedCheckUsername();
+  if (usernameTaken.value) {
+    // If the username is taken, don't proceed with form submission
+    return;
+  }
+
+  // Check password validity 
+  checkPassword();
+  if (passwordError.value) {
+    console.log("Password did not meet requirements.");
+    return; // Stop the submission if the password is invalid
+  }
+
+  // If all checks pass, proceed with Firebase authentication
   try {
-    const docSnap = await getDoc(usernameDocRef);
-    if (docSnap.exists()) { 
-      console.log("Username exists"); 
-      usernameTaken = true; 
-    }
-    // rest of your code...
-  } catch (error) {
-    console.error("Failed to check username uniqueness", error);
-    // handle the error appropriately
-  }
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    console.log('User created with UID:', userCredential.user.uid);
+    UID.value = userCredential.user.uid;
 
-  if (usernameTaken) {
-    // Username already exists
-    alert("Username already taken. Please choose another one!");
-  } else { 
-    await createUserWithEmailAndPassword(auth, email.value, password.value)
-      .then(function (data) {
-        console.log('uid', data.user.uid)
-        UID = data.user.uid;
+    // call the next method, which will write the rest of the user details into database 
+    await writeUserData(UID.value, email.value, username.value, currency.value, firstName.value, lastName.value);
+    console.log('User data written to Firestore');
 
-        // call the next method, which will write the rest of the user details into database 
-        writeUserData(UID, email.value, username.value, currency.value, firstName.value, lastName.value);
-        // Navigate to the login page after successful signup
-        router.push('/'); // Use the route name from your router setup
-      })
-      .catch((error) => {
-        // handle error
-        console.log(error.code)
-        if (error.code === "auth/email-already-in-use") {
-          alert("Email already in use. Please use another email!")
-        } else if (error.code === "auth/weak-password") {
-          alert("Password must be at least 6 characters long.")
-        } else if (!containsSpecialCharacters(password.value)) {
-          alert("Password must contain at least 1 special character!")
-        } else if (!checkUpperLowerCase(password.value)) {
-          alert("Password must contain at least 1 uppercase and lowercase letter!")
-        } else if (!containsNumber(password.value)) {
-          alert("Password must contain at least 1 number!")
-        }
-        // also need to check if username is unique....gg i'll do this another time....
-      });
-
-    // add the username to the firebase collection
+    // Add the username to the Firebase collection
     await setDoc(doc(db, "Usernames", username.value), {
-      UID: UID // Link username to the user's UID for reference
+      UID: UID.value 
     });
-  }
 
-  
+    // Navigate to the home page after successful signup
+    router.push('/');
+  } catch (error) {
+    // Handle errors from createUserWithEmailAndPassword
+    if (error.code === "auth/email-already-in-use") {
+      console.log("Email already in use. Please use another email!");
+    } else if (error.code === "auth/weak-password") {
+      console.log("Password must be at least 6 characters long.");
+    } else {
+      // Log the error and potentially inform the user
+      console.error(error);
+    }
+  }
 }
 
 async function writeUserData(userID, email, username, currency, firstName, lastName) { 
-  console.log("writeUserData function called");
   await setDoc(doc(db, "Users", userID), { 
     Email: email, 
     Username: username, 
@@ -159,23 +217,27 @@ button {
   cursor: pointer;
 }
 
+select {
+  width: 62%;
+  margin-top: 4px;
+}
+
 /* Centered card layout */
 .signup-card {
-  background: rgba(255, 255, 255, 0.7); /* semi-transparent white background */
-  padding: 40px;
+  background: rgba(238, 238, 238, 0.7); /* semi-transparent white background */
+  padding: 20px;
   border-radius: 15px;
   width: 60%; /* Adjust width as needed */
-  height: 90%;
+  height: 80%;
   margin: 0 auto; /* Center the card horizontally */
   position: relative;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* subtle shadow */
   align-items: center; /* Centers flex children horizontally */
-  transform: translateY(20%);
-
+  transform: translateY(10%);
 }
 
 /* Input styling */
-input[type="email"], input[type="password"], input[placeholder="First Name"], input[placeholder="Last Name"], input[placeholder="Username"], select {
+input[type="email"], input[type="password"], input[placeholder="First Name"], input[placeholder="Last Name"], input[placeholder="Username"] {
   width: 60%; /* Full width minus padding */
   float: left; 
   height: 100%;
@@ -185,6 +247,7 @@ input[type="email"], input[type="password"], input[placeholder="First Name"], in
   border-radius: 10px;
   font-size: medium;
   font-family:'Montserrat', sans-serif;
+  background-color: white;
 }
 
 /* Button styling */
@@ -197,12 +260,22 @@ button {
   color: #EDE7E3;
   font-weight: 700;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
-  margin-top: 40px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 
 button:hover {
   background-color: #607994;
+}
+
+.error-message {
+  color: rgb(166, 2, 2);
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  margin-left: 0;
 }
 
 /* Forgot password link */
