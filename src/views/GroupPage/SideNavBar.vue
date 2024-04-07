@@ -4,7 +4,7 @@
       <nav class="sidebar-nav">
         <ul class="nav-list">
           <li class="nav-trip" v-if="tripName">
-            <span>{{ tripName }} Hello</span>
+            <span>{{ tripName }}</span>
           </li>
           <router-link :to="{ name: 'GroupPage', params: { tripName: tripName } }" class="nav-item">
             <img src="@/assets/expensestab.png" alt="Expenses" class="nav-icon">

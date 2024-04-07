@@ -3,27 +3,26 @@
     <h1>My Trips</h1>
     <div class="trip-grid">
       <!-- Trip Cards -->
-      <router-link v-for="trip in trips" :key="trip.UID" :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }"
-        custom v-slot="{ navigate }">
+      <router-link v-for="trip in trips" :key="trip.UID"
+        :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }" custom v-slot="{ navigate }">
         <div class="trip-card" @click="navigate">
           <img :src="trip.image" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
       </router-link>
-
-      <!-- Add New Trip Button -->
-      <button class="add-trip-button" @click="showModal = true">
-        <span>+</span>
-      </button>
-
-      <AddNewTripModal :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
     </div>
+    <!-- Add New Trip Button -->
+    <button class="add-trip-button" @click="showModal = true">
+      <span>+</span>
+    </button>
+
+    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
-  <div v-else>
-    <h1>
-      You must be logged in to view this!
-    </h1>
-  </div>
+    <div v-else>
+      <h1>
+        You must be logged in to view this!
+      </h1>
+    </div>
 </template>
  
  <script>
@@ -44,7 +43,7 @@ import { db, auth } from '@/firebase';
       userID: "",
       showModal: false, 
       trips: [], 
-      newTrips: [],
+      tripLength: 0,
         //  { id: 1, name: 'Grad Trip <3', image: gradTripImage },
         //  { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
         //  { id: 3, name: 'Bali Trip', image: baliTripImage },
@@ -60,6 +59,21 @@ import { db, auth } from '@/firebase';
        // Logic to add new trip
        this.isPopupVisible = !this.isPopupVisible
      }, 
+    async fetchUserTrips(newTripID) { 
+
+      const tripDocRef = doc(db, "Trips", newTripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trips.push( { 
+          Currency: docSnap.data().Currency, 
+          Members: docSnap.data().Members, 
+          TripName: docSnap.data().TripName,
+          UID: newTripID
+        })
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
     async fetchUserData() {
       const user = auth.currentUser;
       console.log(user);
@@ -86,7 +100,7 @@ import { db, auth } from '@/firebase';
                 console.error("Error retrieving trip ", error);
               }
             }
-            
+            this.tripLength = this.trips.length;
           } else {
             console.error("User document does not exist.");
           }
@@ -104,11 +118,8 @@ import { db, auth } from '@/firebase';
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
-        // retrieve user's relevant trips from firestore database 
       }
     })
-
-    // 
   }, 
 
  }

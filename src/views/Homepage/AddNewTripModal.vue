@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { db } from "@/firebase"; 
+import { auth, db } from "@/firebase"; 
 import { doc, getDoc, collection, addDoc, arrayUnion, updateDoc, getDocs } from "firebase/firestore";
 import * as firebase from 'firebase/app';
 
@@ -55,6 +55,7 @@ export default {
   },
   data() { 
     return { 
+      userID: "",
       tripName: "", 
       selectedMembers: [],
       currency: "",
@@ -69,7 +70,7 @@ export default {
       );
     },
   },
-  emits: ['update:isVisible'],
+  emits: ['update:isVisible', 'refreshTrips'],
   async created() {
     await this.fetchUsers();
   },
@@ -104,8 +105,10 @@ export default {
       } else { 
         alert("User entered does not exist."); 
       }*/ 
+      await this.fetchUserData();
 
-      const userIDs = this.selectedMembers.map(member => member.userID);
+      var userIDs = this.selectedMembers.map(member => member.userID);
+      userIDs.push(this.userID);
 
       try {
         const tripDocRef = await addDoc(collection(db, "Trips"), {
@@ -123,10 +126,12 @@ export default {
               GroupTrips: arrayUnion(this.tripID)
             });
             console.log("Trip added to user with userID: " + userID);
+  
           } catch (error) {
             console.error("Error updating user document: ", error);
           }
         }
+        this.$emit('refreshTrips', this.tripID);
       } catch (error) {
         console.error('Error adding trip document: ', error);
       }
@@ -145,6 +150,15 @@ export default {
     }, 
     userList() { 
       // retrieve users from firebase 
+    }, 
+    async fetchUserData() {
+      const user = auth.currentUser;
+      console.log(user);
+      if (user) {
+        this.userID = user.uid;
+      } else {
+        console.error("No user is currently authenticated.");
+      }
     }
   }
 }
