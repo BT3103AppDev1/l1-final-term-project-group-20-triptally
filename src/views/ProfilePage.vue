@@ -159,7 +159,11 @@ export default {
   display: flex;
   align-items: center;
   text-align: center;
+  padding: 3rem;
+}
 
+input[type="email"] { 
+  margin: 0; 
 }
 
 .profile-content {
