@@ -3,7 +3,7 @@
     <div class="sidebar-content">
       <nav class="sidebar-nav">
         <ul class="nav-list">
-          <li class="nav-trip" v-if="tripName">
+          <li class="nav-trip">
             <span>{{ tripName }}</span>
           </li>
           <router-link :to="{ name: 'GroupPage', params: { tripName: tripName } }" class="nav-item">
@@ -42,10 +42,11 @@ export default {
     }
   },
   props: {
-    tripName: String,
+    tripName: String
   }, 
   mounted() { 
     const auth = getAuth();
+    console.log("Trip Name on mount:", this.tripName);
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;

@@ -95,7 +95,6 @@ import { db, auth } from '@/firebase';
                   TripName: docSnap.data().TripName,
                   UID: tripID 
                 });
-                console.log(docSnap.data().TripName);
               } catch (error) {
                 console.error("Error retrieving trip ", error);
               }

@@ -1,6 +1,6 @@
 <template>
-  <div v-if="user" class="main-container">
-    <SideNavBar></SideNavBar>
+  <div v-if="user" class="main">
+    <SideNavBar :tripName=$route.params.tripName></SideNavBar>
   </div>
 
   <div v-else>

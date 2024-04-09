@@ -1,7 +1,7 @@
 
 <template>
   <div class="app-container">
-  <SideNavBar></SideNavBar>
+  <SideNavBar :tripName=$route.params.tripName></SideNavBar>
   <div class="budget-page">
     <button class="edit-button" @click="editBudget">Edit</button>
     <h1>Total Budget: ${{ totalBudget }}</h1>

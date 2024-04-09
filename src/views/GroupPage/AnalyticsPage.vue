@@ -2,7 +2,7 @@
   <!-- <div class="main-container"> -->
   <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
   <div v-if="user">
-    <SideNavBar></SideNavBar>
+    <SideNavBar :tripName=$route.params.tripName></SideNavBar>
   </div>
   <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>

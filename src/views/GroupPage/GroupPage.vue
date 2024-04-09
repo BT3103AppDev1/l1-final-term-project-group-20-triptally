@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-  <SideNavBar></SideNavBar>
-  <div v-if="user" class="main-container">
+  <SideNavBar :tripName="$route.params.tripName"></SideNavBar>
+  <div v-if="!showAddExpenseModal" class="main-container">
     <div class="debt-container">
     <!-- You Are Owed Section -->
     <div class="owed-container">
@@ -54,13 +54,16 @@
     </div>
     <!-- Add Expense Button -->
     <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
-    <AddNewExpenseModal :is-visible="showAddExpenseModal" @update:isVisible="showAddExpenseModal = $event"></AddNewExpenseModal>
+    <div>
+      
+    </div>
+    
   </div>
   
   </div>
 
   <div v-else>
-    <h1>You must be logged in to view this!</h1>
+    <AddNewExpenseModal></AddNewExpenseModal>
   </div>
 </div>
 
