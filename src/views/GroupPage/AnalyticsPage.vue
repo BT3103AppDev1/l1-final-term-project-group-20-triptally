@@ -1,8 +1,9 @@
 <template>
   <!-- <div class="main-container"> -->
   <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
-
-    <SideNavBar></SideNavBar>
+  <div v-if="user">
+    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+  </div>
   <!-- <div class="content-container">
       <h1>Analytics & Reports</h1>
       <div class="wrapper">
@@ -35,6 +36,12 @@ export default {
   name: 'AnalyticsPage',
   data() { 
     return { 
+      trip: { 
+        TripName: "", 
+        Members: [], 
+        Currency: "",
+        UID: ""
+      },
       user: false, 
     }
   },
@@ -57,7 +64,6 @@ export default {
         tripName.value = "dummy until we implement trip collection";
         //there was no issue with the formatting, the trip name was just hardcoded 
         //so it disappeared on this page bc it extracts info from firebase.
-
       }
     });
 
@@ -71,8 +77,24 @@ export default {
   components: {
     SideNavBar
   }, 
+  methods: { 
+    async fetchTripData() { 
+      // fetch trip data based on tripID
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+  }, 
   mounted() {
     const auth = getAuth();
+    this.fetchTripData();
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
