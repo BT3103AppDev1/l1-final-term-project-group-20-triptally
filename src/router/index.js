@@ -7,7 +7,7 @@ import HomePage from '@/views/Homepage/HomePage.vue';
 import GroupPage from '@/views/GroupPage/GroupPage.vue';
 import AnalyticsPage from '@/views/GroupPage/AnalyticsPage.vue';
 import BudgetsPage from '@/views/GroupPage/BudgetsPage.vue';
-import MembersPage from '@/views/GroupPage/MembersPage.vue';
+import MembersPage from '@/views/GroupPage/MembersPage/MembersPage.vue';
 import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
 import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
