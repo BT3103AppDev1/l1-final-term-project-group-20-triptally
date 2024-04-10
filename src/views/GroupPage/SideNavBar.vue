@@ -6,23 +6,23 @@
           <li class="nav-trip">
             <span>{{ tripName }}</span>
           </li>
-          <router-link :to="{ name: 'GroupPage', params: { tripName: tripName } }" class="nav-item">
+          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/expensestab.png" alt="Expenses" class="nav-icon">
             <span>Expenses</span>
           </router-link>
-          <router-link :to="{ name: 'AnalyticsPage', params: { tripName: tripName } }" class="nav-item">
+          <router-link :to="{ name: 'AnalyticsPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/analyticstab.png" alt="Analytics" class="nav-icon">
             <span>Analytics</span>
           </router-link>
-          <router-link :to="{ name: 'BudgetsPage', params: { tripName: tripName } }" class="nav-item">
+          <router-link :to="{ name: 'BudgetsPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/budgetstab.png" alt="Budgets" class="nav-icon">
             <span>Budgets</span>
           </router-link>
-          <router-link :to="{ name: 'MembersPage', params: { tripName: tripName } }" class="nav-item">
+          <router-link :to="{ name: 'MembersPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/memberstab.png" alt="Members" class="nav-icon">
             <span>Members</span>
           </router-link>
-          <router-link :to="{ name: 'SettingsPage', params: { tripName: tripName } }" class="nav-item">
+          <router-link :to="{ name: 'SettingsPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/settingstab.png" alt="Settings" class="nav-icon">
             <span>Settings</span>
           </router-link>
@@ -34,19 +34,23 @@
 
 <script>
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default {
   data() { 
     return { 
       user: false, 
+      tripName: "",
+      tripUID: ""
     }
   },
   props: {
+    tripID: String,
     tripName: String
   }, 
   mounted() { 
     const auth = getAuth();
-    console.log("Trip Name on mount:", this.tripName);
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;

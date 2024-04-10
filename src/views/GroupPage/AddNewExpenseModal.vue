@@ -32,11 +32,17 @@
 
 <script>
 import { db } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default { 
   data() { 
     return { 
+      trip: { 
+        TripName: "",
+        Members: [],
+        Currency: "",
+        UID: ""
+      },
       expense: { 
         date: "", 
         title: "", 
@@ -46,20 +52,47 @@ export default {
     }
   }, 
   props: { 
-    trip: Object
+    tripID: String
   },
   methods: { 
-    fetchTripData() { 
+    async fetchTripData() { 
       // fetch trip data from firebase 
-
+      const tripDocRef = doc(db, "Trips", this.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
     }, 
-    addExpense() { 
-      // add this new expense as a document in the "Expenses" collection in the specific trip document 
-      db.collection('Trips').doc(this.tripID).collection('Expenses').setDoc({
-        Title: this.title, 
-        Amount: this.amount, 
-        PaidBy: this.paidBy
-      })
+    async convertMembersArray() { 
+      // convert members array to their names, based on their userIDs
+      // this is needed for display in the dropdown menu, so that users can select who paid for the expense 
+    },
+    async addExpense() {
+      const tripRef = doc(db, "Trips", this.trip.UID);
+      // Introduce a dummy document ID or meaningful document (e.g., the date as a document)
+      const dateDocRef = doc(collection(tripRef, "Expenses"), this.expense.date); // Use date as a document ID
+
+      // Now create a collection under this document
+
+      const specificExpenseRef = collection(dateDocRef, "Details");
+
+      // Now add the expense details as a document within this new collection
+      const expenseDetailRef = doc(sepcificExpenseRef); // Firestore generates a unique document ID
+      try {
+        await setDoc(expenseDetailRef, {
+          title: this.expense.title,
+          amount: this.expense.amount,
+          paidBy: this.expense.paidBy
+        });
+        console.log("Expense added successfully under date:", this.expense.date);
+      } catch (error) {
+        console.error("Error adding expense:", error);
+      }
     }
   }, 
   mounted() { 
