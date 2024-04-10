@@ -1,8 +1,8 @@
 
 <template>
   <div class="app-container">
-  <SideNavBar></SideNavBar>
-  <div class="budget-page">
+  <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+  <div class="budget-page"> 
     <button class="edit-button" @click="editBudget">Edit</button>
     <h1>Total Budget: ${{ totalBudget }}</h1>
     <div class="budget-categories">
@@ -29,12 +29,20 @@
 <script>
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/firebase';
 
 export default {
   name: 'BudgetPage',
   data() {
     return {
       user: false,
+      trip: { 
+        TripName: "", 
+        Members: [], 
+        Currency: "", 
+        UID: ""
+      },
       totalBudget: 1000, // Example total budget
       budgetItems: [
         { category: 'Food', allocated: 150, used: 80 },
@@ -79,15 +87,29 @@ export default {
     editBudget() {
     this.$router.push({ name: 'EditBudgetPage' });
     },
+    async fetchTripData() { 
+      // fetch trip data based on tripID
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+    },
     mounted() {
         const auth = getAuth();
+        this.fetchTripData();
         onAuthStateChanged(auth, (user) => {
           if (user) {
             this.user = user;
           }
         })
       }
-    }
   }
 </script>
 

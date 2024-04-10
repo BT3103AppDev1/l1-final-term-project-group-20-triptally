@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar v-if="user"></SideNavBar>
+    <SideNavBar v-if="user" :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
     <div class="main-content" v-if="user">
       <!-- Group Members Section -->
       <div class="group-members-section">
@@ -63,6 +63,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import deleteIcon from '@/assets/delete-minus-btn.png';
 import addMemberIcon from '@/assets/add-member.png';
 import DeleteMember from './DeleteMember.vue';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
 
 export default {
   components: {
@@ -72,6 +74,12 @@ export default {
   data() {
     return {
       user: false,
+      trip: { 
+        TripName: "",
+        Members: [],
+        Currency: "", 
+        UID: ""
+      },
       deleteIcon: deleteIcon,
       addMemberIcon: addMemberIcon,
       members: [
@@ -89,6 +97,7 @@ export default {
   },
   mounted() {
     const auth = getAuth();
+    this.fetchTripData();
     onAuthStateChanged(auth, (user) => {
       this.user = user ? user : null;
     });
@@ -119,6 +128,19 @@ export default {
         });
         this.newMemberUsername = ''; 
         this.showAddNewMemberInput = false; 
+      }
+    },
+    async fetchTripData() { 
+      // fetch trip data based on tripID
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     }
 }

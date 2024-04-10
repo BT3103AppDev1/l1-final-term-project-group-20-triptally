@@ -4,7 +4,7 @@
     <div class="trip-grid">
       <!-- Trip Cards -->
       <router-link v-for="trip in trips" :key="trip.UID"
-        :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }" custom v-slot="{ navigate }">
+        :to="{ name: 'GroupPage', params: { tripID: trip.UID }}" custom v-slot="{ navigate }">
         <div class="trip-card" @click="navigate">
           <img :src="trip.image" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
@@ -84,6 +84,7 @@ import { db, auth } from '@/firebase';
           const userDoc = await getDoc(docRef);
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            this.trips = [];
 
             for (const tripID of userData.GroupTrips) {
               const tripDocRef = doc(db, "Trips", tripID);
@@ -95,12 +96,10 @@ import { db, auth } from '@/firebase';
                   TripName: docSnap.data().TripName,
                   UID: tripID 
                 });
-                console.log(docSnap.data().TripName);
               } catch (error) {
                 console.error("Error retrieving trip ", error);
               }
             }
-            this.tripLength = this.trips.length;
           } else {
             console.error("User document does not exist.");
           }
