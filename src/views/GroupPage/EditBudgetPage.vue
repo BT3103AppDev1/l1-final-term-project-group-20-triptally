@@ -123,10 +123,6 @@ h1 {
   /* Style your fields */
 }
 
-label {
-  /* Style your labels */
-}
-
 input[type="number"] {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
