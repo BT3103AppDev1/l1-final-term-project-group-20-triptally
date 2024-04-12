@@ -6,6 +6,23 @@
       <router-link v-for="trip in trips" :key="trip.UID"
         :to="{ name: 'GroupPage', params: { tripName: trip.TripName } }" custom v-slot="{ navigate }">
         <div class="trip-card" @click="navigate">
+          <!-- Settings Page -->
+          <div class="settings" @click.stop="toggleDropdown(trip.UID)">
+            <img src="@/assets/settingsicon.png" alt="Settings" class="settings-icon">
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" v-if="trip.dropdownVisible">
+              <div class="dropdown-item" @click="renameGroup(trip)">Rename Group</div>
+              <div class="dropdown-item" @click="confirmLeaveGroup(trip)">Leave Group</div>
+            </div>
+              <!-- Leave Group Confirmation Modal -->
+              <div class="confirmation-popup" v-if="showLeaveGroupConfirmation && selectedTrip">
+                <div>
+                  <p class="leave-group-confirmation">Are you sure you want to leave the group "{{ selectedTrip.TripName }}"?</p>
+                  <button class="confirm-button" @click="leaveGroup(selectedTrip)">Confirm</button>
+                  <button class="cancel-button" @click="cancelLeaveGroup">Cancel</button>
+                </div>
+              </div>
+          </div>
           <img :src="trip.image" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
@@ -41,7 +58,9 @@ import { db, auth } from '@/firebase';
      return {
       user: false,
       userID: "",
-      showModal: false, 
+      showModal: false,
+      showLeaveGroupConfirmation: false,
+      selectedTrip: null,
       trips: [], 
       tripLength: 0,
         //  { id: 1, name: 'Grad Trip <3', image: gradTripImage },
@@ -55,7 +74,26 @@ import { db, auth } from '@/firebase';
     AddNewTripModal
   },
   methods: {
-     addNewTrip() {
+    toggleDropdown(uid) {
+      const trip = this.trips.find(t => t.UID === uid);
+      if (trip) {
+      trip.dropdownVisible = !trip.dropdownVisible;
+      }
+    },
+    confirmLeaveGroup(trip) {
+      this.showLeaveGroupConfirmation = true;
+      this.selectedTrip = trip;
+    },
+    leaveGroup(trip) {
+      //logic to leave group 
+      console.log("leaving group:", trip.TripName);
+      this.showLeaveGroupConfirmation = false;
+      this.selectedTrip = null;
+    },
+    cancelLeaveGroup() {
+      this.showLeaveGroupConfirmation = false;
+    },
+    addNewTrip() {
        // Logic to add new trip
        this.isPopupVisible = !this.isPopupVisible
      }, 
@@ -68,7 +106,8 @@ import { db, auth } from '@/firebase';
           Currency: docSnap.data().Currency, 
           Members: docSnap.data().Members, 
           TripName: docSnap.data().TripName,
-          UID: newTripID
+          UID: newTripID,
+          dropdownVisible: false,
         })
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -148,7 +187,7 @@ import { db, auth } from '@/firebase';
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 10px;
+    padding: 8px;
     text-align: center;
     text-decoration: none;
     cursor: pointer;
@@ -188,7 +227,93 @@ import { db, auth } from '@/firebase';
   .add-trip-button:hover {
     background-color: #e6b800;
   }
+  .settings {
+    margin-left: 90%;
+    position: relative;
+  }
 
+  .settings-icon {
+    width: 15px;
+    height: 12px;
+  }
+
+  .dropdown-menu {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 150px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.dropdown-item {
+  text-align: left;
+  padding: 10px;
+  padding-left: 15px;
+  cursor: pointer;
+  font-size: smaller;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+.confirmation-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height:150px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 10;
+  font-size: 15px;
+  font-weight: 300;
+}
+
+  .leave-group-confirmation {
+    cursor: pointer;
+    font-weight: 600; 
+  }
+
+  .confirm-button, .cancel-button {
+    font-weight: 300;
+    font-size: 15px;
+    display: flex; /* Enables flexbox */
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    padding: 15px 24px;
+    height: 35px;
+    width: 300px;
+    background-color: white;
+    border-top: 1px solid rgb(244, 243, 243);
+    border-radius: 0%;
+  }
+
+  .confirm-button {
+    color: rgb(189, 1, 1);
+    cursor: pointer;
+  }
+  .cancel-button {
+    color: black;
+    cursor: pointer;
+  }
+
+  .confirm-button:hover, .cancel-button:hover {
+  background-color: #f2f2f2; /* Light grey background on hover */
+}
 </style>
   
   
