@@ -3,7 +3,7 @@
     <h1>Log In</h1>
     <form @submit.prevent="login">
       <input type="email" placeholder="Email" v-model="email" />
-      <input type="password" placeholder="Password" v-model="password" />
+      <input type="password" placeholder="Password" v-model="password" /><br>
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
       <button type="button" @click="login">Let's Tally!</button>
     </form>

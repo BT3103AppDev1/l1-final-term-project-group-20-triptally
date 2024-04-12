@@ -1,10 +1,11 @@
 
 <template>
-  <div class="login-card">
+  <div class="pw-card">
     <h1>Forgot Password</h1>
     <text>Enter the email address associated with your account and click the button below to receive an email to reset this account’s password.</text>
     <form @submit.prevent="submitPasswordReset">
       <input type="email" placeholder="Enter Email" v-model="email" />
+      <br>
       <button type="submit">Reset My Password</button>
       <router-link to="/" class="go-login-link">← Back to Login.</router-link>
     </form>
@@ -41,7 +42,7 @@ export default {
   
 <style>
 /* Centered card layout */
-.login-card {
+.pw-card {
   background: rgba(255, 255, 255, 0.7); /* semi-transparent white background */
   padding: 40px;
   border-radius: 15px;
@@ -85,7 +86,22 @@ button {
   color: #EDE7E3;
   font-size:large;
   margin-top: 20px;
+  margin: 0 auto; /* Center within flex container */
+  display: block; /* Ensure they're treated as block-level for margin auto to work */
   font-weight: 600;
+}
+
+input[type="email"] {
+  width: 450px; /* Full width minus padding */
+  height: 30px;
+  padding: 10px;
+  margin-bottom: 20px; /* Space between inputs */
+  border: 0px solid #ddd;
+  border-radius: 10px;
+  font-size: large;
+  font-family:'Montserrat', sans-serif;
+  margin: 0 auto; /* Center within flex container */
+  display: block; /* Ensure they're treated as block-level for margin auto to work */
 }
 
 text {

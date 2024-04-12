@@ -7,7 +7,7 @@ import HomePage from '@/views/Homepage/HomePage.vue';
 import GroupPage from '@/views/GroupPage/GroupPage.vue';
 import AnalyticsPage from '@/views/GroupPage/AnalyticsPage.vue';
 import BudgetsPage from '@/views/GroupPage/BudgetsPage.vue';
-import MembersPage from '@/views/GroupPage/MembersPage.vue';
+import MembersPage from '@/views/GroupPage/MembersPage/MembersPage.vue';
 import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
 import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
@@ -47,37 +47,38 @@ const routes = [
       component: ProfilePage
     },
     {
-      path: '/group/:tripName', 
+      path: '/group/:tripID', 
       name: 'GroupPage',
       component: GroupPage,
       props: true
     },
     {
-      path: '/group/:tripName/analytics', 
+      path: '/group/:tripID/analytics', 
       name: 'AnalyticsPage',
       component: AnalyticsPage,
       props: true
     },
     {
-      path: '/group/:tripName/budgets', 
+      path: '/group/:tripID/budgets', 
       name: 'BudgetsPage',
       component: BudgetsPage,
       props: true
+      
     },
     {
-      path: '/group/:tripName/editbudget', 
+      path: '/group/:tripID/editbudget', 
       name: 'EditBudgetPage',
       component: EditBudgetPage,
       props: true
     },
     {
-      path: '/group/:tripName/members', 
+      path: '/group/:tripID/members', 
       name: 'MembersPage',
       component: MembersPage,
       props: true
     },
     {
-      path: '/group/:tripName/settings', 
+      path: '/group/:tripID/settings', 
       name: 'SettingsPage',
       component: SettingsPage,
       props: true
