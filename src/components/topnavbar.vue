@@ -18,7 +18,7 @@ User
 
     <div class="logout-popup" v-if="showLogoutPopup">
       <div class="logout-popup-content">
-        <h2>Are you sure you want to log out?</h2>
+        <p class="logoutquestion">Are you sure you want to log out?</p>
         <button class="logoutbutton" @click="logout">Log out</button>
         <button class="cancelbutton" @click="showLogoutPopup = false">Cancel</button>
       </div>
@@ -181,29 +181,6 @@ export default {
   display: block;
 }
 
-
-.logout-popup {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 280px;
-  height:180px;
-  padding: 15px;
-  background-color: white;
-  font-family: Arial;
-  font-size: 10px;
-  border-radius: 10%;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-  z-index: 10;
-}
-
 .logout-popup-content button {
   border: none;
   background-color: white;
@@ -214,16 +191,57 @@ export default {
   cursor: pointer; 
 }
 
-.logoutbutton {
-  color: rgb(189, 1, 1);
-  height:5px;
+.logout-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height:150px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 20;
+  font-size: 15px;
+  font-weight: 300;
 }
 
-.cancelbutton {
-  color: black;
-  height:5px;
-  cursor: pointer;
+  .logoutquestion {
+    cursor: pointer;
+    font-weight: 600; 
+  }
 
+  .logoutbutton, .cancelbutton {
+    font-weight: 300;
+    font-size: 15px;
+    display: flex; /* Enables flexbox */
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    padding: 15px 24px;
+    height: 35px;
+    width: 300px;
+    background-color: white;
+    border-top: 1px solid rgb(244, 243, 243);
+    border-radius: 0%;
+  }
+
+  .logoutbutton {
+    color: rgb(189, 1, 1);
+    cursor: pointer;
+  }
+  .cancelbutton {
+    color: black;
+    cursor: pointer;
+  }
+
+  .logoutbutton:hover, .cancelbutton:hover {
+  background-color: #f2f2f2; /* Light grey background on hover */
 }
 </style>

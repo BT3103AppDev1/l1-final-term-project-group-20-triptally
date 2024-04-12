@@ -268,7 +268,7 @@ import { db, auth } from '@/firebase';
   transform: translate(-50%, -50%);
   width: 300px;
   height:150px;
-  padding: 10px;
+  padding: 15px;
   background-color: white;
   border-radius: 10px;
   text-align: center;
