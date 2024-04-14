@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
-    <SideNavBar />
+    <SideNavBar :key="trip.TripName" :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
     <div class="main-content">
       <p v-if="showSuccessMessage" class="success-message">Budget saved successfully!</p>
       <div class="edit-budget-card">
         <div class="header">
-          <router-link to="/group/:tripName/budgets" class="budget-page-link">←</router-link>
+          <router-link :to="`/group/${tripID}/budgets`" class="budget-page-link">←</router-link>
           <h1>Edit Budget</h1>
           <button class="save-button" @click="saveBudget">Save</button>
         </div>
@@ -22,10 +22,14 @@
 
 <script>
 import { db } from "@/firebase";
-import { collection, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, updateDoc, getDocs } from 'firebase/firestore';
 import SideNavBar from './SideNavBar.vue';
 
 export default {
+  name: 'EditBudgetPage',
+  props: {
+    tripID: String
+  },
   data() { 
     return { 
       showSuccessMessage: false,
@@ -37,13 +41,29 @@ export default {
       },
       budget: [], // Define budget as an array
     }
-  }, 
-  props: {
-    tripID: String
   },
   methods: {
+    async fetchTripData() { 
+      // Ensure you're fetching the trip data based on the correct tripID. This could come from the prop or the route.
+      const tripID = this.tripID || this.$route.params.tripID;
+      const tripDocRef = doc(db, "Trips", tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        if (docSnap.exists()) {
+          // Update the trip data
+          this.trip.TripName = docSnap.data().TripName; 
+          this.trip.Currency = docSnap.data().Currency; 
+          this.trip.Members = docSnap.data().Members;
+          this.trip.UID = tripID; 
+        } else {
+          console.error("Trip document does not exist");
+        }
+      } catch (error) {
+        console.error("Error fetching trip data:", error);
+      }
+    },
     async fetchBudgetItems() {
-      const budgetsRef = collection(db, "Trips", this.tripID, "Budgets"); // Using prop directly
+      const budgetsRef = collection(db, "Trips", this.tripID, "Budgets"); // Ensure this uses the tripID correctly
       try {
         const querySnapshot = await getDocs(budgetsRef);
         this.budget = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -52,7 +72,8 @@ export default {
       }
     },
     async saveBudget() {
-      this.showSuccessMessage = false; // Reset or hide previous message if necessary
+      // Reset the success message state and proceed to update the budget items
+      this.showSuccessMessage = false; 
       try {
         for (const item of this.budget) {
           const budgetDocRef = doc(db, "Trips", this.tripID, "Budgets", item.id);
@@ -60,25 +81,25 @@ export default {
             allocated: item.allocated,
             used: item.used
           });
-          this.showSuccessMessage = true;
         }
+        // Show success message after updates
+        this.showSuccessMessage = true;
         console.log("Budget updated successfully");
-        // Optionally, navigate back to the budget overview page or show a success message
       } catch (error) {
         console.error("Error updating budget items:", error);
-        // Optionally, show an error message to the user
       }
     }
   },
   async mounted() {
-    this.trip.UID = this.tripID; // Ensure this is set before fetching
-    await this.fetchBudgetItems(); // Now calling the correct method
+    await this.fetchTripData(); // Fetch trip data on mount
+    await this.fetchBudgetItems(); // Fetch budget items on mount
   },
   components: {
     SideNavBar
   }
 };
 </script>
+
 
 <style scoped>
 .app-container {

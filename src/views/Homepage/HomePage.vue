@@ -26,10 +26,6 @@
 </template>
  
  <script>
- import gradTripImage from './GroupImages/grad-trip.png';
- import winterExchangeImage from './GroupImages/winter-exchange.png';
- import baliTripImage from './GroupImages/bali-trip.png';
- import weekendKLImage from './GroupImages/weekend-in-kl.png';
 import { doc, getDoc, collection, setDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewTripModal from './AddNewTripModal.vue'
@@ -125,19 +121,16 @@ import { db, auth } from '@/firebase';
  </script>
   
   <style scoped>
-  .app-container {
-  display: flex;
-  align-items: center;
-  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
-  background-size: cover;
-  background-color: rgba(88, 85, 79, 0.2);
-  }
   
   .trip-container {
     padding: 20px;
     padding-bottom: 70px;
     min-height: 100vh;
     text-align: center;
+    align-items: center;
+    background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: rgba(88, 85, 79, 0.2);
   }
 
   .trip-grid {
