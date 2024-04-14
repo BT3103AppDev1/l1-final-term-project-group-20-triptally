@@ -5,6 +5,18 @@
       <input type="date" v-model="expense.date" placeholder="Choose Date"><br>
       <input type="text" v-model="expense.title" placeholder="Title"><br>
       <input type="number" v-model="expense.amount" placeholder="Amount"><br>
+      <div>
+        <select v-model="expense.category">
+          <option value="" disabled selected hidden>Select Category</option>
+          <option value="Food">Food</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Transport">Transport</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Accomodations">Accomodations</option>
+          <option value="Miscellaneous">Miscellaneous</option>
+        </select>
+      </div>
+  
 
       <div class="paid-split-container">
       <div class="paid-by">
@@ -33,10 +45,13 @@
 <script>
 import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 export default { 
   data() { 
     return { 
+      user: false, 
       trip: { 
         TripName: "",
         Members: [],
@@ -47,7 +62,11 @@ export default {
         date: "", 
         title: "", 
         amount: "", 
-        paidBy: ""
+        paidBy: "",
+        category: "",
+        splitBetween: "",
+        owedMembers: []
+        // this represents the userIDs of the members that owe the person that paid for this expense money 
       }
     }
   }, 
@@ -73,21 +92,24 @@ export default {
       // this is needed for display in the dropdown menu, so that users can select who paid for the expense 
     },
     async addExpense() {
+      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense 
+
       const tripRef = doc(db, "Trips", this.trip.UID);
       // Introduce a dummy document ID or meaningful document (e.g., the date as a document)
       const dateDocRef = doc(collection(tripRef, "Expenses"), this.expense.date); // Use date as a document ID
 
       // Now create a collection under this document
-
       const specificExpenseRef = collection(dateDocRef, "Details");
 
       // Now add the expense details as a document within this new collection
-      const expenseDetailRef = doc(sepcificExpenseRef); // Firestore generates a unique document ID
+      const expenseDetailRef = doc(specificExpenseRef); // Firestore generates a unique document ID
       try {
         await setDoc(expenseDetailRef, {
           title: this.expense.title,
           amount: this.expense.amount,
-          paidBy: this.expense.paidBy
+          paidBy: this.expense.paidBy,
+          category: this.expense.category,
+          currency: this.trip.Currency, 
         });
         console.log("Expense added successfully under date:", this.expense.date);
       } catch (error) {
@@ -97,6 +119,12 @@ export default {
   }, 
   mounted() { 
     this.fetchTripData(); 
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.user = user;
+      }
+    })
   }
 }
 </script>
@@ -123,7 +151,8 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-input[placeholder="Choose Date"], input[placeholder="Title"], input[placeholder="Amount"] {
+
+input[placeholder="Choose Date"], input[placeholder="Title"], input[placeholder="Amount"], select {
   width: 58%;
   /* Full width minus padding */
   padding: 10px;
@@ -134,6 +163,10 @@ input[placeholder="Choose Date"], input[placeholder="Title"], input[placeholder=
   border-radius: 10px;
   font-size: medium;
   font-family: 'Montserrat', sans-serif;
+}
+
+select { 
+  width: 60%;
 }
 
 .form-container h1 { 

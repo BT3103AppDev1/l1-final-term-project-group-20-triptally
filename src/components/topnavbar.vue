@@ -1,9 +1,11 @@
 User
 <template> 
   <div class="navbar" v-if="user">
+    <router-link to="/homepage">
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
+    </router-link>
     <div class="navbar-item" @mouseover="isDropdownOpen = true" @mouseleave="isDropdownOpen = false">
-      <router-link to="/homepage">
+    <router-link to="/homepage">
       <img src="@/assets/home.png" class="home_logo" alt="Home">
     </router-link>
       <div class="username">{{ Username }}</div>
