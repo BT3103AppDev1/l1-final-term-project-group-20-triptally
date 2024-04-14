@@ -288,6 +288,9 @@ async fetchTripData() {
 <style scoped>
 .app-container {
   display: flex;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
 }
 
 .main-content {

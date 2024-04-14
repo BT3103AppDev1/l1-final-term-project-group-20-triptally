@@ -55,4 +55,14 @@ export default {
     })
   }
 };
-  </script>
+</script>
+
+<style>
+.main {
+  display: flex;
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
+}
+</style>

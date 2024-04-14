@@ -131,6 +131,21 @@ export default {
             console.error("Error updating user document: ", error);
           }
         }
+
+        const budgetsRef = collection(db, "Trips", tripDocRef.id, "Budgets");
+
+        const defaultBudgetItems = [
+          { category: 'Food', allocated: 150, used: 0, order: 1 },
+          { category: 'Shopping', allocated: 200, used: 0, order: 2 },
+          { category: 'Transport', allocated: 100, used: 0, order: 3 },
+          { category: 'Entertainment', allocated: 50, used: 0, order: 4 },
+          { category: 'Accommodation', allocated: 100, used: 0, order: 5 },
+          { category: 'Miscellaneous', allocated: 50, used: 0, order: 6 },
+        ];
+
+        for (const item of defaultBudgetItems) {
+          await addDoc(budgetsRef, item);
+        }
         this.$emit('refreshTrips', this.tripID);
       } catch (error) {
         console.error('Error adding trip document: ', error);

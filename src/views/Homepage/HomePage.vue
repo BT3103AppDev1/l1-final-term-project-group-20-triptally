@@ -126,9 +126,13 @@ import { db, auth } from '@/firebase';
   
   <style scoped>
   .app-container {
-    font-family: 'Arial', sans-serif;
+  display: flex;
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
   }
-
+  
   .trip-container {
     padding: 20px;
     padding-bottom: 70px;
