@@ -181,23 +181,13 @@ export default {
   display: block;
 }
 
-.logout-popup-content button {
-  border: none;
-  background-color: white;
-  font-size: 15px;
-  border-top: 1px solid rgb(244, 243, 243);
-  border-radius: 0%;
-  width: 280px;
-  cursor: pointer; 
-}
-
 .logout-popup {
   position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 300px;
-  height:150px;
+  width: 310px;
+  height:160px;
   padding: 10px;
   background-color: white;
   border-radius: 15px;
@@ -216,6 +206,7 @@ export default {
   .logoutquestion {
     cursor: pointer;
     font-weight: 600; 
+    padding-bottom: 8px;
   }
 
   .logoutbutton, .cancelbutton {
@@ -226,10 +217,10 @@ export default {
     align-items: center; /* Centers content vertically */
     padding: 15px 24px;
     height: 35px;
-    width: 300px;
+    width: 320px;
     background-color: white;
-    border-top: 1px solid rgb(244, 243, 243);
     border-radius: 0%;
+    font-family: 'MontserratRegular', Montserrat, sans-serif;
   }
 
   .logoutbutton {
@@ -242,6 +233,6 @@ export default {
   }
 
   .logoutbutton:hover, .cancelbutton:hover {
-  background-color: #f2f2f2; /* Light grey background on hover */
+    background-color: #f2f2f2; /* Light grey background on hover */
 }
 </style>
