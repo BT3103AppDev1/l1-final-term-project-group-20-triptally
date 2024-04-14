@@ -143,7 +143,11 @@ export default {
 <style scoped>
 .app-container {
   display: flex;
-  height: 100vh; 
+  height: 110vh; 
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
 }
 
 .main-container {

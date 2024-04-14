@@ -69,7 +69,7 @@ export default {
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 110vh;
 }
 
 .sidebar-content {
