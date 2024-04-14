@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+    <SideNavBar :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
     <div class="budget-page"> 
       <button class="edit-button" @click="editBudget">Edit</button>
       <h1>Total Budget: ${{ totalBudget }}</h1>
@@ -54,6 +54,19 @@ export default {
   },
   props: ['tripID'], 
   methods: {
+    async fetchTripData() { 
+      // fetch trip data based on tripID
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
     progressWidth(item) {
       const percentageUsed = (item.used / item.allocated) * 100;
       return `${percentageUsed}%`;
@@ -90,6 +103,7 @@ export default {
       try {
         const querySnapshot = await getDocs(queryRef);
         this.budget = querySnapshot.docs.map(doc => doc.data());
+        console.log("Budget items fetched successfully:", this.budget);
         
         // Calculate the total budget
         this.totalBudget = this.budget.reduce((total, item) => total + item.allocated, 0);
@@ -104,6 +118,7 @@ export default {
   mounted() {
     const auth = getAuth();
     this.trip.UID = this.tripID; // Ensure this is set before fetching
+    this.fetchTripData();
     console.log("Trip ID from route:", this.$route.params.tripID);
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -113,10 +128,12 @@ export default {
     })
   },
   watch: {
-    '$route'() {
-      this.fetchBudgetItems();
-    },
+  '$route'() {
+    console.log("Route changed, fetching budget items...");
+    this.fetchBudgetItems();
+    this.fetchTripDetails();
   },
+},
 }
 </script>
 
