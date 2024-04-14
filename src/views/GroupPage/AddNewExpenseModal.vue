@@ -93,7 +93,6 @@ export default {
     },
     async addExpense() {
       // call the updateDebts method, which will update the debts of each member in this group trip based on this expense 
-      await updateDebts(); 
 
       const tripRef = doc(db, "Trips", this.trip.UID);
       // Introduce a dummy document ID or meaningful document (e.g., the date as a document)
@@ -116,26 +115,6 @@ export default {
       } catch (error) {
         console.error("Error adding expense:", error);
       }
-    }, 
-    async updateDebts() { 
-      // for now user can only select "Everyone" cos i'm not too sure how to make the dropdown thingy such that different users can be selected 
-      if (this.expense.splitBetween === "Everyone") { 
-        this.expense.owedMembers = this.trip.Members;
-      }
-
-      for (memberID in this.expense.owedMembers) { 
-        if (memberID === user.uid) { 
-          continue; 
-        } else { 
-          const memberDocRef = doc(collection(tripRef, "Debts"), memberID); // Use memberID as a document ID
-
-          // add othersOwe 
-        }
-      }
-
-
-
-
     }
   }, 
   mounted() { 
