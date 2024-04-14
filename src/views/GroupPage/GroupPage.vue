@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-  <SideNavBar></SideNavBar>
-  <div v-if="user" class="main-container">
+  <SideNavBar :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
+  <div v-if="!showAddExpenseModal" class="main-container">
     <div class="debt-container">
     <!-- You Are Owed Section -->
     <div class="owed-container">
@@ -54,13 +54,16 @@
     </div>
     <!-- Add Expense Button -->
     <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
-    <AddNewExpenseModal :is-visible="showAddExpenseModal" @update:isVisible="showAddExpenseModal = $event"></AddNewExpenseModal>
+    <div>
+      
+    </div>
+    
   </div>
   
   </div>
 
   <div v-else>
-    <h1>You must be logged in to view this!</h1>
+    <AddNewExpenseModal :tripID="trip.UID"></AddNewExpenseModal>
   </div>
 </div>
 
@@ -72,11 +75,19 @@
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
 
 export default {
   data() { 
     return { 
       user: false,
+      trip: { 
+        TripName: "", 
+        Members: [], 
+        Currency: "", 
+        UID: ""
+      },
       debtsOwedToYou: [
         { initials: "YA", name: "Yuki Ang", amount: "MYR 20" },
         { initials: "VK", name: "Vanessa Koh", amount: "MYR 10" }
@@ -102,8 +113,24 @@ export default {
     SideNavBar,
     AddNewExpenseModal
   },
+  methods: { 
+    async fetchTripData() { 
+      // fetch trip data based on tripID
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+  }, 
   mounted() {
     const auth = getAuth();
+    this.fetchTripData(); 
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
