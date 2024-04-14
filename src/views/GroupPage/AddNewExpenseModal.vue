@@ -16,21 +16,21 @@
           <option value="Miscellaneous">Miscellaneous</option>
         </select>
       </div>
-  
 
       <div class="paid-split-container">
       <div class="paid-by">
         <span>Paid by</span>
         <select v-model="expense.paidBy">
-          <option value="you">You</option>
-          <!-- Add more options here for other members -->
+          <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
+            {{ member.FirstName }} {{ member.LastName }}
+          </option>
         </select>
       </div>
       
       <div class="split-between">
         <span>and split between</span>
         <select v-model="expense.splitBetween">
-          <option value="everyone">Everyone</option>
+          <option value="Everyone">Everyone</option>
           <!-- Add more options here for individual members or custom splits -->
         </select>
       </div>
@@ -44,7 +44,7 @@
 
 <script>
 import { db } from '@/firebase';
-import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -55,6 +55,7 @@ export default {
       trip: { 
         TripName: "",
         Members: [],
+        MemberDetails: [],
         Currency: "",
         UID: ""
       },
@@ -77,22 +78,83 @@ export default {
     async fetchTripData() { 
       // fetch trip data from firebase 
       const tripDocRef = doc(db, "Trips", this.tripID); 
-      try { 
-        const docSnap = await getDoc(tripDocRef); 
-        this.trip.TripName = docSnap.data().TripName; 
-        this.trip.Currency = docSnap.data().Currency; 
-        this.trip.Members = docSnap.data().Members;
+  
+      const docSnap = await getDoc(tripDocRef); 
+      if (docSnap.exists()) { 
+        const data = docSnap.data(); 
+        this.trip.TripName = data.TripName; 
+        this.trip.Currency = data.Currency; 
+        this.trip.Members = data.Members;
         this.trip.UID = this.$route.params.tripID; 
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } else { 
+        console.log("Error");
       }
     }, 
     async convertMembersArray() { 
-      // convert members array to their names, based on their userIDs
-      // this is needed for display in the dropdown menu, so that users can select who paid for the expense 
+      // this.trip.Members contains an array of the userIDs of all members in the trip
+      // this.trip.MemberDetails contains objects each containing the details of each member of the trip 
+
+      // in this function, we are trying to use this.trip.Members array to to create this.trip.MemberDetails
+      // this is needed for display in the dropdown menu, so that we can display the names of each user in the dropdown menu, and users can select who paid for the expense 
+      console.log(this.trip.Members);
+      const q = query(collection(db, "Users"), where ('__name__', 'in', this.trip.Members));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => { 
+        console.log(doc.id, " => ", doc.data());
+        this.trip.MemberDetails.push({ 
+          ...doc.data(), 
+          UID: doc.id,
+      });
+      })
     },
+    async updateDebts() { 
+      console.log("Update Debts function called")
+      // for now user can only select "Everyone" to split between, cos i'm not too sure how to make the dropdown thingy such that different users can be selected (and more than 1 user) 
+      if (this.expense.splitBetween === "Everyone") { 
+        this.expense.owedMembers = this.trip.Members;
+      }
+
+      // for each member of the owedMembers array, we will update their debt in firebase 
+      for (const memberID of this.expense.owedMembers) { 
+        if (memberID === this.expense.paidBy) { 
+          // this is supposed to check if the memberID corresponds to the user that paid for this expense 
+          
+        } else { 
+          const tripRef = doc(db, "Trips", this.trip.UID);
+          const owedMemberDocRef = doc(collection(tripRef, "Debts"), memberID); // this is the person that owes the payer money 
+          const paidMemberDocRef = doc(collection(tripRef, "Debts"), this.expense.paidBy); // this is the person that has paid firsdt 
+
+          // Now create/access the "Who Owes User" collection for the payee and the "User Owes Who" collection for the person that owes the payer money 
+          const oweUserRef = collection(paidMemberDocRef, "Who Owes User");
+          const userOwesRef = collection(owedMemberDocRef, "User Owes Who");
+
+          const oweUserDoc = doc(oweUserRef, memberID); 
+          const userOwesDoc = doc(userOwesRef, this.expense.paidBy); 
+
+          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length)).toFixed(2));
+
+          try { 
+            await setDoc(oweUserDoc, { 
+              amount: increment(amountOwed),
+              currency: this.trip.Currency
+            }, { merge: true });
+            console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`);
+
+            await setDoc(userOwesDoc, { 
+              amount: increment(amountOwed),
+              currency: this.trip.Currency
+            }, { merge: true });
+            console.log(`${this.expense.paidBy} has a debtor with memberID ${memberID} who owes him/her $${amountOwed}`);
+
+          } catch (error) { 
+            console.error(error); 
+          }
+        }
+      }
+    }, 
     async addExpense() {
-      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense 
+      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
+      await this.updateDebts();  
 
       const tripRef = doc(db, "Trips", this.trip.UID);
       // Introduce a dummy document ID or meaningful document (e.g., the date as a document)
@@ -118,11 +180,12 @@ export default {
     }
   }, 
   mounted() { 
-    this.fetchTripData(); 
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
+        await this.fetchTripData();
+        await this.convertMembersArray();
       }
     })
   }

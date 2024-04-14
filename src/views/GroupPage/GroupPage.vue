@@ -5,12 +5,12 @@
     <div class="debt-container">
     <!-- You Are Owed Section -->
     <div class="owed-container">
-      <h2>YOU ARE OWED <span class="amount">MYR 30</span> IN TOTAL</h2>
-      <div class="individual-debt" v-for="(debt, index) in debtsOwedToYou" :key="index">
-        <div class="initials">{{ debt.initials }}</div>
+      <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
+      <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
+        <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
         <div class="details">
-          <span class="name">{{ debt.name }} owes you</span>
-          <span class="amount">{{ debt.amount }}</span>
+          <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
+          <span class="amount">{{ this.trip.Currency }} {{ debt.amount.toFixed(2) }}</span>
         </div>
         <button class="remind-btn">Remind</button>
       </div>
@@ -18,12 +18,12 @@
     
     <!-- You Owe Section -->
     <div class="owe-container">
-      <h2>YOU OWE <span class="amount">MYR 40</span> IN TOTAL</h2>
-      <div class="individual-debt" v-for="(debt, index) in debtsYouOwe" :key="index">
-        <div class="initials">{{ debt.initials }}</div>
+      <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
+      <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
+        <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
         <div class="details">
-          <span class="name">You owe {{ debt.name }}</span>
-          <span class="amount">{{ debt.amount }}</span>
+          <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
+          <span class="amount"> {{this.trip.Currency}} {{ debt.amount }}</span>
         </div>
         <button class="clear-btn">Clear Debt</button>
       </div>
@@ -75,7 +75,7 @@
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default {
@@ -88,14 +88,10 @@ export default {
         Currency: "", 
         UID: ""
       },
-      debtsOwedToYou: [
-        { initials: "YA", name: "Yuki Ang", amount: "MYR 20" },
-        { initials: "VK", name: "Vanessa Koh", amount: "MYR 10" }
-      ],
-      debtsYouOwe: [
-        { initials: "HQ", name: "Hui Qian Khoo", amount: "MYR 10" },
-        { initials: "CT", name: "Calista Tan", amount: "MYR 30" }
-      ],
+      totalDebtOwedToYou: 0,
+      totalDebtYouOwe: 0, 
+      debtsOwedToYou: [],
+      debtsYouOwe: [],
       groupedExpenses: {
         '25/02/2024': [
           { id: 1, title: 'Dinner at Petaling Street Market', subtitle: 'Calista Tan paid MYR 100', amount: 'You borrowed MYR 30.00'},
@@ -114,6 +110,97 @@ export default {
     AddNewExpenseModal
   },
   methods: { 
+    sumUpDebts(debtArray) { 
+      var sum = 0; 
+      for (const debt of debtArray) { 
+        sum += debt.amount
+      }
+
+      return sum.toFixed(2);
+    },
+    async fetchExpensesData() {
+      // Fetch all the expenses logged for this trip
+      const tripRef = doc(db, "Trips", this.trip.UID);
+      const expensesRef = collection(tripRef, "Expenses");
+      const expensesSnapshot = await getDocs(expensesRef);
+      console.log(expensesSnapshot);
+
+      // Asynchronously process each expense date
+      for (const date of expensesSnapshot.docs) {
+        // Get the "Details" collection for each date
+        const detailsRef = collection(expensesRef, `${date.id}/Details`);
+        // Retrieve all the documents within the "Details" collection
+        const detailsSnapshot = await getDocs(detailsRef);
+        detailsSnapshot.forEach(expense => {
+          // Process each expense detail here
+          console.log(expense.id, '=>', expense.data());
+          // If you want to store these details, you could push them into a state variable, etc.
+        });
+      }
+    }, 
+    async fetchDebtData() { 
+      // lets fetch the debts that the user owes and the debts that others owe the user! 
+      const tripRef = doc(db, "Trips", this.trip.UID);
+      const debtsRef = collection(tripRef, "Debts");
+      const userDebtRef = doc(debtsRef, this.user.uid);
+
+      // debts that the user owes 
+      const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
+      const userOwesWhoSnapshot = await getDocs(userOwesWhoRef);
+      this.debtsYouOwe = [];
+      const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
+        const additionalDataRef = doc(db, "Users", document.id); 
+        const additionalDocSnapshot = await getDoc(additionalDataRef);
+
+        if (additionalDocSnapshot.exists()) { 
+          return { 
+            ...document.data(), 
+            UID: document.id, 
+            FirstName: additionalDocSnapshot.data().FirstName,
+            LastName: additionalDocSnapshot.data().LastName,
+            Username: additionalDocSnapshot.data().Username
+          }
+        } else { 
+          return { 
+            ...document.data(), 
+            UID: document.id
+          }
+        }
+      })
+
+      const debtsYouOwe = await Promise.all(userOwesWhoPromises);
+      this.debtsYouOwe = debtsYouOwe;
+      this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
+
+      // debts that other owe the user 
+      const whoOwesUserRef = collection(userDebtRef, "Who Owes User");
+      const whoOwesUserSnapshot = await getDocs(whoOwesUserRef);
+      this.debtsOwedToYou = [];
+      const whoOwesUserPromises = whoOwesUserSnapshot.docs.map(async (document) => { 
+        const additionalDataRef = doc(db, "Users", document.id); 
+        const additionalDocSnapshot = await getDoc(additionalDataRef);
+
+        if (additionalDocSnapshot.exists()) { 
+          return { 
+            ...document.data(), 
+            UID: document.id, 
+            FirstName: additionalDocSnapshot.data().FirstName,
+            LastName: additionalDocSnapshot.data().LastName,
+            Username: additionalDocSnapshot.data().Username
+          }
+        } else { 
+          return { 
+            ...document.data(), 
+            UID: document.id
+          }
+        }
+      })
+
+      const whoOwesYou = await Promise.all(whoOwesUserPromises);
+      this.debtsOwedToYou = whoOwesYou;
+      this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou)
+
+    }, 
     async fetchTripData() { 
       // fetch trip data based on tripID
       const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
@@ -130,10 +217,11 @@ export default {
   }, 
   mounted() {
     const auth = getAuth();
-    this.fetchTripData(); 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
+        await this.fetchTripData(); 
+        await this.fetchDebtData();
       }
     })
   }
