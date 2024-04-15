@@ -7,13 +7,15 @@
         <div class="header">
           <router-link :to="`/group/${tripID}/budgets`" class="budget-page-link">←</router-link>
           <h1>Edit Budget</h1>
-          <button class="save-button" @click="saveBudget">Save</button>
         </div>
         <div class="budget-fields">
           <div class="field" v-for="item in budget" :key="item.id">
             <label :for="`category-${item.category}`">{{ item.category }}: </label>
             <input type="number" :id="`category-${item.category}`" v-model.number="item.allocated" />
           </div>
+        </div>
+        <div class="save-button-container">
+          <button class="save-button" @click="saveBudget">Save</button>
         </div>
       </div>
     </div>
@@ -119,9 +121,8 @@ export default {
 h1 {
   color: white;
   font-size:x-large;
-  position: absolute;
-  top: 10px;
-  margin-left: 80px;
+  flex-grow: 1;
+  margin-top: 35px;
 }
 
 /* Centered card layout */
@@ -129,6 +130,7 @@ h1 {
   background: #307A8D; 
   border-radius: 15px;
   width: 700px; /* Adjust width as needed */
+  height: 450px;
   margin: 0 auto; /* Center the card horizontally */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
@@ -139,7 +141,14 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 30px;
+  padding: 20px;
   /* Style your header */
+}
+
+.save-button-container {
+  display: flex;
+  justify-content: flex-end; /* This aligns the button to the right */
 }
 
 .save-button {
@@ -147,11 +156,12 @@ h1 {
   color: black;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-weight: 500;
-  font-size: small;
-  border-radius: 10px;
-  width: 100px;
-  margin: 2cap;
-  margin-right: 2cap;
+  font-size: medium;
+  border-radius: 12px;
+  height: 35px;
+  width: 70px;
+  padding: 8px 10px;
+  margin-right: 3cap;
 }
 
 .save-button:hover {
@@ -164,7 +174,6 @@ h1 {
   font-weight: 1000;
   font-size:x-large;
   text-decoration: none;
-  margin-left: 2cap;
 }
 .budget-fields {
   display: flex;
@@ -172,16 +181,32 @@ h1 {
   font-family: Montserrat, sans-serif;
   font-weight: 700;
   color: white;
-  margin-left: 8cap;
+  margin-left: 12cap;
 }
 
 .field {
-  margin-bottom: 15px;
-  /* Style your fields */
+  display: flex;
+  align-items: center;
+  margin-bottom: 27px;
+}
+
+label {
+  width: 30%; /* Adjust label width as necessary */
+  min-width: 100px; /* Adjust min-width as needed for responsiveness */
+  margin-right: 25px; /* Space between label and input */
+  font-size: large;
 }
 
 input[type="number"] {
   font-family: Montserrat, sans-serif;
+  background-color: #489FB5;
+  border-radius: 5px; 
+  color: white;
+  border: none;
+  font-size: large;
+  padding: 2px;
+  padding-left: 8px;
+  font-weight: 600;
 }
 
 .success-message {
