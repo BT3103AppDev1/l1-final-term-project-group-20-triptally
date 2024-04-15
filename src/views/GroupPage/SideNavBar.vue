@@ -22,10 +22,6 @@
             <img src="@/assets/memberstab.png" alt="Members" class="nav-icon">
             <span>Members</span>
           </router-link>
-          <router-link :to="{ name: 'SettingsPage', params: { tripID: tripID } }" class="nav-item">
-            <img src="@/assets/settingstab.png" alt="Settings" class="nav-icon">
-            <span>Settings</span>
-          </router-link>
         </ul>
       </nav>
     </div>
