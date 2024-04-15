@@ -1,4 +1,5 @@
 <template>
+  <div class="container">
   <div class="login-card">
     <h1>Log In</h1>
     <form @submit.prevent="login">
@@ -7,6 +8,7 @@
       <router-link to="/forgot-password" class="forgot-password-link">Forgot Password?</router-link>
       <button type="button" @click="login">Let's Tally!</button>
     </form>
+  </div>
   </div>
 </template>
 
@@ -42,7 +44,7 @@ export default {
 
 <style scoped>
 /* Use a full-screen background image */
-body, html {
+.container {
   height: 100%;
   margin: 0;
   background: url('src/assets/singapore.jpg') no-repeat center center fixed;

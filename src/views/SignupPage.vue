@@ -1,4 +1,5 @@
 <template>
+  <div class="container">
   <div class="signup-card"> <!-- Apply .login-card class here -->
     <h1>Sign Up</h1>
     <form @submit.prevent="submitHandler">
@@ -31,8 +32,7 @@
       <button type="submit">Let's Tally!</button>
     </form>
   </div>
-
- 
+  </div>
 </template>
 
 <script setup> 
@@ -205,7 +205,7 @@ async function writeUserData(userID, email, username, currency, firstName, lastN
 </script>
 
 <style scoped> 
-body, html {
+.container {
   height: 100%;
   margin: 0;
   background: url('src/assets/singapore.jpg') no-repeat center center fixed;
