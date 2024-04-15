@@ -11,7 +11,10 @@
         <div class="budget-fields">
           <div class="field" v-for="item in budget" :key="item.id">
             <label :for="`category-${item.category}`">{{ item.category }}: </label>
-            <input type="number" :id="`category-${item.category}`" v-model.number="item.allocated" />
+            <div class="input-group">
+              <span class="currency-symbol">{{ currencySymbols[trip.Currency] }}</span>
+              <input type="number" :id="`category-${item.category}`" v-model.number="item.allocated" />
+            </div>
           </div>
         </div>
         <div class="save-button-container">
@@ -41,6 +44,22 @@ export default {
         Currency: "", 
         UID: ""
       },
+      currencySymbols: {
+        USD: "$",
+        JPY: "¥",
+        SGD: "S$",
+        AUD: "A$",
+        CAD: "C$",
+        CHF: "₣",
+        CNY: "¥",
+        EUR: "€",
+        GBP: "£",
+        KRW: "₩",
+        MYR: "RM",
+        NZD: "NZ$",
+        SEK: "kr",
+        // Add more currencies as needed
+      },
       budget: [], // Define budget as an array
     }
   },
@@ -68,7 +87,12 @@ export default {
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets"); // Ensure this uses the tripID correctly
       try {
         const querySnapshot = await getDocs(budgetsRef);
-        this.budget = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let fetchedBudgets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const order = ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodation', 'Miscellaneous'];
+        // Sort the fetched budgets according to the order array
+        this.budget = order.map(category => fetchedBudgets.find(item => item.category === category));
+
       } catch (error) {
         console.error("Error fetching budget items:", error);
       }
@@ -130,7 +154,7 @@ h1 {
   background: #307A8D; 
   border-radius: 15px;
   width: 700px; /* Adjust width as needed */
-  height: 450px;
+  height: 470px;
   margin: 0 auto; /* Center the card horizontally */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
@@ -195,6 +219,12 @@ label {
   min-width: 100px; /* Adjust min-width as needed for responsiveness */
   margin-right: 25px; /* Space between label and input */
   font-size: large;
+}
+
+.currency-symbol {
+  margin-right: 3px;
+  font-weight: 600;
+  font-size: 23px;
 }
 
 input[type="number"] {
