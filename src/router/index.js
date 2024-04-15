@@ -11,6 +11,7 @@ import MembersPage from '@/views/GroupPage/MembersPage/MembersPage.vue';
 //import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
 import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
+import AddNewExpenseModal from '@/views/GroupPage/AddNewExpenseModal.vue';
 
 const routes = [
     {
@@ -50,6 +51,12 @@ const routes = [
       path: '/group/:tripID', 
       name: 'GroupPage',
       component: GroupPage,
+      props: true
+    },
+    {
+      path: '/group/:tripID/add-expense', 
+      name: 'AddNewExpenseModal', 
+      component: AddNewExpenseModal, 
       props: true
     },
     {

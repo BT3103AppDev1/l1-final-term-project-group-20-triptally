@@ -1,18 +1,21 @@
 <template>
   <div class="app-container">
-  <SideNavBar :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
+  <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
   <div v-if="!showAddExpenseModal" class="main-container">
     <div class="debt-container">
     <!-- You Are Owed Section -->
     <div class="owed-container">
       <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
       <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
-        <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-        <div class="details">
-          <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-          <span class="amount">{{ this.trip.Currency }} {{ debt.amount.toFixed(2) }}</span>
+        <div class="debt-details" v-if="debt.totalAmount !== 0">
+          <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+          <div class="details">
+            <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
+            <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+          </div>
+          <button class="remind-btn">Remind</button>
         </div>
-        <button class="remind-btn">Remind</button>
+        <div v-else></div>
       </div>
     </div>
     
@@ -20,12 +23,15 @@
     <div class="owe-container">
       <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
       <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
-        <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-        <div class="details">
-          <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-          <span class="amount"> {{this.trip.Currency}} {{ debt.amount }}</span>
+        <div class="debt-details" v-if="debt.totalAmount !== 0">
+          <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+          <div class="details">
+            <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
+            <span class="amount"> {{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
+          </div>
+          <button class="clear-btn">Clear Debt</button>
         </div>
-        <button class="clear-btn">Clear Debt</button>
+        <div v-else></div>
       </div>
     </div>
   </div>
@@ -44,7 +50,7 @@
             <div class="expense-subtitle">{{ expense.subtitle }}</div>
           </div>
           <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
-            {{ expense.amount }}
+            {{ expense.sideDisplayText }}
           </div>
           <div class="expense-balance" v-if="expense.balance">
             {{ expense.balance }}
@@ -55,16 +61,16 @@
     <!-- Add Expense Button -->
     <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
     <div>
-      
+  
     </div>
     
   </div>
   
   </div>
-
   <div v-else>
-    <AddNewExpenseModal :tripID="trip.UID"></AddNewExpenseModal>
+    <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
   </div>
+
 </div>
 
 
@@ -75,7 +81,7 @@
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default {
@@ -93,14 +99,14 @@ export default {
       debtsOwedToYou: [],
       debtsYouOwe: [],
       groupedExpenses: {
-        '25/02/2024': [
-          { id: 1, title: 'Dinner at Petaling Street Market', subtitle: 'Calista Tan paid MYR 100', amount: 'You borrowed MYR 30.00'},
-          { id: 2, title: 'Clothes from thrift store', subtitle: 'You paid MYR 50', amount: 'No balance' }
-        ],
-        '24/02/2024': [
-          { id: 3, title: 'Karaoke', subtitle: 'Hui Qian Khoo paid MYR 50', amount: 'You borrowed MYR 10' },
-          { id: 4, title: 'Lunch by the river', subtitle: 'You paid MYR 100', amount: 'You lent MYR 80.00' }
-        ]
+        // '25/02/2024': [
+        //   { id: 1, title: 'Dinner at Petaling Street Market', subtitle: 'Calista Tan paid MYR 100', amount: 'You borrowed MYR 30.00'},
+        //   { id: 2, title: 'Clothes from thrift store', subtitle: 'You paid MYR 50', amount: 'No balance' }
+        // ],
+        // '24/02/2024': [
+        //   { id: 3, title: 'Karaoke', subtitle: 'Hui Qian Khoo paid MYR 50', amount: 'You borrowed MYR 10' },
+        //   { id: 4, title: 'Lunch by the river', subtitle: 'You paid MYR 100', amount: 'You lent MYR 80.00' }
+        // ]
       },
       showAddExpenseModal: false,
     };
@@ -109,11 +115,23 @@ export default {
     SideNavBar,
     AddNewExpenseModal
   },
-  methods: { 
+  watch: {
+    showAddExpenseModal(newVal, oldVal) {
+      // Check if the modal is being closed
+      if (oldVal === true && newVal === false) {
+        this.fetchDebtData();
+        this.fetchExpensesData();
+      }
+    }
+  },
+  methods: {
+    togglePage() { 
+      this.showAddExpenseModal = false
+    },
     sumUpDebts(debtArray) { 
       var sum = 0; 
       for (const debt of debtArray) { 
-        sum += debt.amount
+        sum += debt.totalAmount
       }
 
       return sum.toFixed(2);
@@ -122,22 +140,103 @@ export default {
       // Fetch all the expenses logged for this trip
       const tripRef = doc(db, "Trips", this.trip.UID);
       const expensesRef = collection(tripRef, "Expenses");
-      const expensesSnapshot = await getDocs(expensesRef);
-      console.log(expensesSnapshot);
 
-      // Asynchronously process each expense date
-      for (const date of expensesSnapshot.docs) {
-        // Get the "Details" collection for each date
-        const detailsRef = collection(expensesRef, `${date.id}/Details`);
-        // Retrieve all the documents within the "Details" collection
-        const detailsSnapshot = await getDocs(detailsRef);
-        detailsSnapshot.forEach(expense => {
-          // Process each expense detail here
-          console.log(expense.id, '=>', expense.data());
-          // If you want to store these details, you could push them into a state variable, etc.
-        });
-      }
+      // Create a query against the collection, ordering by the 'date' field in descending order
+      const q = query(expensesRef, orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      const userCache = {};
+
+      // Helper function to fetch user details
+      const fetchUserDetails = async (userId) => {
+        if (!userCache[userId]) {
+          const userRef = doc(db, "Users", userId);
+          const userSnap = await getDoc(userRef);
+          userCache[userId] = userSnap.exists() ? userSnap.data() : { firstName: "Unknown", lastName: "" };
+        }
+        return userCache[userId];
+      };
+
+      // Fetch user details for each expense and map them
+      const expenses = await Promise.all(querySnapshot.docs.map(async (doc) => {
+        const expenseData = doc.data();
+        var userDetails; 
+        if (expenseData.paidBy === this.user.uid) { 
+          userDetails = { 
+            FirstName: "You", 
+            LastName: ""
+          }
+        } else { 
+          userDetails = await fetchUserDetails(expenseData.paidBy);
+        }
+        return {
+          id: doc.id,
+          ...expenseData,
+          date: expenseData.date.toDate(),  // Convert Timestamp to JavaScript Date
+          paidByFirstName: userDetails.FirstName, 
+          paidByLastName: userDetails.LastName
+        };
+      }));
+
+      // this function will group the expenses according to their dates 
+      this.groupExpensesByDate(expenses);
+
+      // querySnapshot.forEach((doc) => {
+      //   console.log(`${doc.id} =>`,  doc.data());
+      // });
+
+
+    //   // each expense is now stored in one document, each under the "Expenses" collection 
+    //   const expensesSnapshot = await getDocs(expensesRef);
+    //   expensesSnapshot.forEach(doc => { 
+    //   console.log(doc.id, " => ", doc.data());
+    //  })
+
+     // order expenses by date, from most recent to least recent 
+
     }, 
+    async groupExpensesByDate(expenses) { 
+      const groupedExpenses = expenses.reduce((acc, expense) => {
+      // Format the date as 'dd/mm/yyyy'
+      const expenseDate = expense.date.toLocaleDateString('en-GB');  // Change locale as needed
+
+      // Initialize the array if this date hasn't been added to the accumulator
+      if (!acc[expenseDate]) {
+        acc[expenseDate] = [];
+      }
+
+      const amountEachUserOwes = (expense.amount / (expense.owedMembers.length + 1)).toFixed(2); 
+      console.log(expense.owedMembers);
+      var displayText; 
+
+      if (expense.owedMembers.indexOf(this.user.uid) > -1 ) { 
+        // this means that the user owes the money, so you must display ' you borrowed ....'
+        displayText = `You borrowed ${this.trip.Currency} ${amountEachUserOwes}`;
+
+      } else if (expense.paidBy === this.user.uid) { 
+        // this means that the user is the one that paid for the expense, so must display ' you lent ...' 
+        displayText = `You lent ${this.trip.Currency} ${(expense.amount - amountEachUserOwes).toFixed(2)}`;
+      } else { 
+        // this means that the user is neither the borrower nor the payer - user is not involved in the expense 
+        displayText = 'No balance';
+      }
+
+      // Push the current expense to the array for this date
+      acc[expenseDate].push({
+        id: expense.id,
+        title: expense.title,
+        category: expense.category,
+        subtitle: `${expense.paidByFirstName} ${expense.paidByLastName} paid ${expense.currency} ${(expense.amount).toFixed(2)}`,
+        sideDisplayText: displayText
+        // amount: expense.amount  // You might want to format or calculate the amount differently
+      });
+
+      return acc;
+      }, {});
+
+      // Update your component state or data object
+      this.groupedExpenses = groupedExpenses;
+      console.log(groupedExpenses);
+    },
     async fetchDebtData() { 
       // lets fetch the debts that the user owes and the debts that others owe the user! 
       const tripRef = doc(db, "Trips", this.trip.UID);
@@ -222,6 +321,7 @@ export default {
         this.user = user;
         await this.fetchTripData(); 
         await this.fetchDebtData();
+        await this.fetchExpensesData();
       }
     })
   }
@@ -294,6 +394,10 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.debt-details { 
+  width: 100%;
 }
 
 .initials {
