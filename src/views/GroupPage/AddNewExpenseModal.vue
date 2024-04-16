@@ -37,7 +37,7 @@
       </div>
     </div>
 
-    <button @click="addExpense">Add Expense!</button>
+    <button type="submit" @click="addExpense">Add Expense!</button>
 
     </div>
   </div>
@@ -179,12 +179,20 @@ export default {
               })
 
               const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
-              
-              await setDoc(oweUserDoc, { 
-                expenses: {[`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount)},
+              const docSnapshot = await getDoc(oweUserDoc);
+              const docData = docSnapshot.data();
+
+              let updates = {
+                expenses: { [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount) },
                 totalAmount: increment(amountOwed - paidMemberData.totalAmount),
-                currency: this.trip.Currency 
-              }, { merge: true });
+                currency: this.trip.Currency
+              };
+
+              if (!docData || docData.reminder === undefined) { 
+                updates.reminder = false;
+              }
+              
+              await setDoc(oweUserDoc, updates, { merge: true });
               console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`); 
 
               await setDoc(doc(paidMemberWhoOwesUserRef, memberID), { 
@@ -206,7 +214,7 @@ export default {
           await setDoc(oweUserDoc, { 
             expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
             totalAmount: increment(amountOwed),
-            currency: this.trip.Currency 
+            currency: this.trip.Currency,  
           }, { merge: true });
           console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`);
 
@@ -214,7 +222,7 @@ export default {
             expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
             totalAmount: increment(amountOwed),
             currency: this.trip.Currency, 
-
+            reminder: false
           }, { merge: true });
           console.log(`${this.expense.paidBy} has a debtor with memberID ${memberID} who owes him/her $${amountOwed}`);
 
@@ -275,6 +283,14 @@ export default {
           owedMembers: this.expense.owedMembers
         })
         console.log("Expense added successfully!");
+        this.expense.date = "";
+        this.expense.title = ""; 
+        this.expense.amount = ""; 
+        this.expense.paidBy = "";
+        this.expense.category = "";
+        this.expense.splitBetween = "";
+        this.expense.owedMembers =[]
+
       } catch (error) { 
         console.error("Error adding expense: " + error);
       }

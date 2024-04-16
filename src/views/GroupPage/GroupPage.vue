@@ -1,7 +1,12 @@
 <template>
   <div class="app-container">
   <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
-  <div v-if="!showAddExpenseModal" class="main-container">
+  <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
+    <div class="reminders" v-for="reminder in reminders">
+      <div class="reminder-msg">
+        <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount }}!</h1>
+      </div>
+    </div>
     <div class="debt-container">
     <!-- You Are Owed Section -->
     <div class="owed-container">
@@ -13,7 +18,7 @@
             <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
             <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
           </div>
-          <button class="remind-btn">Remind</button>
+          <button class="remind-btn" @click="remindUser(debt)">Remind</button>
         </div>
         <div v-else></div>
       </div>
@@ -29,7 +34,7 @@
             <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
             <span class="amount"> {{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
           </div>
-          <button class="clear-btn">Clear Debt</button>
+          <button class="clear-btn" @click="clearDebt">Clear Debt</button>
         </div>
         <div v-else></div>
       </div>
@@ -68,7 +73,12 @@
   
   </div>
   <div v-else>
-    <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
+    <div v-if="showClearDebtPage">
+      <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :tripID="trip.UID"/>
+    </div>
+    <div v-else>
+      <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
+    </div>
   </div>
 
 </div>
@@ -79,10 +89,13 @@
 
 <script>
 import SideNavBar from './SideNavBar.vue';
+import ClearDebtPage from './ClearDebtPage.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 export default {
   data() { 
@@ -94,10 +107,11 @@ export default {
         Currency: "", 
         UID: ""
       },
-      totalDebtOwedToYou: 0,
-      totalDebtYouOwe: 0, 
+      totalDebtOwedToYou: 0.00,
+      totalDebtYouOwe: 0.00, 
       debtsOwedToYou: [],
       debtsYouOwe: [],
+      reminders: [],
       groupedExpenses: {
         // '25/02/2024': [
         //   { id: 1, title: 'Dinner at Petaling Street Market', subtitle: 'Calista Tan paid MYR 100', amount: 'You borrowed MYR 30.00'},
@@ -109,11 +123,13 @@ export default {
         // ]
       },
       showAddExpenseModal: false,
+      showClearDebtPage: false
     };
   },
   components: {
     SideNavBar,
-    AddNewExpenseModal
+    AddNewExpenseModal,
+    ClearDebtPage
   },
   watch: {
     showAddExpenseModal(newVal, oldVal) {
@@ -126,7 +142,10 @@ export default {
   },
   methods: {
     togglePage() { 
-      this.showAddExpenseModal = false
+      this.showAddExpenseModal = false;
+    },
+    removeClearDebtPage() { 
+      this.showClearDebtPage = false;
     },
     sumUpDebts(debtArray) { 
       var sum = 0; 
@@ -179,20 +198,6 @@ export default {
 
       // this function will group the expenses according to their dates 
       this.groupExpensesByDate(expenses);
-
-      // querySnapshot.forEach((doc) => {
-      //   console.log(`${doc.id} =>`,  doc.data());
-      // });
-
-
-    //   // each expense is now stored in one document, each under the "Expenses" collection 
-    //   const expensesSnapshot = await getDocs(expensesRef);
-    //   expensesSnapshot.forEach(doc => { 
-    //   console.log(doc.id, " => ", doc.data());
-    //  })
-
-     // order expenses by date, from most recent to least recent 
-
     }, 
     async groupExpensesByDate(expenses) { 
       const groupedExpenses = expenses.reduce((acc, expense) => {
@@ -247,11 +252,28 @@ export default {
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
       const userOwesWhoSnapshot = await getDocs(userOwesWhoRef);
       this.debtsYouOwe = [];
+      this.reminders = [];
       const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
         const additionalDataRef = doc(db, "Users", document.id); 
         const additionalDocSnapshot = await getDoc(additionalDataRef);
 
         if (additionalDocSnapshot.exists()) { 
+
+          if (document.data().reminder && document.data().totalAmount > 0) { 
+            this.reminders.push({
+              totalAmount: document.data().totalAmount,
+              paidByID: document.id, 
+              ...additionalDocSnapshot.data()
+            })
+          }
+
+          // // check if reminder exists 
+          // if (document.data().reminder) { 
+          //   this.reminders.push({
+          //     totalAmount: document.data().totalAmount, 
+              
+          //   })
+          // } 
           return { 
             ...document.data(), 
             UID: document.id, 
@@ -277,7 +299,7 @@ export default {
       this.debtsOwedToYou = [];
       const whoOwesUserPromises = whoOwesUserSnapshot.docs.map(async (document) => { 
         const additionalDataRef = doc(db, "Users", document.id); 
-        const additionalDocSnapshot = await getDoc(additionalDataRef);
+        const additionalDocSnapshot = await getDoc(additionalDataRef);    
 
         if (additionalDocSnapshot.exists()) { 
           return { 
@@ -285,7 +307,7 @@ export default {
             UID: document.id, 
             FirstName: additionalDocSnapshot.data().FirstName,
             LastName: additionalDocSnapshot.data().LastName,
-            Username: additionalDocSnapshot.data().Username
+            Username: additionalDocSnapshot.data().Username, 
           }
         } else { 
           return { 
@@ -311,6 +333,36 @@ export default {
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
+    }, 
+    async remindUser(debt) { 
+      // we shall send a reminder so that the user will check their "User Owes Who" collection with this specific user's ID and it'll display how much user owes that user 
+      // we will add this as an attribute to the document 
+
+      const tripDocRef = doc(db, "Trips", this.$route.params.tripID);
+      console.log("tripdocref: " + tripDocRef);
+      const debtCollection = collection(tripDocRef, "Debts");
+      console.log("debtCollection: " + debtCollection);
+      const userDebtRef = doc(debtCollection, debt.UID); 
+      console.log(userDebtRef)
+      const userOwesWhoRef = collection(userDebtRef, "User Owes Who"); 
+      console.log("userOwesWhoRef: " + userOwesWhoRef);
+      const userOwesWhoDoc = doc(userOwesWhoRef, this.user.uid); 
+      console.log("userOwesWhoDoc: " + userOwesWhoDoc);
+
+      try { 
+        await updateDoc(userOwesWhoDoc, { 
+          reminder: true
+        })
+        console.log("Reminder successfully sent to owing member!")
+        // toast("Reminder successfully sent!", { 
+        //   autoClose: 2000,
+        // })
+      } catch (error) { 
+        console.error(error);
+      }
+    }, 
+    clearDebt() { 
+      this.showClearDebtPage = true;
     }
   }, 
   mounted() {
@@ -539,6 +591,17 @@ export default {
 
 .add-expense-btn:hover {
   background-color: #e6b800;
+}
+
+.reminder-msg { 
+  background-color: #16697A;
+  border-radius: 10px;
+  padding: 1;
+  
+}
+
+h1 { 
+  color: rgb(214, 160, 21);
 }
 
 </style>

@@ -6,7 +6,7 @@
           <li class="nav-trip">
             <span>{{ tripName }}</span>
           </li>
-          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID } }" class="nav-item">
+          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID }}" class="nav-item">
             <img src="@/assets/expensestab.png" alt="Expenses" class="nav-icon">
             <span>Expenses</span>
           </router-link>
@@ -65,7 +65,7 @@ export default {
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  height: 880px;
+  height: 895px;
 }
 
 .sidebar-content {
