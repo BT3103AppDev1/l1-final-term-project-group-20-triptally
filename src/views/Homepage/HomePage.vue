@@ -57,7 +57,7 @@
 </template>
  
  <script>
-import { doc, getDoc, collection, setDoc } from "firebase/firestore";
+import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewTripModal from './AddNewTripModal.vue'
 import { db, auth } from '@/firebase';
@@ -91,7 +91,7 @@ import { db, auth } from '@/firebase';
       trip.dropdownVisible = !trip.dropdownVisible;
       }
       this.trips.forEach(t => {
-        if (t.UID !== tripID) {
+        if (t.UID !== uid) {
           t.dropdownVisible = false;
         }
       });
@@ -114,11 +114,35 @@ import { db, auth } from '@/firebase';
       this.showEditTripNamePopup = false;
       this.selectedTrip = null; 
     },
-    leaveGroup(trip) {
+    async leaveGroup(trip) {
       //logic to leave group 
       console.log("leaving group:", trip.TripName);
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
+
+      // remove the user from the group trip's members array 
+      const tripDocRef = doc(db, "Trips", trip.UID);
+      try { 
+        await updateDoc(tripDocRef, { 
+          Members: arrayRemove(this.user.uid)
+        })
+        console.log("User removed from trip's members array");
+      } catch (error) { 
+        console.error(error);
+      }
+
+      // remove the tripID from the user's trips array 
+      const userDocRef = doc(db, "Users", this.user.uid);
+      try { 
+        await updateDoc(userDocRef, { 
+          GroupTrips: arrayRemove(trip.UID)
+        })
+        console.log("Trip removed from user's GroupTrips array");
+      } catch (error) { 
+        console.error(error);
+      }
+
+      await this.fetchUserData();
     },
     cancelLeaveGroup() {
       this.showLeaveGroupConfirmation = false;

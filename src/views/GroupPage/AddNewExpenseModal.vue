@@ -31,8 +31,8 @@
       <div class="split-between">
         <span>and split between</span>
         <select v-model="expense.splitBetween">
+          <!--Ideally user should be able to either select 'Everyone' or manually add members one by one - members involved in the expense will be added to this.expense.owedMembers -->
           <option value="Everyone">Everyone</option>
-          <!-- Add more options here for individual members or custom splits -->
         </select>
       </div>
     </div>
@@ -47,8 +47,6 @@
 import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import SideNavBar from './SideNavBar.vue';
-
 
 export default { 
   name: 'AddNewExpenseModal',
@@ -78,11 +76,9 @@ export default {
   props: { 
     tripID: String
   },
-  components: {
-    SideNavBar
-  },
   methods: { 
     returnToMainExpensesPage() { 
+      // this will be emitted to the parent component - aka GroupPage, which will then toggle back to the main expenses display
       this.$emit('returnToMainPage');
     },
     async fetchTripData() { 
@@ -116,6 +112,7 @@ export default {
       })
     },
     async updateDebts(expenseID) { 
+      // update debt details for all members involved in the expense - we need to update the WhoOwesUser collection for the payer, and the UserOwesWho collection for the person who owes the money 
 
       // for now user can only select "Everyone" to split between, cos i'm not too sure how to make the dropdown thingy such that different users can be selected (and more than 1 user) 
       if (this.expense.splitBetween === "Everyone") { 
@@ -129,12 +126,12 @@ export default {
         const owedMemberDocRef = doc(collection(tripRef, "Debts"), memberID); // this is the person that owes the payer money 
         const paidMemberDocRef = doc(collection(tripRef, "Debts"), this.expense.paidBy); // this is the person that has paid first 
 
-        // Now create/access the "Who Owes User" collection for the payee and the "User Owes Who" collection for the person that owes the payer money 
+        // Now create/access the "Who Owes User" collection for the payer and the "User Owes Who" collection for the person that owes the payer money 
         const paidMemberWhoOwesUserRef = collection(paidMemberDocRef, "Who Owes User"); // this is the payer's "Who Owes User" collection
         const paidMemberUserOwesWhoRef = collection(paidMemberDocRef, "User Owes Who"); // this is the payer's "User Owes Who" collection
         const owedMemberUserOwesWhoRef = collection(owedMemberDocRef, "User Owes Who"); // this is the ower's "User Owes Who" collection
         const owedMemberWhoOwesUserRef = collection(owedMemberDocRef, "Who Owes User");  // this is the ower's "Who Owes User" collection
-        const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by user 
+        const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
 
         // check whether the paid member currently owes this member any money - if yes, minus off from there
         const memberDocRef = doc(paidMemberUserOwesWhoRef, memberID); 
@@ -142,14 +139,19 @@ export default {
 
         if (memberDocSnapshot.exists()) { 
           // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
-          console.log("Paid member currently owes owed member money!")
 
           const paidMemberData = memberDocSnapshot.data();
           if (paidMemberData.totalAmount >= amountOwed) { 
             // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
             //  we will minus away amountOwed from paidMemberData.totalAmount 
             try { 
+              // update the "User Owes Who" collection for the paid member to reflect the updated total amount owed 
               await updateDoc(doc(paidMemberUserOwesWhoRef, memberID), { 
+                totalAmount: increment(-amountOwed)
+              })
+
+              // update the "Who Owes User" collection for the owing member, to reflect the updated total amount that the paid member still owes him/her
+              await updateDoc(doc(owedMemberWhoOwesUserRef, this.expense.paidBy), { 
                 totalAmount: increment(-amountOwed)
               })
             } catch (error) { 
@@ -165,28 +167,28 @@ export default {
               const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, memberID);
               const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
               await updateDoc(paidMemberUserOwesWhoDoc, { 
-                totalAmount: 0
+                totalAmount: 0, 
+                expenses: {}
               })
 
-              // delete all the expenses in here! 
-              await this.deleteAllFieldsWithWord(paidMemberUserOwesWhoDoc, "expenses");
-              await this.deleteAllFieldsWithWord(owedMemberWhoOwesUserDoc, "expenses");
+              // delete all the expenses in here!
               
               await updateDoc(owedMemberWhoOwesUserDoc, { 
-                totalAmount: 0
+                totalAmount: 0,
+                expenses: {}
               })
 
               const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
               
               await setDoc(oweUserDoc, { 
-                [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount),
+                expenses: {[`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount)},
                 totalAmount: increment(amountOwed - paidMemberData.totalAmount),
                 currency: this.trip.Currency 
               }, { merge: true });
               console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`); 
 
               await setDoc(doc(paidMemberWhoOwesUserRef, memberID), { 
-                [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount),
+                expenses: {[`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount)},
                 totalAmount: increment(amountOwed - paidMemberData.totalAmount),
                 currency: this.trip.Currency 
               }, { merge: true });
@@ -202,14 +204,14 @@ export default {
 
           try { 
           await setDoc(oweUserDoc, { 
-            [`expenses.${expenseID}`]: increment(amountOwed),
+            expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
             totalAmount: increment(amountOwed),
             currency: this.trip.Currency 
           }, { merge: true });
           console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`);
 
           await setDoc(userOwesDoc, { 
-            [`expenses.${expenseID}`]: increment(amountOwed),
+            expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
             totalAmount: increment(amountOwed),
             currency: this.trip.Currency, 
 
@@ -234,7 +236,10 @@ export default {
             for (const key in data) {
                 if (typeof data[key] === 'number' && key.includes(word)) {
                     // Prepare to delete the field
-                    updates[key] = deleteField();
+                    updates = {
+                      ...updates, 
+                      [key]: deleteField()
+                    };
                     shouldUpdate = true;
                 }
             }
@@ -273,28 +278,6 @@ export default {
       } catch (error) { 
         console.error("Error adding expense: " + error);
       }
-
-
-      // // Introduce a dummy document ID or meaningful document (e.g., the date as a document)
-      // const expenseDocRef = doc(collection(tripRef, "Expenses"), this.expense.date); // Use date as a document ID
-
-      // // Now create a collection under this document
-      // const specificExpenseRef = collection(dateDocRef, "Details");
-
-      // // Now add the expense details as a document within this new collection
-      // const expenseDetailRef = doc(specificExpenseRef); // Firestore generates a unique document ID
-      // try {
-      //   await setDoc(expenseDetailRef, {
-      //     title: this.expense.title,
-      //     amount: this.expense.amount,
-      //     paidBy: this.expense.paidBy,
-      //     category: this.expense.category,
-      //     currency: this.trip.Currency, 
-      //   });
-      //   console.log("Expense added successfully under date:", this.expense.date);
-      // } catch (error) {
-      //   console.error("Error adding expense:", error);
-      // }
     }
   }, 
   mounted() { 

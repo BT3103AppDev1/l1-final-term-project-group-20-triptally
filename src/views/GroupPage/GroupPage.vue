@@ -205,7 +205,7 @@ export default {
       }
 
       const amountEachUserOwes = (expense.amount / (expense.owedMembers.length + 1)).toFixed(2); 
-      console.log(expense.owedMembers);
+      //console.log(expense.owedMembers);
       var displayText; 
 
       if (expense.owedMembers.indexOf(this.user.uid) > -1 ) { 
@@ -271,7 +271,7 @@ export default {
       this.debtsYouOwe = debtsYouOwe;
       this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
 
-      // debts that other owe the user 
+      // debts that other members owe the user 
       const whoOwesUserRef = collection(userDebtRef, "Who Owes User");
       const whoOwesUserSnapshot = await getDocs(whoOwesUserRef);
       this.debtsOwedToYou = [];
@@ -298,7 +298,6 @@ export default {
       const whoOwesYou = await Promise.all(whoOwesUserPromises);
       this.debtsOwedToYou = whoOwesYou;
       this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou)
-
     }, 
     async fetchTripData() { 
       // fetch trip data based on tripID
