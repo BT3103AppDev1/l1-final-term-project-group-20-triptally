@@ -1,7 +1,10 @@
 <template>
   <div v-if="user" class="trip-container">
     <h1>My Trips</h1>
-    <div class="trip-grid">
+      <div v-if="trips.length === 0" class="no-trips-message">
+        No trips created yet. Start tallying by clicking the '+' button!
+        </div>
+      <div class="trip-grid">
       <!-- Trip Cards -->
       <router-link v-for="trip in trips" :key="trip.UID"
         :to="{ name: 'GroupPage', params: { tripID: trip.UID }}" custom v-slot="{ navigate }">
@@ -235,7 +238,12 @@ import { db, auth } from '@/firebase';
  </script>
   
   <style scoped>
-  
+
+  .no-trips-message {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
   .trip-container {
     padding: 20px;
     padding-bottom: 70px;
