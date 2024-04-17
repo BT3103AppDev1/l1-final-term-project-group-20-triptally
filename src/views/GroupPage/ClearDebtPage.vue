@@ -20,7 +20,7 @@
 <script>
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from '@/firebase'
-import { doc, getDoc, getDocs, collection, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, getDocs, collection, updateDoc, deleteDoc } from 'firebase/firestore'
 
 export default { 
   name: 'ClearDebtPage', 
@@ -72,6 +72,7 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
+      console.log("Just rendered - debts you owe: " + this.debtsYouOwe);
        
     },
     async payUp(debt) { 
@@ -79,21 +80,25 @@ export default {
       const tripRef = doc(db, "Trips", this.$route.params.tripID);
       const debtsRef = collection(tripRef, "Debts");
       const userDebtRef = doc(debtsRef, this.user.uid);
+      const payerDebtRef = doc(debtsRef, debt.UID); 
 
       // debts that the user owes 
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
       const userOwesDoc = doc(userOwesWhoRef, debt.UID);
 
+      // update the paid member's debts too! 
+      const whoOwesUserRef = collection(payerDebtRef, "Who Owes User"); 
+      const whoOwesUserDoc = doc(whoOwesUserRef, this.user.uid); 
+
       try { 
-        await updateDoc(userOwesDoc, { 
-          reminder: false, 
-          totalAmount: 0, 
-          expenses: {}
-        })
-        console.log("Debt settled")
-        const indexOf = this.debtsYouOwe.indexOf(debt);
-        this.debtsYouOwe = this.debtsYouOwe.splice(indexOf, 1);
-        console.log(this.debtsYouOwe);
+
+        // delete the debt
+
+        await deleteDoc(userOwesDoc); 
+        await deleteDoc(whoOwesUserDoc);
+
+        // refresh the debt data in GroupPage and ClearDebtPage 
+        await this.fetchDebtData();
         this.$emit('refreshDebtData');
       } catch (error) { 
         console.error(error);
@@ -140,6 +145,7 @@ h1 {
   margin-right: auto;
   padding: 10px;
   display: flex;
+  margin-bottom: 7px;
 }
 
 .payUpButton { 

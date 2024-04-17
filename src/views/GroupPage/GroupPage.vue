@@ -244,6 +244,7 @@ export default {
     },
     async fetchDebtData() { 
       // lets fetch the debts that the user owes and the debts that others owe the user! 
+      console.log("fetchDebtData called");
       const tripRef = doc(db, "Trips", this.trip.UID);
       const debtsRef = collection(tripRef, "Debts");
       const userDebtRef = doc(debtsRef, this.user.uid);
@@ -291,6 +292,7 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
+      console.log("User's debts: " + this.debtsYouOwe);
       this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
 
       // debts that other members owe the user 
