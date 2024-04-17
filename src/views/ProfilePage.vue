@@ -1,4 +1,5 @@
 <template>
+  <div class="main-container">
   <div v-if="user" class="profile-container">
     <div class="profile-content">
       <h1 class="profile-text">Profile</h1>
@@ -39,6 +40,7 @@
   </div>
   <div v-else>
     <h1 class="msg">You must be logged in to view this!</h1>
+  </div>
   </div>
 </template>
 
@@ -153,6 +155,13 @@ export default {
   text-align: center;
   color: #16697a;
   margin-bottom: 40px;
+}
+
+.main-container { 
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
 }
 
 .profile-container {

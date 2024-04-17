@@ -3,7 +3,7 @@
     <SideNavBar :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
     <div class="budget-page"> 
       <button class="edit-button" @click="editBudget">Edit</button>
-      <h1>Total Budget: ${{ totalBudget }}</h1>
+      <h1>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
       <div class="budget-categories">
         <div class="category-block" v-for="(item, index) in budget" :key="index">
           <div class="icon-and-category">
@@ -13,12 +13,12 @@
           <div class="progress-and-amount">
             <div class="progress-container">
               <div class="progress-bar" :style="{width: progressWidth(item), backgroundColor: getCategoryColor(item.category)}">
-                <span class="spent-amount">${{ item.used }}</span>
+                <span class="spent-amount">{{ currencySymbols[trip.Currency] }}{{ item.used }}</span>
               </div>
             </div>
             <div class="amount-info">
-              <div class="amount-allocated">${{ item.allocated }}</div>
-              <div class="amount-left">left ${{ item.allocated - item.used }}</div>
+              <div class="amount-allocated"> {{ currencySymbols[trip.Currency] }}{{ item.allocated }}</div>
+              <div class="amount-left">left {{ currencySymbols[trip.Currency] }}{{ item.allocated - item.used }}</div>
             </div>
           </div>
         </div>
@@ -44,6 +44,22 @@ export default {
         Members: [], 
         Currency: "", 
         UID: ""
+      },
+      currencySymbols: {
+        USD: "$",
+        JPY: "¥",
+        SGD: "S$",
+        AUD: "A$",
+        CAD: "C$",
+        CHF: "₣",
+        CNY: "¥",
+        EUR: "€",
+        GBP: "£",
+        KRW: "₩",
+        MYR: "RM",
+        NZD: "NZ$",
+        SEK: "kr",
+        // Add more currencies as needed
       },
       totalBudget: 0, // Example total budget
       budget: [], // Array to store budget items
@@ -104,7 +120,7 @@ export default {
         const querySnapshot = await getDocs(queryRef);
         this.budget = querySnapshot.docs.map(doc => doc.data());
         console.log("Budget items fetched successfully:", this.budget);
-        
+
         // Calculate the total budget
         this.totalBudget = this.budget.reduce((total, item) => total + item.allocated, 0);
 
