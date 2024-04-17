@@ -378,10 +378,20 @@ import { db, auth } from '@/firebase';
 
 .name-form {
   margin-bottom: 10px;
+  font-size: medium;
 }
 
 .name-form input {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
+  background-color: #489FB5;
+  border-radius: 5px; 
+  border: none;
+  padding-left: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  color: white;
+  font-size: medium;
+  width: 150px;
 }
 
 .name {
