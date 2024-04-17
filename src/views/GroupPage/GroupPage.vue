@@ -9,40 +9,44 @@
     </div>
     <div class="debt-container">
     <!-- You Are Owed Section -->
-    <div class="owed-container">
-      <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
-      <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
-        <div class="debt-details" v-if="debt.totalAmount !== 0">
-          <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-          <div class="details">
-            <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-            <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
-          </div>
-          <button class="remind-btn" @click="remindUser(debt)">Remind</button>
-        </div>
-        <div v-else></div>
+  <div class="owed-container">
+  <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
+  <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
+    <div class="debt-details" v-if="debt.totalAmount !== 0">
+      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+      <div class="details">
+        <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
+        <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+      </div>
+      <div class="action-buttons">
+        <button class="remind-btn" @click="remindUser(debt)">Remind</button>
       </div>
     </div>
+    <div v-else></div>
+  </div>
+</div>
     
     <!-- You Owe Section -->
     <div class="owe-container">
-      <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
-      <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
-        <div class="debt-details" v-if="debt.totalAmount !== 0">
-          <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-          <div class="details">
-            <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-            <span class="amount"> {{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
-          </div>
-          <button class="clear-btn" @click="clearDebt">Clear Debt</button>
-        </div>
-        <div v-else></div>
+  <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
+  <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
+    <div class="debt-details" v-if="debt.totalAmount !== 0">
+      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+      <div class="details">
+        <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
+        <span class="amount">{{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
       </div>
+      <div class="action-buttons">
+        <button class="clear-btn" @click="clearDebt">Clear Debt</button>
+      </div>
+    </div>
+    <div v-else></div>
+  </div>
     </div>
   </div>
 
-  <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
   <div class="expenses-list-container">
+    <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
     <div class="date-expense-group" v-for="(expenses, date) in groupedExpenses" :key="date">
       <div class="date">{{ date }}</div>
       <div class="expenses" v-for="expense in expenses" :key="expense.id">
@@ -384,7 +388,6 @@ export default {
 <style scoped>
 .app-container {
   display: flex;
-  height: 110vh; 
   align-items: center;
   background: url('@/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
@@ -395,9 +398,7 @@ export default {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
   align-items: center;
-  padding-top: 20px;
   overflow: hidden;
 }
 
@@ -412,7 +413,6 @@ export default {
 .owed-container,
 .owe-container {
   flex: 1;
-  min-width: 0; 
   padding: 1rem; 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
@@ -446,44 +446,53 @@ export default {
 .individual-debt {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 10px; 
+  margin-bottom: 10px; 
 }
 
-.debt-details { 
-  width: 100%;
-}
-
-.initials {
-  background: #ececec; 
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+.debt-details {
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-right: 10px;
-  font-weight: bold;
-}
-
-.details {
   flex-grow: 1;
 }
 
+.initials {
+  background-color: #CCCCCC; 
+  border-radius: 50%;
+  color: black; 
+  width: 40px; 
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px; 
+  font-weight: bold;
+  font-size: 1em; 
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .name {
-  display: block;
   font-size: 20px;
 }
 
 .amount {
-  display: block;
   font-weight: bold;
+  margin-left: 20px;
+  color: #d9534f;
+}
+
+.action-buttons {
+  margin-left: auto; /* Aligns the buttons to the right */
 }
 
 .remind-btn,
 .clear-btn {
-  border: none;
   padding: 10px;
-  width: 150px;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -505,14 +514,15 @@ export default {
   color: #d9534f; 
 }
 
+
 .expenses-list-container {
-  max-width: 600px;
   padding: 50px;
   background: #f8f9faac;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin: 20px auto; 
   height: 300px; 
+  width: 50rem;
   overflow-y: auto; 
 }
 
