@@ -51,7 +51,6 @@ import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
-
 export default {
   name: 'ProfileForm',
   data() {
@@ -92,15 +91,17 @@ export default {
           await updateDoc(docRef, {
             Username: this.enteredUsername
           });
+          
 
           // delete document in "Usernames" collection with original username 
           await deleteDoc(doc(db, "Usernames", this.profile.username)); 
+
+          this.profile.username = this.enteredUsername
           // create new document in "Usernames" collection with new username, setting UID as userID 
           await setDoc(doc(db, "Usernames", this.enteredUsername), { 
             UID: this.userID
           })
 
-          window.location.reload();
         } catch (error) {
           console.error("Error updating currency:", error);
         }
@@ -251,4 +252,5 @@ button:hover {
   text-align: left;
   margin-bottom: 2rem;
 }
+
 </style>
