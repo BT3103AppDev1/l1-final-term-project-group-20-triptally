@@ -104,15 +104,31 @@ import { db, auth } from '@/firebase';
       this.showEditTripNamePopup = true;
       this.selectedTrip = trip;
       this.newTripName = trip.TripName;
+      trip.dropdownVisible = false; 
+
     },
-    updateTripName() {
+    async updateTripName() {
       this.selectedTrip.TripName = this.newTripName;
       this.showEditTripNamePopup = false;
+
+      console.log(this.newTripName);
+
+      const tripDocRef = doc(db, "Trips", this.selectedTrip.UID);
+      try { 
+        await updateDoc(tripDocRef, { 
+          TripName: this.newTripName
+        })
+        console.log("Trip name changed to " + this.newTripName);
+      } catch (error) { 
+        console.log(error);
+      }
+
       this.selectedTrip = null; 
     },
     cancelEditTripName() {
-      this.showEditTripNamePopup = false;
+      this.selectedTrip.dropdownVisible = false;
       this.selectedTrip = null; 
+      this.showEditTripNamePopup = false;
     },
     async leaveGroup(trip) {
       //logic to leave group 
@@ -323,7 +339,7 @@ import { db, auth } from '@/firebase';
   transform: translate(-50%, -50%);
   width: 300px;
   height:150px;
-  padding: 15px;
+  padding: 30px;
   background-color: white;
   border-radius: 10px;
   text-align: center;
@@ -379,9 +395,9 @@ import { db, auth } from '@/firebase';
   transform: translate(-50%, -50%);
   width: 300px;
   height:150px;
-  padding: 15px;
+  padding: 30px;
   background-color: #16697A;
-  border-radius: 10px;
+  border-radius: 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -406,6 +422,9 @@ import { db, auth } from '@/firebase';
 
 .name-form input {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
+  border-radius: 10px;
+  border: none;
+  padding: 6px;
 }
 
 .name {
@@ -443,6 +462,7 @@ import { db, auth } from '@/firebase';
   cursor: pointer;
   padding-bottom: 5px;
 }
+
 .cancel-edit {
   color: white;
   cursor: pointer;

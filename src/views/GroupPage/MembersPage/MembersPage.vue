@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar v-if="user" :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
     <div class="main-content" v-if="user">
       <!-- Group Members Section -->
       <div class="group-members-section">
@@ -44,7 +44,6 @@
         </div>
       </div>
     </div>
-    <h1 v-else>You must be logged in to view this!</h1>
 
     <!-- DeleteMember Modal -->
     <delete-member
@@ -234,13 +233,23 @@ async handleAddMember() {
       await this.fetchUserData(); 
       if (this.userExists) {
         if (this.trip.Members.includes(this.uniqueID) && this.inTrip) {
-          console.log('User is already part of the trip:', usernameTemp);
+          alert('User is already part of the trip!');
           this.errorMessage = 'The user is already part of this trip';//in the same page, it keeps adding the same user
         } else {
           console.log('Adding new member:', usernameTemp);
           const tripRef = doc(db, "Trips", this.$route.params.tripID);
-          const updatedMembers = [...this.trip.Members, this.uniqueID];
-          await updateDoc(tripRef, { Members: updatedMembers });
+          this.trip.Members = [...this.trip.Members, this.uniqueID];
+
+          // add new member to the Members array in the trip document 
+          await updateDoc(tripRef, { 
+            Members: arrayUnion(this.uniqueID)
+          })
+
+          // add the trip ID to the member's GroupTrips array in the user's document 
+          const userRef = doc(db, "Users", this.uniqueID);
+          await updateDoc(userRef, { 
+            GroupTrips: arrayUnion(this.trip.UID)
+          })
           
           const memberDocRef = doc(db, 'Users', this.uniqueID);
           const memberDocSnap = await getDoc(memberDocRef);
@@ -252,10 +261,9 @@ async handleAddMember() {
               email: memberData.Email });
 
           this.inTrip = true;
-          window.location.reload();
         }
       } else {
-        console.log('User does not exist:', usernameTemp);
+        alert('User does not exist');
         this.errorMessage = 'There is no user with this username';
       }
     } catch (error) {

@@ -89,6 +89,7 @@ button {
   margin: 0 auto; /* Center within flex container */
   display: block; /* Ensure they're treated as block-level for margin auto to work */
   font-weight: 600;
+  cursor: pointer;
 }
 
 input[type="email"] {
