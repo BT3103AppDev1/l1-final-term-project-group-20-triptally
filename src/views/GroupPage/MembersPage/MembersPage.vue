@@ -26,7 +26,7 @@
         <!-- Group Members List -->
         <div class="group-members-list">
           <!-- Group Member Item -->
-          <div class="group-member" v-for="member in members" :key="member.initials">
+          <div class="group-member" v-for="member in Members" :key="member.initials">
             <div class="member-initials">{{ member.initials }}</div>
             <div class="member-info">
               <div class="member-name">{{ member.name }}</div>
@@ -47,7 +47,9 @@
 
     <!-- DeleteMember Modal -->
     <delete-member
+    
       v-if="showDeleteMemberModal"
+      :tripName="trip.TripName"
       :isVisible="showDeleteMemberModal"
       :member="selectedMemberToDelete"
       @update:isVisible="showDeleteMemberModal = $event"
@@ -62,7 +64,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import deleteIcon from '@/assets/delete-minus-btn.png';
 import addMemberIcon from '@/assets/add-member.png';
 import DeleteMember from './DeleteMember.vue';
-import { doc, getDoc, getDocs, updateDoc, getFirestore } from 'firebase/firestore';
+import { doc, getDoc, getDocs, updateDoc, getFirestore, arrayRemove, arrayUnion} from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default {
@@ -81,43 +83,27 @@ export default {
       },
       deleteIcon: deleteIcon,
       addMemberIcon: addMemberIcon,
-      Members: [
-      { initials: 'YA', username: 'Yuki Ang', email: 'yukiang@gmail.com' },
-        { initials: 'VK', username: 'Vanessa Koh', email: 'vankoh@gmail.com' },
-        { initials: 'HQ', username: 'Hui Qian Khoo', email: 'huiqian@yahoo.com' },
-        { initials: 'CT', username: 'Calista Tan', email: 'calistatan@gmail.com' },
-        { initials: 'PP', username: 'Petrine Pang', email: 'petrinepang@gmail.com' },
-      ],
+      Members: [],
       showAddNewMemberInput: false,
-      newMemberUsername: '',
+      newMemberUsername: "",
       showDeleteMemberModal: false,
       selectedMemberToDelete: null,
     };
-  },
-  async mounted() {
-    const auth = getAuth();
-    await this.fetchTripData();
-    await this.fetchMembers();
-    onAuthStateChanged(auth, (user) => {
-      this.user = user ? user : null;
-    });
-    
   },
   methods: {
   async fetchMembers() {
     try {
       console.log("trying to fetch members")
-      const db = getFirestore(); 
       const tripRef = doc(db, 'Trips', this.$route.params.tripID); 
       const tripDocSnap = await getDoc(tripRef); 
       
       if (tripDocSnap.exists()) {
         const tripData = tripDocSnap.data();
         console.log('Trip data:', tripData);
-        const membersArray = tripData.Members;
-        console.log('Members array:', membersArray);
+        this.Members = tripData.Members; 
+        console.log('Members array:', this.Members);
 
-        const memberPromises = membersArray.map(async memberId => {
+        const memberPromises = this.Members.map(async memberId => {
           const memberDocRef = doc(db, 'Users', memberId);
           const memberDocSnap = await getDoc(memberDocRef);
           if (memberDocSnap.exists()) {
@@ -126,7 +112,8 @@ export default {
             const memberObject = {
               initials: memberData.FirstName[0] + memberData.LastName[0],
               username: memberData.Username,
-              email: memberData.Email
+              email: memberData.Email, 
+              UID:  memberId
             };
             console.log("this user exists:", memberObject)
             return memberObject;
@@ -135,50 +122,13 @@ export default {
             return null;
           }
         });
-        const members = await Promise.all(memberPromises);
-        this.members = members.filter(member => member !== null);
-      
+        this.Members = await Promise.all(memberPromises);
+
       } else {
         console.error('Trip document does not exist');
       }
     } catch (error) {
       console.error('Error fetching members:', error);
-    }
-  },
-  async fetchUserData() {
-    const usernameTemp = this.newMemberUsername.trim();
-    const tripID = this.$route.params.tripID;
-    try {
-      const userDocRef = doc(db, 'Usernames', usernameTemp);
-      const userDocSnap = await getDoc(userDocRef);
-      
-      if (!userDocSnap.exists()) {
-        this.userExists = false;
-        this.inTrip = false;
-        return;
-      }
-
-      this.uniqueID = userDocSnap.data().UID;
-      const tripDocRef = doc(db, 'Trips', tripID);
-      const tripDocSnap = await getDoc(tripDocRef);
-      if (!tripDocSnap.exists()) {
-        this.inTrip = false;
-        return;
-      }
-      const tripData = tripDocSnap.data();
-      if (tripData.Members && tripData.Members.includes(this.uniqueID)) {
-          this.inTrip = true; 
-      } else {
-        console.log('Members:', tripData.Members);
-        console.log("Unique ID:", this.uniqueID)
-          this.inTrip = false;
-      }
-      this.userExists = true;
-
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      this.userExists = false;
-      this.inTrip = false;
     }
   },
   openDeleteMemberModal(member) {
@@ -190,86 +140,98 @@ export default {
     this.showDeleteMemberModal = false;
   },
   async handleDeleteConfirmation(member) {
-  try {
-    console.log("currently deleting:", member);
+    try {
+    // remove tripID from the user's GroupTrips array 
+    const userDocRef = doc(db, "Users", member.UID); 
     
-    const delUsername = member.username;
-    console.log("Deleting member with Username:", delUsername);
+    await updateDoc(userDocRef, { 
+      GroupTrips: arrayRemove(this.trip.UID)
+    })
 
-    const index = this.members.findIndex(m => m.username == delUsername);
-    console.log("Index of member to delete:", index);
+    console.log("Trip ID removed from user's GroupTrips array");
 
-    if (index !== -1) {
-      const delRef = doc(db, "Usernames", delUsername);
-      const delDocSnap = await getDoc(delRef);
-      const delM = delDocSnap.data();
-      const delID = delM.UID;
+    // remove userID from trip's Members array 
+    const tripDocRef = doc(db, "Trips", this.trip.UID); 
+    
+    await updateDoc(tripDocRef, { 
+      Members: arrayRemove(member.UID)
+    })
+    
+    console.log("User ID removed from group trip's Members array")
 
-      this.members.splice(index, 1);
+    // update data within the MembersPage component so that no re-render is required, and members are updated immediately on the screen
+    const newMembers = this.Members.filter(m => m.username !== member.username); 
+    this.Members = newMembers; 
 
-      const tripRef = doc(db, "Trips", this.$route.params.tripID);
-      console.log("Original Members array:", this.trip.Members);
-
-      const updatedMembers = this.trip.Members.filter(m => m !== delID);
-      console.log("Updated Members array:", updatedMembers);
-
-      await updateDoc(tripRef, { Members: updatedMembers });
-      console.log('Member removed from trip:', delUsername);
-      this.inTrip = false;
-    } else {
-      console.error('Member not found in members array:', delUsername);
-    }
+    const newTripMembers = this.trip.Members.filter(m => m !== member.UID); 
+    this.trip.Members = newTripMembers;
+    
   } catch (error) {
     console.error('Error removing member from trip:', error);
   }
   console.log('Member deleted:', member);
-  window.location.reload();
   this.closeDeleteMemberModal();
 },
 async handleAddMember() {
   if (this.newMemberUsername.trim()) {
     const usernameTemp = this.newMemberUsername.trim();  
-    try {
-      await this.fetchUserData(); 
-      if (this.userExists) {
-        if (this.trip.Members.includes(this.uniqueID) && this.inTrip) {
-          alert('User is already part of the trip!');
-          this.errorMessage = 'The user is already part of this trip';//in the same page, it keeps adding the same user
-        } else {
-          console.log('Adding new member:', usernameTemp);
-          const tripRef = doc(db, "Trips", this.$route.params.tripID);
-          this.trip.Members = [...this.trip.Members, this.uniqueID];
 
-          // add new member to the Members array in the trip document 
-          await updateDoc(tripRef, { 
-            Members: arrayUnion(this.uniqueID)
+    const tripID = this.$route.params.tripID;
+    try {
+      // check if this username exists 
+      const usernameDocRef = doc(db, 'Usernames', usernameTemp);
+      const usernameDocSnap = await getDoc(usernameDocRef);
+      
+      if (usernameDocSnap.exists()) { 
+        console.log(usernameDocSnap.data().UID);
+        // username exists, now fetch user data and check if it is already in the group 
+        // check if user is in group already 
+        if (this.trip.Members.includes(usernameDocSnap.data().UID)) { 
+          // user is in this group already! 
+          alert("This user is already in the group!")
+        } else { 
+          // can add user to the group
+          // fetch user data first 
+          const userDocRef = doc(db, 'Users', usernameDocSnap.data().UID); 
+          const userDocSnap = await getDoc(userDocRef); 
+          const memberData = userDocSnap.data();
+
+          this.trip.Members.push(usernameDocSnap.data().UID);
+
+          this.Members.push( { 
+            initials: memberData.FirstName[0] + memberData.LastName[0],
+            username: memberData.Username,
+            email: memberData.Email, 
+            UID:  usernameDocSnap.data().UID
           })
 
-          // add the trip ID to the member's GroupTrips array in the user's document 
-          const userRef = doc(db, "Users", this.uniqueID);
-          await updateDoc(userRef, { 
+          // add the trip ID to the user's GroupTrips array 
+          await updateDoc(userDocRef, { 
             GroupTrips: arrayUnion(this.trip.UID)
           })
+
+          // add the userID to the trip's Members array 
+          const tripDocRef = doc(db, "Trips", this.trip.UID); 
           
-          const memberDocRef = doc(db, 'Users', this.uniqueID);
-          const memberDocSnap = await getDoc(memberDocRef);
-          const memberData = memberDocSnap.data();
+          await updateDoc(tripDocRef, { 
+            Members: arrayUnion(usernameDocSnap.data().UID)
+          })
 
-          this.Members.push({ 
-              initials: memberData.FirstName[0] + memberData.LastName[0],
-              username: usernameTemp,
-              email: memberData.Email });
-
-          this.inTrip = true;
+          console.log("User added"); 
+          console.log(this.Members); 
+          console.log(this.trip.Members);
         }
-      } else {
-        alert('User does not exist');
-        this.errorMessage = 'There is no user with this username';
+        this.newMemberUsername = "";
+        
+      } else { 
+        // username does not exist. 
+        alert("Username does not exist");
       }
-    } catch (error) {
-      console.error('Error handling user addition:', error);
+
+    } catch (error) { 
+      console.error(error);
     }
-  }
+  } 
 },
 async fetchTripData() {
   const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
@@ -289,7 +251,19 @@ async fetchTripData() {
   }
 }
 
-}};
+}, 
+mounted() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.user = user;
+        await this.fetchTripData();
+        await this.fetchMembers();
+      }
+    })
+  },
+
+};
 
 </script>
 
