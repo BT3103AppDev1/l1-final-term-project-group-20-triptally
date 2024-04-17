@@ -47,7 +47,7 @@
       <span>+</span>
     </button>
 
-    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
+    <AddNewTripModal @refresh-trips="fetchUserTrips(newTripID)" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
     <div v-else>
       <h1>
@@ -57,7 +57,7 @@
 </template>
  
  <script>
-import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, getDocs } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewTripModal from './AddNewTripModal.vue'
 import { db, auth } from '@/firebase';
@@ -185,48 +185,64 @@ import { db, auth } from '@/firebase';
       }
     },
     async fetchUserData() {
-      const user = auth.currentUser;
-      console.log(user);
-      this.userID = user.uid; 
-      if (user) {
-        const docRef = doc(db, "Users", this.userID);
-        try {
-          const userDoc = await getDoc(docRef);
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            this.trips = [];
+  
+      const docRef = doc(db, "Users", this.user.uid);
+      try {
+        const userDoc = await getDoc(docRef);
+        if (userDoc.exists()) {
+          const groupTrips = userDoc.data().GroupTrips;
+          console.log(groupTrips);
 
-            for (const tripID of userData.GroupTrips) {
-              const tripDocRef = doc(db, "Trips", tripID);
-              try {
-                const docSnap = await getDoc(tripDocRef);
-                this.trips.push({ 
-                  Currency: docSnap.data().Currency, 
-                  Members: docSnap.data().Members, 
-                  TripName: docSnap.data().TripName,
-                  UID: tripID 
-                });
-              } catch (error) {
-                console.error("Error retrieving trip ", error);
-              }
-            }
-          } else {
-            console.error("User document does not exist.");
+          // Firestore limits the 'in' query to a maximum of 10 elements in the array
+          const maxQuerySize = 10;
+          const tripCollections = collection(db, "Trips");
+          this.trips = [];
+
+          // If you have more than 10 trip IDs, you need to split them into chunks of 10
+          for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
+            const chunk = groupTrips.slice(i, i + maxQuerySize);
+            const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
+            const querySnapshot = await getDocs(tripsQuery);
+            
+            querySnapshot.forEach(docSnapshot => {
+              this.trips.push({ 
+                Currency: docSnapshot.data().Currency, 
+                Members: docSnapshot.data().Members, 
+                TripName: docSnapshot.data().TripName,
+                UID: docSnapshot.id 
+              });
+            });
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+
+          // for (const tripID of userData.GroupTrips) {
+          //   const tripDocRef = doc(db, "Trips", tripID);
+          //   try {
+          //     const docSnap = await getDoc(tripDocRef);
+          //     this.trips.push({ 
+          //       Currency: docSnap.data().Currency, 
+          //       Members: docSnap.data().Members, 
+          //       TripName: docSnap.data().TripName,
+          //       UID: tripID 
+          //     });
+          //   } catch (error) {
+          //     console.error("Error retrieving trip ", error);
+          //   }
+          // }
+        } else {
+          console.error("User document does not exist.");
         }
-      } else {
-        console.error("No user is currently authenticated.");
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
-    }
-   },
+      }
+    },
   mounted() {
-    this.fetchUserData(); 
+  
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
+        this.fetchUserData(); 
       }
     })
   }, 
