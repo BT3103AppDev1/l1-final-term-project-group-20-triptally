@@ -302,7 +302,6 @@ export default {
     async addExpense() {
       // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
       const tripRef = doc(db, "Trips", this.trip.UID);
-
       const expenseDocRef = doc(collection(tripRef, "Expenses")); 
       const expenseID = expenseDocRef.id; 
       await this.updateDebts(expenseID); 
@@ -319,6 +318,14 @@ export default {
           owedMembers: this.expense.owedMembers
         })
         console.log("Expense added successfully!");
+
+        // Update the used amount in the corresponding budget category
+        const budgetCategoryRef = doc(db, "Trips", this.trip.UID, "Budgets", this.expense.category);
+        await updateDoc(budgetCategoryRef, {
+          used: increment(Number(this.expense.amount)),
+        });
+
+        // Reset the form fields
         this.expense.date = "";
         this.expense.title = ""; 
         this.expense.amount = ""; 

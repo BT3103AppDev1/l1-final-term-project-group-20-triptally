@@ -1,11 +1,10 @@
 <template>
   <div class="app-container">
-    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
-    <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
-      <div class="reminders" v-for="reminder in reminders">
-        <div class="reminder-msg">
-          <img src="@/assets/reminder-icon.png" alt="Reminder Icon" class="reminder-icon">
-          <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount.toFixed(2) }}!</h1>
+  <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
+  <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
+    <div class="reminders" v-for="reminder in reminders">
+      <div class="reminder-msg">
+        <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount }}!</h1>
       </div>
     </div>
       <div class="debt-container">
@@ -140,6 +139,22 @@ export default {
         //   { id: 3, title: 'Karaoke', subtitle: 'Hui Qian Khoo paid MYR 50', amount: 'You borrowed MYR 10' },
         //   { id: 4, title: 'Lunch by the river', subtitle: 'You paid MYR 100', amount: 'You lent MYR 80.00' }
         // ]
+      },
+      currencySymbols: {
+        USD: "$",
+        JPY: "¥",
+        SGD: "S$",
+        AUD: "A$",
+        CAD: "C$",
+        CHF: "₣",
+        CNY: "¥",
+        EUR: "€",
+        GBP: "£",
+        KRW: "₩",
+        MYR: "RM",
+        NZD: "NZ$",
+        SEK: "kr",
+        // Add more currencies as needed
       },
       showAddExpenseModal: false,
       showClearDebtPage: false,
@@ -408,6 +423,7 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
+        console.log(this.$route.query.tripName);
         await this.fetchTripData(); 
         await this.fetchDebtData();
         await this.fetchExpensesData();

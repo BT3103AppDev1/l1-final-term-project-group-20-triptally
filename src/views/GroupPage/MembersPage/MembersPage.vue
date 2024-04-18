@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+    <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
     <div class="main-content" v-if="user">
       <!-- Group Members Section -->
       <div class="group-members-section">

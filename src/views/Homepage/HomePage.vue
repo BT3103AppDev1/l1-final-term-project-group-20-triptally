@@ -7,7 +7,7 @@
       <div class="trip-grid">
       <!-- Trip Cards -->
       <router-link v-for="trip in trips" :key="trip.UID"
-        :to="{ name: 'GroupPage', params: { tripID: trip.UID }}" custom v-slot="{ navigate }">
+        :to="{ name: 'GroupPage', query: { tripName: trip.TripName }, params: { tripID: trip.UID }}" custom v-slot="{ navigate }">
         <div class="trip-card" @click="navigate">
           <!-- Settings Page -->
           <div class="settings" @click.stop="toggleDropdown(trip.UID)">

@@ -158,7 +158,7 @@ export default {
           { category: 'Shopping', allocated: 0, used: 0, order: 2 },
           { category: 'Transport', allocated: 0, used: 0, order: 3 },
           { category: 'Entertainment', allocated: 0, used: 0, order: 4 },
-          { category: 'Accommodation', allocated: 0, used: 0, order: 5 },
+          { category: 'Accommodations', allocated: 0, used: 0, order: 5 },
           { category: 'Miscellaneous', allocated: 0, used: 0, order: 6 },
         ];
 
