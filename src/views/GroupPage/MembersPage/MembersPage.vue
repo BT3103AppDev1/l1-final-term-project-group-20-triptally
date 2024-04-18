@@ -278,8 +278,8 @@ mounted() {
 }
 
 .main-content {
-  padding: 100px;
-  width: 100%;
+  margin: auto; 
+  margin-top: 100px;
 }
 
 .group-members-section {
@@ -288,6 +288,7 @@ mounted() {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
+  width: 1000px;
 }
 
 .group-members-header {
