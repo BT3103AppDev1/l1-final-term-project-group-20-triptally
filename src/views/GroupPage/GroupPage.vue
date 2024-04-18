@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-  <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+  <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
   <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
     <div class="reminders" v-for="reminder in reminders">
       <div class="reminder-msg">
@@ -392,6 +392,7 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
+        console.log(this.$route.query.tripName);
         await this.fetchTripData(); 
         await this.fetchDebtData();
         await this.fetchExpensesData();

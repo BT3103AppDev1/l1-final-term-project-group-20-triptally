@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
+    <SideNavBar :tripID="$route.params.tripID" :tripName="$route.query.tripName"></SideNavBar>
     <div class="budget-page"> 
       <button class="edit-button" @click="editBudget">Edit</button>
       <h1>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
