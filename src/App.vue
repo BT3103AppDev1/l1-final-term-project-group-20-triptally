@@ -1,51 +1,58 @@
 <template>
   <div id="app">
-    <TopNavBar v-if="user"/>
-    <NavBar v-else />
+    <!-- Show NavBar if on specific routes that do not require authentication -->
+    <NavBar v-if="shouldShowNavBar"/>
+    <!-- Otherwise, show TopNavBar if user is logged in -->
+    <TopNavBar v-else-if="user"/>
+    <router-view></router-view>
   </div>
-  <router-view></router-view>
 </template>
 
 <script>
-import { useRoute } from 'vue-router';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import NavBar from '@/components/NavBar.vue';
 import TopNavBar from './components/topnavbar.vue';
-import { doc, getDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: 'App',
-  data() { 
-    return { 
-      user: null, 
-    }
-  },
   components: {
     NavBar,
     TopNavBar,
   },
-  setup() {
-    const route = useRoute();
-    return { route };
-  }, 
+  data() { 
+    return { 
+      user: null,
+      authChecked: false,
+    }
+  },
+  computed: {
+  // Returns true for routes that should show the pre-login NavBar
+  shouldShowNavBar() {
+    const isNonAuthRoute = ['LoginPage', 'ForgotPassword', 'SignupPage'].includes(this.$route.name);
+    console.log(`Route name: ${this.$route.name}, Should show NavBar: ${isNonAuthRoute}`);
+    return isNonAuthRoute;
+  },
+},
   mounted() {
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // If there's a user, set the user data
-        this.user = user;
-        console.log("User logged in:", user); 
-      } else {
-        // If there's no user, set user to null
-        this.user = null;
-        console.log("No user logged in");
-      }
+      this.user = user;
+      this.authChecked = true; // Indicates that auth state has been checked
     });
   }
 };
 </script>
 
+
 <style>
+.app {
+  height: 100%;
+  margin: 0;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
+}
+
 @font-face {
   font-family: 'MontserratRegular';
   src: url('~@/assets/fonts/Montserrat-Regular.ttf') format('truetype');

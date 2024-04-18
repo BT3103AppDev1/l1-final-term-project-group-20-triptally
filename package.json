@@ -16,7 +16,8 @@
     "vue": "^3.4.21",
     "vue-multiselect": "^2.1.9",
     "vue-resource": "^1.5.3",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue3-toastify": "^0.2.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

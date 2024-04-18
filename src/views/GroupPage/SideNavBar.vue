@@ -6,7 +6,7 @@
           <li class="nav-trip">
             <span>{{ tripName }}</span>
           </li>
-          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID } }" class="nav-item">
+          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID }}" class="nav-item">
             <img src="@/assets/expensestab.png" alt="Expenses" class="nav-icon">
             <span>Expenses</span>
           </router-link>
@@ -21,10 +21,6 @@
           <router-link :to="{ name: 'MembersPage', params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/memberstab.png" alt="Members" class="nav-icon">
             <span>Members</span>
-          </router-link>
-          <router-link :to="{ name: 'SettingsPage', params: { tripID: tripID } }" class="nav-item">
-            <img src="@/assets/settingstab.png" alt="Settings" class="nav-icon">
-            <span>Settings</span>
           </router-link>
         </ul>
       </nav>
@@ -69,7 +65,7 @@ export default {
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 895px;
 }
 
 .sidebar-content {

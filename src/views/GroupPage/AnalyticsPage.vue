@@ -1,5 +1,5 @@
 <template>
-  <!-- <div class="main-container"> -->
+  <div class="main-container">
   <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
   <div v-if="user">
     <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
@@ -20,8 +20,8 @@
       <div class="spending">
         <h3>Spending This Trip</h3>
       </div>
-    </div>
-  </div> -->
+    </div> --->
+  </div>
   <!-- </div> -->
 </template>
 
@@ -107,7 +107,11 @@ export default {
 
 <style scoped>
 .main-container { 
-  display:flex;
+  display: flex;
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
 }
 
 .content-container {
