@@ -196,41 +196,42 @@ import { db, auth } from '@/firebase';
           const groupTrips = userDoc.data().GroupTrips;
           console.log(groupTrips);
 
-          // Firestore limits the 'in' query to a maximum of 10 elements in the array
-          const maxQuerySize = 10;
-          const tripCollections = collection(db, "Trips");
-          this.trips = [];
+          // // Firestore limits the 'in' query to a maximum of 10 elements in the array
+          // const maxQuerySize = 10;
+          // const tripCollections = collection(db, "Trips");
+          // this.trips = [];
 
-          // If you have more than 10 trip IDs, you need to split them into chunks of 10
-          for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
-            const chunk = groupTrips.slice(i, i + maxQuerySize);
-            const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
-            const querySnapshot = await getDocs(tripsQuery);
+          // // If you have more than 10 trip IDs, you need to split them into chunks of 10
+          // for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
+          //   const chunk = groupTrips.slice(i, i + maxQuerySize);
+          //   const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
+          //   const querySnapshot = await getDocs(tripsQuery);
             
-            querySnapshot.forEach(docSnapshot => {
+          //   querySnapshot.forEach(docSnapshot => {
+          //     this.trips.push({ 
+          //       Currency: docSnapshot.data().Currency, 
+          //       Members: docSnapshot.data().Members, 
+          //       TripName: docSnapshot.data().TripName,
+          //       UID: docSnapshot.id 
+          //     });
+          //   });
+          // }
+
+          for (const tripID of userDoc.data().GroupTrips) {
+            const tripDocRef = doc(db, "Trips", tripID);
+            try {
+              const docSnap = await getDoc(tripDocRef);
               this.trips.push({ 
-                Currency: docSnapshot.data().Currency, 
-                Members: docSnapshot.data().Members, 
-                TripName: docSnapshot.data().TripName,
-                UID: docSnapshot.id 
+                Currency: docSnap.data().Currency, 
+                Members: docSnap.data().Members, 
+                TripName: docSnap.data().TripName,
+                UID: tripID 
               });
-            });
+            } catch (error) {
+              console.error("Error retrieving trip ", error);
+            }
           }
 
-          // for (const tripID of userData.GroupTrips) {
-          //   const tripDocRef = doc(db, "Trips", tripID);
-          //   try {
-          //     const docSnap = await getDoc(tripDocRef);
-          //     this.trips.push({ 
-          //       Currency: docSnap.data().Currency, 
-          //       Members: docSnap.data().Members, 
-          //       TripName: docSnap.data().TripName,
-          //       UID: tripID 
-          //     });
-          //   } catch (error) {
-          //     console.error("Error retrieving trip ", error);
-          //   }
-          // }
         } else {
           console.error("User document does not exist.");
         }
