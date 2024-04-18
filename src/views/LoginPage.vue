@@ -71,6 +71,7 @@ export default {
 
 button { 
   cursor: pointer; 
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 
 /* Input styling */

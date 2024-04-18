@@ -1,93 +1,107 @@
 <template>
   <div class="app-container">
-  <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
-  <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
-    <div class="reminders" v-for="reminder in reminders">
-      <div class="reminder-msg">
-        <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount }}!</h1>
+    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+    <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
+      <div class="reminders" v-for="reminder in reminders">
+        <div class="reminder-msg">
+          <img src="@/assets/reminder-icon.png" alt="Reminder Icon" class="reminder-icon">
+          <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount.toFixed(2) }}!</h1>
       </div>
     </div>
-    <div class="debt-container">
-    <!-- You Are Owed Section -->
-  <div class="owed-container">
-  <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
-  <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
-    <div class="debt-details" v-if="debt.totalAmount !== 0">
-      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-      <div class="details">
-        <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-        <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
-      </div>
-      <div class="action-buttons">
-        <button class="remind-btn" @click="remindUser(debt)">Remind</button>
-      </div>
-    </div>
-    <div v-else></div>
-  </div>
-</div>
-    
-    <!-- You Owe Section -->
-    <div class="owe-container">
-  <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
-  <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
-    <div class="debt-details" v-if="debt.totalAmount !== 0">
-      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-      <div class="details">
-        <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-        <span class="amount">{{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
-      </div>
-      <div class="action-buttons">
-        <button class="clear-btn" @click="clearDebt">Clear Debt</button>
-      </div>
-    </div>
-    <div v-else></div>
-  </div>
-    </div>
-  </div>
-
-  <div class="expenses-list-container">
-    <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
-    <div class="date-expense-group" v-for="(expenses, date) in groupedExpenses" :key="date">
-      <div class="date">{{ date }}</div>
-      <div class="expenses" v-for="expense in expenses" :key="expense.id">
-        <div class="expense-item">
-          <div class="expense-icon">
-            <!-- icon placeholder -->
+      <div class="debt-container">
+        <!-- You Are Owed Section -->
+        <div class="owed-container">
+          <h2>YOU ARE OWED <span class="amount">{{ trip.Currency }} {{ totalDebtOwedToYou }}</span> IN TOTAL</h2>
+          <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
+            <div class="debt-details" v-if="debt.totalAmount !== 0">
+              <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+              <div class="details">
+                <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
+                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="remind-btn" @click="remindUser(debt)">Remind</button>
+              </div>
+            </div>
+            <div v-else></div>
           </div>
-          <div class="expense-details">
-            <div class="expense-title">{{ expense.title }}</div>
-            <div class="expense-subtitle">{{ expense.subtitle }}</div>
-          </div>
-          <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
-            {{ expense.sideDisplayText }}
-          </div>
-          <div class="expense-balance" v-if="expense.balance">
-            {{ expense.balance }}
+        </div>
+        <!-- You Owe Section -->
+        <div class="owe-container">
+          <h2>YOU OWE <span class="amount">{{ trip.Currency }} {{ totalDebtYouOwe }}</span> IN TOTAL</h2>
+          <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
+            <div class="debt-details" v-if="debt.totalAmount !== 0">
+              <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+              <div class="details">
+                <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
+                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="clear-btn" @click="clearDebt">Clear Debt</button>
+              </div>
+            </div>
+            <div v-else></div>
           </div>
         </div>
       </div>
+      <div class="expenses-list-container">
+        <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
+        <div v-if="Object.keys(groupedExpenses).length === 0" class="no-expense-msg">
+          No expense added yet. Start tallying by clicking the '+' button!
+        </div>
+        <div v-else>
+          <div class="date-expense-group" v-for="(expenses, date) in groupedExpenses" :key="date">
+            <div class="date">{{ date }}</div>
+            <div class="expenses" v-for="expense in expenses" :key="expense.id">
+              <div class="expense-item">
+                <div class="expense-icon">
+                  <span v-if="expense.category === 'Food'">🍽️</span>
+                <span v-else-if="expense.category === 'Shopping'">🛍️</span>
+                <span v-else-if="expense.category === 'Transport'">🚌</span>
+                <span v-else-if="expense.category === 'Entertainment'">🎭</span>
+                <span v-else-if="expense.category === 'Accommodation'">🏨</span>
+                <span v-else>📦</span> 
+                </div>
+                <div class="expense-details">
+                  <div class="expense-title">{{ expense.title }}</div>
+                  <div class="expense-subtitle">{{ expense.subtitle }}</div>
+                </div>
+                <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
+                  {{ expense.sideDisplayText }}
+                </div>
+                <div class="expense-balance" v-if="expense.balance">
+                  {{ expense.balance }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Add Expense Button -->
+        <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
+      </div>
+      <!-- Reminder Confirmation Popup -->
+    <div v-if="showReminderConfirmation && selectedUser" class="confirmation-popup">
+      <div class="confirmation-content">
+        <p class="reminder-confirmation">
+          Are you sure you want to send a reminder to
+          {{ selectedUser.FirstName }} {{ selectedUser.LastName }}?
+        </p>
+        <div class="confirmation-buttons">
+          <button class="confirm-button" @click="sendReminder(selectedUser)">Remind</button>
+          <button class="cancel-button" @click="cancelReminder">Cancel</button>
+        </div>
+      </div>
     </div>
-    <!-- Add Expense Button -->
-    <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
-    <div>
-  
-    </div>
-    
-  </div>
-  
-  </div>
-  <div v-else>
-    <div v-if="showClearDebtPage">
-      <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :tripID="trip.UID"/>
     </div>
     <div v-else>
-      <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
+      <div v-if="showClearDebtPage">
+        <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :tripID="trip.UID"/>
+      </div>
+      <div v-else>
+        <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
+      </div>
     </div>
   </div>
-
-</div>
-
-
 </template>
 
 
@@ -100,6 +114,7 @@ import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc } from 'fir
 import { db } from '@/firebase';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import ReminderIcon from '@/assets/reminder-icon.png';
 
 export default {
   data() { 
@@ -127,7 +142,9 @@ export default {
         // ]
       },
       showAddExpenseModal: false,
-      showClearDebtPage: false
+      showClearDebtPage: false,
+      showReminderConfirmation: false,
+      selectedUser: null,
     };
   },
   components: {
@@ -369,6 +386,21 @@ export default {
     }, 
     clearDebt() { 
       this.showClearDebtPage = true;
+    },
+    remindUser(debt) {
+      this.selectedUser = debt;
+      this.showReminderConfirmation = true;
+    },
+    sendReminder(user) {
+      // Logic to send a reminder to the user
+      this.showReminderConfirmation = false;
+      this.selectedUser = null;
+      // Show success message
+      toast("Reminder sent successfully!", { autoClose: 2000 });
+    },
+    cancelReminder() {
+      this.showReminderConfirmation = false;
+      this.selectedUser = null;
     }
   }, 
   mounted() {
@@ -399,31 +431,33 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
 }
 
 .debt-container {
-  width: calc(100% - 100px); 
+  width: 100%;
   display: flex;
   justify-content: space-between; 
-  margin-top: 20px;
   margin-bottom: 20px;
+  margin-right: 40px;
+  margin-left: 20px;
 }
 
 .owed-container,
 .owe-container {
   flex: 1;
-  padding: 1rem; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2rem; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.902);
   border-radius: 10px;
-  background: #ffffff;
+  background: #fef7ee;
   overflow: hidden; 
   margin-left: 20px;
+  justify-content: space-between; 
+  display: flex;
+  flex-direction: column;
 }
 
 .owed-container h2,
 .owe-container h2 {
-  white-space: nowrap; 
   text-align: center;
 }
 
@@ -446,7 +480,6 @@ export default {
 .individual-debt {
   display: flex;
   align-items: center;
-  padding: 10px; 
   margin-bottom: 10px; 
 }
 
@@ -472,28 +505,19 @@ export default {
 
 .details {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.name {
-  font-size: 20px;
-}
-
-.amount {
-  font-weight: bold;
-  margin-left: 20px;
-  color: #d9534f;
+  font-size: 15px;
 }
 
 .action-buttons {
-  margin-left: auto; /* Aligns the buttons to the right */
+  margin-left: auto; 
 }
 
 .remind-btn,
 .clear-btn {
   padding: 10px;
   border-radius: 10px;
+  width: 150px;
   cursor: pointer;
 }
 
@@ -503,10 +527,18 @@ export default {
   font-family: 'Montserrat', sans-serif;
 }
 
+.remind-btn:hover {
+  background-color: #f7bd6a;
+}
+
 .clear-btn {
   background: #5eaac7; 
   color: white;
   font-family: 'Montserrat', sans-serif;
+}
+
+.clear-btn:hover {
+  background-color: #87cbe6;
 }
 
 .amount {
@@ -514,6 +546,10 @@ export default {
   color: #d9534f; 
 }
 
+.no-expense-msg {
+  font-size: 20px;
+  font-style: italic;
+}
 
 .expenses-list-container {
   padding: 50px;
@@ -521,8 +557,8 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin: 20px auto; 
-  height: 300px; 
-  width: 50rem;
+  height: 400px; 
+  width: 70rem;
   overflow-y: auto; 
 }
 
@@ -606,14 +642,69 @@ export default {
 }
 
 .reminder-msg { 
-  background-color: #16697A;
-  border-radius: 10px;
-  padding: 1;
-  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #16697A; 
+  border-radius: 30px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  margin: 10px; 
+  font-family: 'Montserrat', sans-serif; 
+  font-size: 0.8em;
+  margin-bottom: 20px;
+}
+
+.reminder-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
 }
 
 h1 { 
-  color: rgb(214, 160, 21);
+  color: #facf21;
+  margin: auto;
 }
 
+.confirmation-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height:150px;
+  padding: 30px;
+  background-color: white;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 10;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.confirm-button, .cancel-button {
+  font-weight: 500;
+  font-size: 15px;
+  background-color: white;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+}
+
+.confirm-button {
+  color: rgb(189, 1, 1);
+  cursor: pointer;
+}
+.cancel-button {
+  color: black;
+  cursor: pointer;
+}
+
+.confirm-button:hover, .cancel-button:hover {
+  background-color: #f2f2f2; 
+}
 </style>
