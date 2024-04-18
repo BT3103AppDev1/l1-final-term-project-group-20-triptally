@@ -50,7 +50,7 @@
       <span>+</span>
     </button>
 
-    <AddNewTripModal @refresh-trips="fetchUserTrips(newTripID)" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
+    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
     <div v-else>
       <h1>
@@ -161,7 +161,9 @@ import { db, auth } from '@/firebase';
         console.error(error);
       }
 
-      await this.fetchUserData();
+      // update this.trips to reflect the updated group trips that user is in 
+      const updatedTrips = this.trips.filter(t => t.UID !== trip.UID); 
+      this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
       this.showLeaveGroupConfirmation = false;
@@ -183,6 +185,7 @@ import { db, auth } from '@/firebase';
           UID: newTripID,
           dropdownVisible: false,
         })
+        console.log(newTripID + " added to user's group trips");
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -195,6 +198,7 @@ import { db, auth } from '@/firebase';
         if (userDoc.exists()) {
           const groupTrips = userDoc.data().GroupTrips;
           console.log(groupTrips);
+          this.trips = [];
 
           // // Firestore limits the 'in' query to a maximum of 10 elements in the array
           // const maxQuerySize = 10;
