@@ -7,75 +7,74 @@
         <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount }}!</h1>
       </div>
     </div>
-    <div class="debt-container">
-    <!-- You Are Owed Section -->
-  <div class="owed-container">
-  <h2>YOU ARE OWED <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
-  <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
-    <div class="debt-details" v-if="debt.totalAmount !== 0">
-      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-      <div class="details">
-        <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-        <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ debt.totalAmount.toFixed(2) }}</span>
-      </div>
-      <div class="action-buttons">
-        <button class="remind-btn" @click="remindUser(debt)">Remind</button>
-      </div>
-    </div>
-    <div v-else></div>
-  </div>
-</div>
-    
-    <!-- You Owe Section -->
-    <div class="owe-container">
-  <h2>YOU OWE <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
-  <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
-    <div class="debt-details" v-if="debt.totalAmount !== 0">
-      <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
-      <div class="details">
-        <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-        <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ debt.totalAmount.toFixed(2) }}</span>
-      </div>
-      <div class="action-buttons">
-        <button class="clear-btn" @click="clearDebt">Clear Debt</button>
-      </div>
-    </div>
-    <div v-else></div>
-  </div>
-    </div>
-  </div>
-  <div class="expenses-list-container">
-    <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
-    <div v-if="Object.keys(groupedExpenses).length === 0" class="no-expense-msg">
-      No expense added yet. Start tallying by clicking the '+' button!
-    </div>
-    <div v-else>
-      <div class="date-expense-group" v-for="(expenses, date) in groupedExpenses" :key="date">
-        <div class="date">{{ date }}</div>
-        <div class="expenses" v-for="expense in expenses" :key="expense.id">
-          <div class="expense-item">
-            <div class="expense-icon">
-              <span v-if="expense.category === 'Food'">🍽️</span>
-            <span v-else-if="expense.category === 'Shopping'">🛍️</span>
-            <span v-else-if="expense.category === 'Transport'">🚌</span>
-            <span v-else-if="expense.category === 'Entertainment'">🎭</span>
-            <span v-else-if="expense.category === 'Accommodation'">🏨</span>
-            <span v-else>📦</span> 
+      <div class="debt-container">
+        <!-- You Are Owed Section -->
+        <div class="owed-container">
+          <h2>YOU ARE OWED <span class="amount">{{ trip.Currency }} {{ totalDebtOwedToYou }}</span> IN TOTAL</h2>
+          <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
+            <div class="debt-details" v-if="debt.totalAmount !== 0">
+              <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+              <div class="details">
+                <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
+                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="remind-btn" @click="showReminderPopup(debt)">Remind</button>
+              </div>
             </div>
-            <div class="expense-details">
-              <div class="expense-title">{{ expense.title }}</div>
-              <div class="expense-subtitle">{{ expense.subtitle }}</div>
+            <div v-else></div>
+          </div>
+        </div>
+        <!-- You Owe Section -->
+        <div class="owe-container">
+          <h2>YOU OWE <span class="amount">{{ trip.Currency }} {{ totalDebtYouOwe }}</span> IN TOTAL</h2>
+          <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
+            <div class="debt-details" v-if="debt.totalAmount !== 0">
+              <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
+              <div class="details">
+                <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
+                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="clear-btn" @click="clearDebt">Clear Debt</button>
+              </div>
             </div>
-            <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
-              {{ expense.sideDisplayText }}
-            </div>
-            <div class="expense-balance" v-if="expense.balance">
-              {{ expense.balance }}
-            </div>
+            <div v-else></div>
           </div>
         </div>
       </div>
-    </div>
+      <div class="expenses-list-container">
+        <h2 class="expense-list-heading">LIST OF EXPENSES</h2>
+        <div v-if="Object.keys(groupedExpenses).length === 0" class="no-expense-msg">
+          No expense added yet. Start tallying by clicking the '+' button!
+        </div>
+        <div v-else>
+          <div class="date-expense-group" v-for="(expenses, date) in groupedExpenses" :key="date">
+            <div class="date">{{ date }}</div>
+            <div class="expenses" v-for="expense in expenses" :key="expense.id">
+              <div class="expense-item">
+                <div class="expense-icon">
+                  <span v-if="expense.category === 'Food'">🍽️</span>
+                <span v-else-if="expense.category === 'Shopping'">🛍️</span>
+                <span v-else-if="expense.category === 'Transport'">🚌</span>
+                <span v-else-if="expense.category === 'Entertainment'">🎭</span>
+                <span v-else-if="expense.category === 'Accommodation'">🏨</span>
+                <span v-else>📦</span> 
+                </div>
+                <div class="expense-details">
+                  <div class="expense-title">{{ expense.title }}</div>
+                  <div class="expense-subtitle">{{ expense.subtitle }}</div>
+                </div>
+                <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
+                  {{ expense.sideDisplayText }}
+                </div>
+                <div class="expense-balance" v-if="expense.balance">
+                  {{ expense.balance }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Add Expense Button -->
         <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
       </div>
@@ -87,7 +86,7 @@
           {{ selectedUser.FirstName }} {{ selectedUser.LastName }}?
         </p>
         <div class="confirmation-buttons">
-          <button class="confirm-button" @click="sendReminder(selectedUser)">Remind</button>
+          <button class="confirm-button" @click="remindUser(selectedUser)">Remind</button>
           <button class="cancel-button" @click="cancelReminder">Cancel</button>
         </div>
       </div>
@@ -373,6 +372,10 @@ export default {
         console.error("Error fetching user data:", error);
       }
     }, 
+    showReminderPopup(debt) { 
+      this.showReminderConfirmation = true;
+      this.selectedUser = debt;
+    },
     async remindUser(debt) { 
       // we shall send a reminder so that the user will check their "User Owes Who" collection with this specific user's ID and it'll display how much user owes that user 
       // we will add this as an attribute to the document 
@@ -382,17 +385,24 @@ export default {
       const debtCollection = collection(tripDocRef, "Debts");
       console.log("debtCollection: " + debtCollection);
       const userDebtRef = doc(debtCollection, debt.UID); 
-      console.log(userDebtRef)
+      console.log(userDebtRef);
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who"); 
       console.log("userOwesWhoRef: " + userOwesWhoRef);
       const userOwesWhoDoc = doc(userOwesWhoRef, this.user.uid); 
       console.log("userOwesWhoDoc: " + userOwesWhoDoc);
+      this.showReminderConfirmation = true;
 
       try { 
         await updateDoc(userOwesWhoDoc, { 
           reminder: true
         })
         console.log("Reminder successfully sent to owing member!")
+
+        this.showReminderConfirmation = false;
+        this.selectedUser = null;
+        // Show success message
+        toast("Reminder sent successfully!", { autoClose: 2000 });
+
         // toast("Reminder successfully sent!", { 
         //   autoClose: 2000,
         // })
@@ -402,17 +412,6 @@ export default {
     }, 
     clearDebt() { 
       this.showClearDebtPage = true;
-    },
-    remindUser(debt) {
-      this.selectedUser = debt;
-      this.showReminderConfirmation = true;
-    },
-    sendReminder(user) {
-      // Logic to send a reminder to the user
-      this.showReminderConfirmation = false;
-      this.selectedUser = null;
-      // Show success message
-      toast("Reminder sent successfully!", { autoClose: 2000 });
     },
     cancelReminder() {
       this.showReminderConfirmation = false;
