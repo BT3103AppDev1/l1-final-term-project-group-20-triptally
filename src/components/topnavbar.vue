@@ -212,29 +212,23 @@ export default {
   }
 
   .logoutbutton, .cancelbutton {
-    font-weight: 300;
-    font-size: 15px;
-    display: flex; /* Enables flexbox */
-    justify-content: center; /* Centers content horizontally */
-    align-items: center; /* Centers content vertically */
-    padding: 15px 24px;
-    height: 35px;
-    width: 320px;
-    background-color: white;
-    border-radius: 0%;
-    font-family: 'MontserratRegular', Montserrat, sans-serif;
-  }
-
-  .logoutbutton {
-    color: rgb(189, 1, 1);
-    cursor: pointer;
-  }
-  .cancelbutton {
-    color: black;
-    cursor: pointer;
-  }
-
-  .logoutbutton:hover, .cancelbutton:hover {
-    background-color: #f2f2f2; /* Light grey background on hover */
+  font-weight: 500;
+  font-size: 15px;
+  background-color: white;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
+
+.logoutbutton {
+  color: rgb(189, 1, 1);
+  cursor: pointer;
+}
+.cancelbutton {
+  color: black;
+  cursor: pointer;
+}
+
+.logoutbutton:hover, .cancelbutton:hover {
+  background-color: #f2f2f2; 
+}
+
 </style>

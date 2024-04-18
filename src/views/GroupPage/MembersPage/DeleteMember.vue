@@ -16,8 +16,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="confirm-btn" @click="confirmDelete">Yes</button>
-        <button class="cancel-btn" @click="closeModal">No</button>
+        <button class="confirm-button" @click="confirmDelete">Yes</button>
+        <button class="cancel-button" @click="closeModal">No</button>
       </div>
     </div>
   </div>
@@ -120,28 +120,23 @@ export default {
   margin-top: 30px;
 }
 
-.confirm-btn,
-.cancel-btn {
-  border: none;
-  padding: 10px 20px;
-  margin: 0 10px;
-  border-radius: 5px;
+.confirm-button, .cancel-button {
+  font-weight: 500;
+  font-size: 15px;
+  background-color: white;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+}
+
+.confirm-button {
+  color: rgb(189, 1, 1);
   cursor: pointer;
-  margin-left: 30px;
+}
+.cancel-button {
+  color: black;
+  cursor: pointer;
 }
 
-.confirm-btn {
-  background-color: #4CAF50;
-  color: white;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.cancel-btn {
-  background-color: #f44336;
-  color: white;
-  border-radius: 10px;
-  font-family: 'Montserrat', sans-serif;
+.confirm-button:hover, .cancel-button:hover {
+  background-color: #f2f2f2; 
 }
 </style>
