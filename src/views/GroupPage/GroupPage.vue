@@ -20,7 +20,7 @@
                 <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
               </div>
               <div class="action-buttons">
-                <button class="remind-btn" @click="remindUser(debt)">Remind</button>
+                <button class="remind-btn" @click="showReminderPopup(debt)">Remind</button>
               </div>
             </div>
             <div v-else></div>
@@ -87,7 +87,7 @@
           {{ selectedUser.FirstName }} {{ selectedUser.LastName }}?
         </p>
         <div class="confirmation-buttons">
-          <button class="confirm-button" @click="sendReminder(selectedUser)">Remind</button>
+          <button class="confirm-button" @click="remindUser(selectedUser)">Remind</button>
           <button class="cancel-button" @click="cancelReminder">Cancel</button>
         </div>
       </div>
@@ -357,6 +357,10 @@ export default {
         console.error("Error fetching user data:", error);
       }
     }, 
+    showReminderPopup(debt) { 
+      this.showReminderConfirmation = true;
+      this.selectedUser = debt;
+    },
     async remindUser(debt) { 
       // we shall send a reminder so that the user will check their "User Owes Who" collection with this specific user's ID and it'll display how much user owes that user 
       // we will add this as an attribute to the document 
@@ -366,17 +370,24 @@ export default {
       const debtCollection = collection(tripDocRef, "Debts");
       console.log("debtCollection: " + debtCollection);
       const userDebtRef = doc(debtCollection, debt.UID); 
-      console.log(userDebtRef)
+      console.log(userDebtRef);
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who"); 
       console.log("userOwesWhoRef: " + userOwesWhoRef);
       const userOwesWhoDoc = doc(userOwesWhoRef, this.user.uid); 
       console.log("userOwesWhoDoc: " + userOwesWhoDoc);
+      this.showReminderConfirmation = true;
 
       try { 
         await updateDoc(userOwesWhoDoc, { 
           reminder: true
         })
         console.log("Reminder successfully sent to owing member!")
+
+        this.showReminderConfirmation = false;
+        this.selectedUser = null;
+        // Show success message
+        toast("Reminder sent successfully!", { autoClose: 2000 });
+
         // toast("Reminder successfully sent!", { 
         //   autoClose: 2000,
         // })
@@ -386,17 +397,6 @@ export default {
     }, 
     clearDebt() { 
       this.showClearDebtPage = true;
-    },
-    remindUser(debt) {
-      this.selectedUser = debt;
-      this.showReminderConfirmation = true;
-    },
-    sendReminder(user) {
-      // Logic to send a reminder to the user
-      this.showReminderConfirmation = false;
-      this.selectedUser = null;
-      // Show success message
-      toast("Reminder sent successfully!", { autoClose: 2000 });
     },
     cancelReminder() {
       this.showReminderConfirmation = false;
