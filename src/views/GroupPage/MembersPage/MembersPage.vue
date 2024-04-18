@@ -113,6 +113,7 @@ export default {
               initials: memberData.FirstName[0] + memberData.LastName[0],
               username: memberData.Username,
               email: memberData.Email, 
+              name: memberData.FirstName + " " + memberData.LastName,
               UID:  memberId
             };
             console.log("this user exists:", memberObject)
@@ -201,6 +202,7 @@ async handleAddMember() {
           this.Members.push( { 
             initials: memberData.FirstName[0] + memberData.LastName[0],
             username: memberData.Username,
+            name: memberData.FirstName + memberData.LastName,
             email: memberData.Email, 
             UID:  usernameDocSnap.data().UID
           })

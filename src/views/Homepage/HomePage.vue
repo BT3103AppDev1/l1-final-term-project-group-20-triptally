@@ -50,7 +50,7 @@
       <span>+</span>
     </button>
 
-    <AddNewTripModal @refresh-trips="fetchUserTrips(newTripID)" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
+    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
     <div v-else>
       <h1>
@@ -161,7 +161,9 @@ import { db, auth } from '@/firebase';
         console.error(error);
       }
 
-      await this.fetchUserData();
+      // update this.trips to reflect the updated group trips that user is in 
+      const updatedTrips = this.trips.filter(t => t.UID !== trip.UID); 
+      this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
       this.showLeaveGroupConfirmation = false;
@@ -183,6 +185,7 @@ import { db, auth } from '@/firebase';
           UID: newTripID,
           dropdownVisible: false,
         })
+        console.log(newTripID + " added to user's group trips");
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -195,42 +198,44 @@ import { db, auth } from '@/firebase';
         if (userDoc.exists()) {
           const groupTrips = userDoc.data().GroupTrips;
           console.log(groupTrips);
-
-          // Firestore limits the 'in' query to a maximum of 10 elements in the array
-          const maxQuerySize = 10;
-          const tripCollections = collection(db, "Trips");
           this.trips = [];
 
-          // If you have more than 10 trip IDs, you need to split them into chunks of 10
-          for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
-            const chunk = groupTrips.slice(i, i + maxQuerySize);
-            const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
-            const querySnapshot = await getDocs(tripsQuery);
+          // // Firestore limits the 'in' query to a maximum of 10 elements in the array
+          // const maxQuerySize = 10;
+          // const tripCollections = collection(db, "Trips");
+          // this.trips = [];
+
+          // // If you have more than 10 trip IDs, you need to split them into chunks of 10
+          // for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
+          //   const chunk = groupTrips.slice(i, i + maxQuerySize);
+          //   const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
+          //   const querySnapshot = await getDocs(tripsQuery);
             
-            querySnapshot.forEach(docSnapshot => {
+          //   querySnapshot.forEach(docSnapshot => {
+          //     this.trips.push({ 
+          //       Currency: docSnapshot.data().Currency, 
+          //       Members: docSnapshot.data().Members, 
+          //       TripName: docSnapshot.data().TripName,
+          //       UID: docSnapshot.id 
+          //     });
+          //   });
+          // }
+
+          for (const tripID of userDoc.data().GroupTrips) {
+            const tripDocRef = doc(db, "Trips", tripID);
+            try {
+              const docSnap = await getDoc(tripDocRef);
               this.trips.push({ 
-                Currency: docSnapshot.data().Currency, 
-                Members: docSnapshot.data().Members, 
-                TripName: docSnapshot.data().TripName,
-                UID: docSnapshot.id 
+                Currency: docSnap.data().Currency, 
+                Members: docSnap.data().Members, 
+                TripName: docSnap.data().TripName,
+                UID: tripID 
               });
-            });
+            } catch (error) {
+              console.error("Error retrieving trip ", error);
+            }
           }
 
-          // for (const tripID of userData.GroupTrips) {
-          //   const tripDocRef = doc(db, "Trips", tripID);
-          //   try {
-          //     const docSnap = await getDoc(tripDocRef);
-          //     this.trips.push({ 
-          //       Currency: docSnap.data().Currency, 
-          //       Members: docSnap.data().Members, 
-          //       TripName: docSnap.data().TripName,
-          //       UID: tripID 
-          //     });
-          //   } catch (error) {
-          //     console.error("Error retrieving trip ", error);
-          //   }
-          // }
         } else {
           console.error("User document does not exist.");
         }
@@ -442,13 +447,20 @@ import { db, auth } from '@/firebase';
 
 .name-form {
   margin-bottom: 10px;
+  font-size: medium;
 }
 
 .name-form input {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
-  border-radius: 10px;
+  background-color: #489FB5;
+  border-radius: 5px; 
   border: none;
-  padding: 6px;
+  padding-left: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  color: white;
+  font-size: medium;
+  width: 150px;
 }
 
 .name {
