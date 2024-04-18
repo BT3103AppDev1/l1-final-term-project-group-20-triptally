@@ -10,13 +10,13 @@
     <div class="debt-container">
     <!-- You Are Owed Section -->
   <div class="owed-container">
-  <h2>YOU ARE OWED <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
+  <h2>YOU ARE OWED <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
   <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
     <div class="debt-details" v-if="debt.totalAmount !== 0">
       <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
       <div class="details">
         <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-        <span class="amount">{{ this.trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+        <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ debt.totalAmount.toFixed(2) }}</span>
       </div>
       <div class="action-buttons">
         <button class="remind-btn" @click="remindUser(debt)">Remind</button>
@@ -28,13 +28,13 @@
     
     <!-- You Owe Section -->
     <div class="owe-container">
-  <h2>YOU OWE <span class="amount">{{ this.trip.Currency }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
+  <h2>YOU OWE <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
   <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
     <div class="debt-details" v-if="debt.totalAmount !== 0">
       <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
       <div class="details">
         <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-        <span class="amount">{{this.trip.Currency}} {{ debt.totalAmount.toFixed(2) }}</span>
+        <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ debt.totalAmount.toFixed(2) }}</span>
       </div>
       <div class="action-buttons">
         <button class="clear-btn" @click="clearDebt">Clear Debt</button>
@@ -125,6 +125,22 @@ export default {
         //   { id: 3, title: 'Karaoke', subtitle: 'Hui Qian Khoo paid MYR 50', amount: 'You borrowed MYR 10' },
         //   { id: 4, title: 'Lunch by the river', subtitle: 'You paid MYR 100', amount: 'You lent MYR 80.00' }
         // ]
+      },
+      currencySymbols: {
+        USD: "$",
+        JPY: "¥",
+        SGD: "S$",
+        AUD: "A$",
+        CAD: "C$",
+        CHF: "₣",
+        CNY: "¥",
+        EUR: "€",
+        GBP: "£",
+        KRW: "₩",
+        MYR: "RM",
+        NZD: "NZ$",
+        SEK: "kr",
+        // Add more currencies as needed
       },
       showAddExpenseModal: false,
       showClearDebtPage: false

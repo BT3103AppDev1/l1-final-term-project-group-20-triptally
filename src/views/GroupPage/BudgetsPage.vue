@@ -13,7 +13,9 @@
           <div class="progress-and-amount">
             <div class="progress-container">
               <div class="progress-bar" :style="{width: progressWidth(item), backgroundColor: getCategoryColor(item.category)}">
-                <span class="spent-amount">{{ currencySymbols[trip.Currency] }}{{ item.used }}</span>
+                <span :class="['spent-amount', showAmountOutside[index] ? 'amount-outside' : '']">
+                  {{ currencySymbols[trip.Currency] }}{{ item.used }}
+                </span>
               </div>
             </div>
             <div class="amount-info">
@@ -31,8 +33,7 @@
 import SideNavBar from './SideNavBar.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from '@/firebase';
-import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
-
+import { doc, getDoc, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
 export default {
   name: 'BudgetPage',
@@ -63,6 +64,7 @@ export default {
       },
       totalBudget: 0, // Example total budget
       budget: [], // Array to store budget items
+      showAmountOutside: {}, // This will be an object keyed by budget item index
     };
   },
   components: {
@@ -83,8 +85,10 @@ export default {
         console.error("Error fetching user data:", error);
       }
     },
-    progressWidth(item) {
+    progressWidth(item, index) {
       const percentageUsed = (item.used / item.allocated) * 100;
+      // If less than 10%, we'll show the amount outside the progress bar
+      this.showAmountOutside[index] = percentageUsed < 10;
       return `${percentageUsed}%`;
     },
     getCategoryIcon(category) {
@@ -93,7 +97,7 @@ export default {
         'Shopping': '🛍️',
         'Transport': '🚌',
         'Entertainment': '🎭',
-        'Accommodation': '🏨',
+        'Accommodations': '🏨',
         'Miscellaneous': '📦'
       };
       return icons[category] || '❓';
@@ -104,7 +108,7 @@ export default {
         'Shopping': '#F0E694',
         'Transport': '#ABD9EA',
         'Entertainment': '#DDC9F7',
-        'Accommodation': '#FCC2AB',
+        'Accommodations': '#FCC2AB',
         'Miscellaneous': '#EDA5B9',
       };
       return colors[category] || '#cccccc'; // Default color if the category is not found
@@ -112,24 +116,51 @@ export default {
     editBudget() {
       this.$router.push({ name: 'EditBudgetPage' });
     },
+    determineAmountPosition() {
+      // Assuming this method is called after budget data is updated
+      this.budget.forEach((item, index) => {
+        const percentageUsed = (item.used / item.allocated) * 100;
+        this.showAmountOutside[index] = percentageUsed < 25;
+      });
+    },
     async fetchBudgetItems() {
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
-      const queryRef = query(budgetsRef, orderBy("order")); // Order by the 'order' field
+      const queryRef = query(budgetsRef, orderBy("order"));
 
       try {
         const querySnapshot = await getDocs(queryRef);
-        this.budget = querySnapshot.docs.map(doc => doc.data());
-        console.log("Budget items fetched successfully:", this.budget);
+        let budgets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Loop through each budget category to calculate the used amount
+        for (let i = 0; i < budgets.length; i++) {
+          let usedAmount = 0;
+          const expensesRef = collection(db, "Trips", this.tripID, "Expenses");
+          const expensesQuery = query(expensesRef, where("category", "==", budgets[i].category));
+          const expensesSnapshot = await getDocs(expensesQuery);
+
+          expensesSnapshot.forEach((doc) => {
+            usedAmount += Number(doc.data().amount); // Ensure 'amount' is a number
+          });
+
+          // Update the used amount in the budgets array
+          budgets[i] = { ...budgets[i], used: usedAmount };
+        }
+
+        // Calculate the progress for each budget item
+        budgets = budgets.map(budgetItem => ({
+          ...budgetItem,
+          progress: ((budgetItem.used / budgetItem.allocated) * 100).toFixed(2) + '%',
+        }));
+
+        this.budget = budgets;
+        this.determineAmountPosition(); 
 
         // Calculate the total budget
-        this.totalBudget = this.budget.reduce((total, item) => total + item.allocated, 0);
-
-        console.log("Fetched budget items in order:", this.budget);
-        console.log("Total Budget: ", this.totalBudget);
+        this.totalBudget = this.budget.reduce((acc, item) => acc + item.allocated, 0);
       } catch (error) {
         console.error("Error fetching budget items:", error);
       }
-    },
+    }
   },
   mounted() {
     const auth = getAuth();
@@ -260,6 +291,16 @@ h1 {
   font-weight: 600;
   font-size: 0.95em; /* Adjust font size as necessary */
   white-space: nowrap; /* Ensure the text doesn't wrap */
+}
+
+.amount-outside {
+  position: absolute;
+  left: calc(100% + 5px); /* Places it outside the bar */
+  top: 50%;
+  transform: translateY(-50%); /* Centers it vertically */
+  color: black; /* Adjust the text color so it's visible */
+  background: none; /* Ensures no background */
+  white-space: nowrap; /* Prevents it from wrapping to the next line */
 }
 
 .progress-container {
