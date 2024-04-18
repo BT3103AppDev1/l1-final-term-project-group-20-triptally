@@ -1,46 +1,66 @@
 <template> 
+<div class="app-container">
   <div class="main-container">
-    <div class="form-container">
-      <button @click="returnToMainExpensesPage">Back</button>
-      <h1>Add New Expense</h1>
-      <input type="date" v-model="expense.date" placeholder="Choose Date"><br>
-      <input type="text" v-model="expense.title" placeholder="Title"><br>
-      <input type="number" v-model="expense.amount" placeholder="Amount"><br>
-      <div>
-        <select v-model="expense.category">
-          <option value="" disabled selected hidden>Select Category</option>
-          <option value="Food">Food</option>
-          <option value="Shopping">Shopping</option>
-          <option value="Transport">Transport</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Accomodations">Accomodations</option>
-          <option value="Miscellaneous">Miscellaneous</option>
-        </select>
+    <div class="header">
+      <div class="back-button" @click="returnToMainExpensesPage">
+        <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
       </div>
-
-      <div class="paid-split-container">
-      <div class="paid-by">
+      <h1>Add New Expense</h1>
+    </div> 
+    <div class="form-container">
+      <div class="first-row">
+        <input type="date" v-model="expense.date" placeholder="Choose Date">
+      </div>
+      <div class="second-row">
+        <select v-model="expense.category" class="expense-category">
+          <option value="Food">🍽️</option>
+          <option value="Shopping">🛍️</option>
+          <option value="Transport">🚌</option>
+          <option value="Entertainment">🎭</option>
+          <option value="Accomodations">🏨</option>
+          <option value="Miscellaneous">📦</option>
+        </select>
+        <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
+      </div>
+      <div class="third-row">
+        <select v-model="selectedCurrency" class="currency-category">
+          <option value="" disabled selected>Select Currency</option>
+          <option value="SGD">SGD</option>
+          <option value="AUD">AUD</option>
+          <option value="CAD">CAD</option>
+          <option value="CHF">CHF</option>
+          <option value="CNY">CNY</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+          <option value="KRW">KRW</option>
+          <option value="MYR">MYR</option>
+          <option value="NZD">NZD</option>
+          <option value="SEK">SEK</option>
+          <option value="USD">USD</option>
+        </select>
+        <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
+      </div>
+      <div class="fourth-row">
+        <div class="paid-by">
         <span>Paid by</span>
-        <select v-model="expense.paidBy">
+        <select class="payer" v-model="expense.paidBy">
           <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
             {{ member.FirstName }} {{ member.LastName }}
           </option>
         </select>
-      </div>
-      
-      <div class="split-between">
         <span>and split between</span>
-        <select v-model="expense.splitBetween">
-          <!--Ideally user should be able to either select 'Everyone' or manually add members one by one - members involved in the expense will be added to this.expense.owedMembers -->
-          <option value="Everyone">Everyone</option>
+        <select class="split-between" v-model="expense.splitBetween">
+        <!--Ideally user should be able to either select 'Everyone' or manually add members one by one - members involved in the expense will be added to this.expense.owedMembers -->
+        <option value="Everyone">Everyone</option>
         </select>
       </div>
     </div>
-
-    <button type="submit" @click="addExpense">Add Expense!</button>
-
-    </div>
   </div>
+  <button type="submit" @click="addExpense">Add Expense!</button>  
+  </div>
+</div>
+  
 </template>
 
 <script>
@@ -51,7 +71,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
-    return { 
+    return {
+      selectedCurrency: "", 
       user: false, 
       trip: { 
         TripName: "",
@@ -65,8 +86,8 @@ export default {
         title: "", 
         amount: "", 
         paidBy: "",
-        category: "",
-        splitBetween: "",
+        category: "Food",
+        splitBetween: "Everyone",
         owedMembers: []
         // this represents the userIDs of the members that owe the person that paid for this expense money 
       }
@@ -76,7 +97,21 @@ export default {
   props: { 
     tripID: String
   },
+  computed: {
+    currencyOptions() {
+      return Object.entries(this.currencySymbols).map(([code, symbol]) => ({
+        code,
+        symbol
+      }));
+    }
+  },
   methods: { 
+    initializeCurrency() {
+      // Assuming 'trip.Currency' is loaded here or via a prop
+      if (this.trip.Currency) {
+        this.selectedCurrency = this.trip.Currency;
+      }
+    },
     returnToMainExpensesPage() { 
       // this will be emitted to the parent component - aka GroupPage, which will then toggle back to the main expenses display
       this.$emit('returnToMainPage');
@@ -92,6 +127,7 @@ export default {
         this.trip.Currency = data.Currency; 
         this.trip.Members = data.Members;
         this.trip.UID = this.$route.params.tripID; 
+        this.initializeCurrency();
       } else { 
         console.log("Error");
       }
@@ -297,6 +333,7 @@ export default {
     }
   }, 
   mounted() { 
+    this.initializeCurrency();
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -312,28 +349,72 @@ export default {
 <style scoped>
 
 .main-container { 
+  background: #307A8D; 
+  border-radius: 15px;
+  width: 820px; /* Adjust width as needed */
+  height: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
+  top: 60%; /* Adjust this value to control the vertical position */
+  transform: translateY(20%);
+  color: white;
+  margin-left: 200px;
+  margin-top: -350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%; 
-  display: flex;
+  position: relative;
+  height: 60px;
+  width: 820px;
+  padding: 20px;
+  padding-top: 50px;
+  margin-bottom: 0px;
+}
+
+.back-button {
+  position: absolute;
+  left: 65px; /* Positions the back button 20px from the left */
+  top: 60%; /* Centers the button vertically */
+  transform: translateY(-50%); /* Aligns the button vertically centered */
+}
+
+.backbutton-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+h1 {
+  color: white;
+  flex-grow: 1;
+  text-align: center;
+  margin-top: 35px;
+  font-size: 40px;
 }
 
 .form-container { 
-  padding: 20px;
-  background: #16697ae4;
-  color: white;
-  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   width: 80%;
+  height: 80%;
   position: relative; 
-  padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.first-row {
+  width: 100%;
+}
 
-input[placeholder="Choose Date"], input[placeholder="Title"], input[placeholder="Amount"], select {
-  width: 58%;
+input[placeholder="Choose Date"] {
+  width: 55%;
   /* Full width minus padding */
   padding: 10px;
   margin-top: 10px;
@@ -345,8 +426,43 @@ input[placeholder="Choose Date"], input[placeholder="Title"], input[placeholder=
   font-family: 'Montserrat', sans-serif;
 }
 
-select { 
-  width: 60%;
+.expense-category {
+  font-size: 35px;
+  width: 100px;
+  height: 60px;
+  margin-right: 20px;
+  padding-left: 25px;
+}
+
+.currency-category {
+  font-size: 18px;
+  width: 100px;
+  height: 60px;
+  margin-right: 20px;
+  padding-left: 22px;
+}
+
+.expense-title, .expense-amount {
+  width: 300px;
+  height: 60px;
+  border: 0px solid #ddd;
+  border-radius: 10px;
+  font-size: large;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 10px;
+  padding-left: 8px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.second-row, .third-row {
+  display: flex;
+}
+
+.payer, .split-between {
+  width: 140px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .form-container h1 { 
@@ -357,9 +473,11 @@ button {
   background-color: #82C0CC; /* Replace with your color */
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 20px 30px;
+  font-size: 22px;
   cursor: pointer;
-  /* Other styling */
+  margin-bottom: 55px;
+  margin-top: 10px;
 }
 
 button:hover {
