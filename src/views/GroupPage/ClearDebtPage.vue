@@ -26,6 +26,9 @@
           <button class="confirm-button" @click="payUp(selectedUser)">Yes</button>
           <button class="cancel-button" @click="cancelPayment">Cancel</button>
         </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 
