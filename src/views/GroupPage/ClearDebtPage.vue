@@ -4,12 +4,18 @@
       <h1>Clear Debt</h1>
     </header>
     <div class="debt-list" v-for="debt in debtsYouOwe">
-      <div class="debt-details">
-        {{ debt.FirstName }} {{  debt.LastName }}
-        You owe {{ debt.currency }} {{  debt.totalAmount }}
+      <div v-if="debt.currency !== userCurrency" class="debt-details">
+        {{ debt.FirstName }} {{  debt.LastName }} <br>
+        You owe {{ debt.currency }} {{  debt.totalAmount }} = {{ userCurrency }} {{ debt.ConvertedAmount.toFixed(2) }}
 
         <button @click="payUp(debt)" class="payUpButton">Pay Up</button>
 
+      </div>
+      <div v-else class="debt-details">
+        {{ debt.FirstName }} {{  debt.LastName }} <br>
+        You owe {{ debt.currency }} {{  debt.totalAmount }}
+
+        <button @click="payUp(debt)" class="payUpButton">Pay Up</button>
       </div>
     </div>
     <button @click="goBack">Back</button>
@@ -21,12 +27,14 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from '@/firebase'
 import { doc, getDoc, getDocs, collection, updateDoc, deleteDoc } from 'firebase/firestore'
+import axios from 'axios';
 
 export default { 
   name: 'ClearDebtPage', 
   data() { 
     return { 
       user: false,
+      userCurrency: "",
       debtsYouOwe: [], 
       showConfirmationPopup: false
     }
@@ -51,7 +59,25 @@ export default {
       const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
         const additionalDataRef = doc(db, "Users", document.id); 
         const additionalDocSnapshot = await getDoc(additionalDataRef);
+        const debtData = document.data();
 
+        // if expense currency is not the same as the user's default currency, then fetch exchange rates  
+        const expenseCurrency = document.data().currency; 
+        var expenseInUserCurrency;
+
+        if (expenseCurrency !== this.userCurrency) { 
+          // fetch current exchange rate from freecurrencyapi
+          const response = await axios.get('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_iaKyOqNjZI0PjnMBKqchb1UFhMxXh12FLbkCuzNy');
+
+          // must convert expense to USD first, then from USD convert to the user's default currency 
+          const expenseInUSD = debtData.totalAmount / (response.data.data[expenseCurrency]);
+          expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
+          console.log(response.data.data)
+        } else { 
+          expenseInUserCurrency = debtData.totalAmount;
+        }
+
+        // fetch paid member data
         if (additionalDocSnapshot.exists()) { 
 
           return { 
@@ -60,7 +86,8 @@ export default {
             FirstName: additionalDocSnapshot.data().FirstName,
             LastName: additionalDocSnapshot.data().LastName,
             Username: additionalDocSnapshot.data().Username,
-            Email: additionalDocSnapshot.data().Email
+            Email: additionalDocSnapshot.data().Email,
+            ConvertedAmount: expenseInUserCurrency
           }
         } else { 
           return { 
@@ -72,7 +99,6 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
-      console.log("Just rendered - debts you owe: " + this.debtsYouOwe);
        
     },
     async payUp(debt) { 
@@ -93,17 +119,24 @@ export default {
       try { 
 
         // delete the debt
-
         await deleteDoc(userOwesDoc); 
         await deleteDoc(whoOwesUserDoc);
 
-        // refresh the debt data in GroupPage and ClearDebtPage 
-        await this.fetchDebtData();
+        // remove the debt from the debts array  
+        const updatedDebts = this.debtsYouOwe.filter(d => d.UID !== debt.UID);
+        this.debtsYouOwe = updatedDebts;
+
+         // refresh the debt data in GroupPage and ClearDebtPage 
         this.$emit('refreshDebtData');
       } catch (error) { 
         console.error(error);
       }
 
+    },
+    async fetchUserData() { 
+      const userDocRef = doc(db, "Users", this.user.uid); 
+      const userData = await getDoc(userDocRef);
+      this.userCurrency = userData.data().Currency;
     }
   }, 
   mounted() { 
@@ -111,6 +144,7 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
+        await this.fetchUserData();
         await this.fetchDebtData();
       }
     })
