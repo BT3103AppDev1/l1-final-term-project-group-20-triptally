@@ -8,9 +8,10 @@ import GroupPage from '@/views/GroupPage/GroupPage.vue';
 import AnalyticsPage from '@/views/GroupPage/AnalyticsPage.vue';
 import BudgetsPage from '@/views/GroupPage/BudgetsPage.vue';
 import MembersPage from '@/views/GroupPage/MembersPage/MembersPage.vue';
-import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
+//import SettingsPage from '@/views/GroupPage/SettingsPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
 import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
+import AddNewExpenseModal from '@/views/GroupPage/AddNewExpenseModal.vue';
 
 const routes = [
     {
@@ -53,6 +54,12 @@ const routes = [
       props: true
     },
     {
+      path: '/group/:tripID/add-expense', 
+      name: 'AddNewExpenseModal', 
+      component: AddNewExpenseModal, 
+      props: true
+    },
+    {
       path: '/group/:tripID/analytics', 
       name: 'AnalyticsPage',
       component: AnalyticsPage,
@@ -77,12 +84,12 @@ const routes = [
       component: MembersPage,
       props: true
     },
-    {
-      path: '/group/:tripID/settings', 
-      name: 'SettingsPage',
-      component: SettingsPage,
-      props: true
-    },
+    // {
+    //   path: '/group/:tripID/settings', 
+    //   name: 'SettingsPage',
+    //   component: SettingsPage,
+    //   props: true
+    // },
   ]
 
 const router = createRouter({
