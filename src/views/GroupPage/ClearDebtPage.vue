@@ -13,7 +13,8 @@
               <div class="debt-name">{{ debt.FirstName }} {{  debt.LastName }}</div>
               <div class="user-email">{{ debt.Email }}</div>
             </div>
-            <div class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
+            <div v-if="debt.currency === userCurrency" class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
+            <div v-else class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
           </div>
           <button @click="confirmPayUp(debt)" class="payUpButton">Pay Up</button>
         </div>
@@ -26,6 +27,9 @@
           <button class="confirm-button" @click="payUp(selectedUser)">Yes</button>
           <button class="cancel-button" @click="cancelPayment">Cancel</button>
         </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 
@@ -147,7 +151,13 @@ export default {
     },
     cancelPayment() {
       this.showConfirmationPopup = false;
+    },
+    async fetchUserData() { 
+      const userDocRef = doc(db, "Users", this.user.uid); 
+      const userData = await getDoc(userDocRef);
+      this.userCurrency = userData.data().Currency;
     }
+
   }, 
   mounted() { 
     const auth = getAuth();
