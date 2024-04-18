@@ -125,7 +125,9 @@ export default {
       await this.fetchUserData();
 
       var userIDs = this.selectedMembers.map(member => member.userID);
-      userIDs.push(this.userID);
+      if (!userIDs.includes(this.userID)) { 
+        userIDs.push(this.userID);
+      }
 
       try {
         const tripDocRef = await addDoc(collection(db, "Trips"), {
