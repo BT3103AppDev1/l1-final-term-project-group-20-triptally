@@ -10,7 +10,7 @@
       <div class="debt-container">
         <!-- You Are Owed Section -->
         <div class="owed-container">
-          <h2>YOU ARE OWED <span class="amount">{{ trip.Currency }} {{ totalDebtOwedToYou }}</span> IN TOTAL</h2>
+          <h2>YOU ARE OWED <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtOwedToYou }}</span> IN TOTAL</h2>
           <div class="individual-debt" v-for="debt in debtsOwedToYou" :key="debt.UID">
             <div class="debt-details" v-if="debt.totalAmount !== 0">
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
@@ -27,7 +27,7 @@
         </div>
         <!-- You Owe Section -->
         <div class="owe-container">
-          <h2>YOU OWE <span class="amount">{{ trip.Currency }} {{ totalDebtYouOwe }}</span> IN TOTAL</h2>
+          <h2>YOU OWE <span class="amount">{{ currencySymbols[this.trip.Currency] }} {{ this.totalDebtYouOwe }}</span> IN TOTAL</h2>
           <div class="individual-debt" v-for="debt in debtsYouOwe" :key="debt.UID">
             <div class="debt-details" v-if="debt.totalAmount !== 0">
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
