@@ -8,12 +8,17 @@
         <div class="category-block" v-for="(item, index) in budget" :key="index">
           <div class="icon-and-category">
             <span class="icon">{{ getCategoryIcon(item.category) }}</span>
-            <span class="category-name">{{ item.category }}</span>
+            <span :class="['category-name']">
+              {{ item.category }}
+              <span v-if="budgetExceeded[index]" class="exceeded-message">
+                Budget has been exceeded!
+              </span>
+            </span>
           </div>
           <div class="progress-and-amount">
             <div class="progress-container">
               <div class="progress-bar" :style="{width: progressWidth(item), backgroundColor: getCategoryColor(item.category)}">
-                <span :class="['spent-amount', showAmountOutside[index] ? 'amount-outside' : '']">
+                <span :class="amountSpentClass(item, index)">
                   {{ currencySymbols[trip.Currency] }}{{ item.used }}
                 </span>
               </div>
@@ -65,6 +70,7 @@ export default {
       totalBudget: 0, // Example total budget
       budget: [], // Array to store budget items
       showAmountOutside: {}, // This will be an object keyed by budget item index
+      budgetExceeded: {}, // This will check if the set budget is exceeded
     };
   },
   components: {
@@ -116,6 +122,18 @@ export default {
     editBudget() {
       this.$router.push({ name: 'EditBudgetPage' });
     },
+    checkBudgetExceeded() {
+      this.budget.forEach((item, index) => {
+        this.budgetExceeded[index] = item.used > item.allocated;
+      });
+    },
+    amountSpentClass(item, index) {
+      return {
+        'text-danger': this.budgetExceeded[index],
+        'spent-amount': !this.budgetExceeded[index],
+        'amount-outside': this.showAmountOutside[index] && !this.budgetExceeded[index],
+      };
+    },
     determineAmountPosition() {
       // Assuming this method is called after budget data is updated
       this.budget.forEach((item, index) => {
@@ -153,7 +171,8 @@ export default {
         }));
 
         this.budget = budgets;
-        this.determineAmountPosition(); 
+        this.determineAmountPosition(); // Check if budget is above or below 25% used up, alter display accordingly 
+        this.checkBudgetExceeded(); // Check if budget is still within progress bar
 
         // Calculate the total budget
         this.totalBudget = this.budget.reduce((acc, item) => acc + item.allocated, 0);
@@ -222,6 +241,8 @@ export default {
   font-size: medium;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 h1 {
@@ -332,5 +353,30 @@ h1 {
   font-size: small; /* Adjust the font size if needed */
   border-radius: 5px;
   padding: 5px 10px;
+}
+
+.exceeded-message {
+  color: rgb(194, 40, 40);
+  margin-left: 10px;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.text-danger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(-10%, -50%); /* Adjust positioning to inside the progress bar */
+  color: rgb(194, 40, 40); /* Improved visibility against colored backgrounds */
+  background-color: transparent; /* Optional: Adjust based on visibility needs */
+  padding: 0 4px; /* Slight padding on the sides */
+  min-width: 30px; /* Ensure there's enough room for numbers */
+  text-align: center; /* Center the text within the space */
+  border-radius: 5px;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  font-weight: 600;
+  font-size: 0.95em; /* Adjust font size as necessary */
+  white-space: nowrap; /* Ensure the text doesn't wrap */
 }
 </style>
