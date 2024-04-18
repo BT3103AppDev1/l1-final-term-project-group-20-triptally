@@ -16,7 +16,7 @@
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
               <div class="details">
                 <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+                <span class="amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
               </div>
               <div class="action-buttons">
                 <button class="remind-btn" @click="showReminderPopup(debt)">Remind</button>
@@ -33,7 +33,7 @@
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
               <div class="details">
                 <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-                <span class="amount">{{ trip.Currency }} {{ debt.totalAmount.toFixed(2) }}</span>
+                <span class="amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
               </div>
               <div class="action-buttons">
                 <button class="clear-btn" @click="clearDebt">Clear Debt</button>
