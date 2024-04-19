@@ -89,7 +89,9 @@ export default {
     };
   },
   components: {
-    SideNavBar
+    SideNavBar, 
+    BudgetAnalytics,
+    ExpensesAnalytics
   }, 
   methods: { 
     async fetchTripData() { 

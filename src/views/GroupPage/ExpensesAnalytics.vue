@@ -1,6 +1,5 @@
 <template>
 
-
 </template>
 
 <script>
@@ -12,7 +11,17 @@ export default {
   name: 'ExpensesAnalytics', 
   data() { 
     return { 
-      user: false,
+      user: false, 
+      expenses: {},
+      trip: { 
+        Currency: "",
+        TripName: "", 
+        Members: [], 
+        UID: ""
+      }, 
+      groupedExpenses: {},
+      datasets: [
+      ]
     }
   },
   props: {
@@ -21,7 +30,7 @@ export default {
   methods: { 
     async fetchExpensesData() {
       // Fetch all the expenses logged for this trip
-      const tripRef = doc(db, "Trips", tripID);
+      const tripRef = doc(db, "Trips", this.tripID);
       const expensesRef = collection(tripRef, "Expenses");
 
       // Create a query against the collection, ordering by the 'date' field in descending order
@@ -94,9 +103,7 @@ export default {
         id: expense.id,
         title: expense.title,
         category: expense.category,
-        subtitle: `${expense.paidByFirstName} ${expense.paidByLastName} paid ${expense.currency} ${(expense.amount).toFixed(2)}`,
-        sideDisplayText: displayText
-        // amount: expense.amount  // You might want to format or calculate the amount differently
+        amount: expense.amount
       });
 
       return acc;
@@ -105,6 +112,30 @@ export default {
       // Update your component state or data object
       this.groupedExpenses = groupedExpenses;
       console.log(groupedExpenses);
+      this.calculateDailyTotals();
+    },
+    async fetchTripData() { 
+      const tripDocRef = doc(db, "Trips", this.tripID); 
+      try { 
+        const docSnap = await getDoc(tripDocRef); 
+        this.trip.TripName = docSnap.data().TripName; 
+        this.trip.Currency = docSnap.data().Currency; 
+        this.trip.Members = docSnap.data().Members;
+        this.trip.UID = this.$route.params.tripID; 
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }, 
+    calculateDailyTotals() { 
+      const totals = {};
+      for (const date in this.groupedExpenses) {
+        totals[date] = this.groupedExpenses[date].reduce((sum, expense) => {
+          return sum + Number(expense.amount); // Make sure 'expense.amount' is a number and not a string
+        }, 0);
+      }
+
+      // Store the totals in the component state if needed or handle them as needed
+      console.log("Daily Totals:", totals);
     }
   }, 
   mounted() { 
@@ -112,7 +143,8 @@ export default {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.user = user;
-        
+        this.fetchExpensesData();
+
       }
     })
   }
