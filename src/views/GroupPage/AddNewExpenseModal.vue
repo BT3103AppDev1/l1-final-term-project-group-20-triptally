@@ -365,6 +365,7 @@ export default {
       if (user) {
         this.user = user;
         await this.fetchTripData();
+        await this.fetchCurrentUserDetails(user.uid);
         await this.convertMembersArray();
       }
     })
