@@ -2,11 +2,16 @@
   <div class="app-container">
   <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
   <div v-if="!showAddExpenseModal && !showClearDebtPage" class="main-container">
-    <div class="reminders" v-for="reminder in reminders">
-      <div class="reminder-msg">
-        <h1>Reminder: {{ reminder.FirstName }} {{ reminder.LastName }} has reminded you to pay {{ trip.Currency }} {{ reminder.totalAmount }}!</h1>
+    <div v-if="consolidatedReminder" class="reminders">
+        <div class="reminder-msg">
+          <img src="@/assets/reminder-icon.png" alt="Reminder Icon" class="reminder-icon">
+          <h1>Reminders:</h1>
+          <ul>
+            <li v-for="message in consolidatedReminder" :key="message.id">{{ message }}</li>
+          </ul>
+        </div>
       </div>
-    </div>
+      <h1 class="debt-overview">Debt Overview</h1>
       <div class="debt-container">
         <!-- You Are Owed Section -->
         <div class="owed-container">
@@ -175,6 +180,16 @@ export default {
         this.fetchExpensesData();
       }
     }
+  },
+  computed: {
+    consolidatedReminder() {
+      if (this.reminders.length === 0) {
+        return null;
+      }
+      return this.reminders.map(reminder => 
+        `${reminder.FirstName} ${reminder.LastName} has reminded you to pay ${this.trip.Currency} ${reminder.totalAmount.toFixed(2)}!`
+      );
+    },
   },
   methods: {
     togglePage() { 
@@ -447,6 +462,12 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: -80px auto 0;
+}
+
+.debt-overview {
+  color: #16697A;
+  margin-bottom: 20px;
 }
 
 .debt-container {
@@ -467,7 +488,6 @@ export default {
   background: #fef7ee;
   overflow: hidden; 
   margin-left: 20px;
-  justify-content: space-between; 
   display: flex;
   flex-direction: column;
 }
@@ -659,15 +679,15 @@ export default {
 
 .reminder-msg { 
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
+  padding: auto;
   background-color: #16697A; 
   border-radius: 30px; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
   margin: 10px; 
   font-family: 'Montserrat', sans-serif; 
-  font-size: 0.8em;
+  font-size: 0.9em;
   margin-bottom: 20px;
 }
 
@@ -675,6 +695,16 @@ export default {
   width: 50px;
   height: 50px;
   margin-right: 10px;
+}
+
+.reminder-msg ul {
+  margin: 10px;
+  padding-left: 20px;
+  color: #fff;  
+}
+
+.reminder-msg li {
+  margin-bottom: 5px;
 }
 
 h1 { 
