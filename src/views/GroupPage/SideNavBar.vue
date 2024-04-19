@@ -6,19 +6,19 @@
           <li class="nav-trip">
             <span>{{ tripName }}</span>
           </li>
-          <router-link :to="{ name: 'GroupPage', params: { tripID: tripID }}" class="nav-item">
+          <router-link :to="{ name: 'GroupPage', query: { tripName: this.tripName }, params: { tripID: tripID }}" class="nav-item">
             <img src="@/assets/expensestab.png" alt="Expenses" class="nav-icon">
             <span>Expenses</span>
           </router-link>
-          <router-link :to="{ name: 'AnalyticsPage', params: { tripID: tripID } }" class="nav-item">
+          <router-link :to="{ name: 'AnalyticsPage', query: { tripName: this.tripName }, params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/analyticstab.png" alt="Analytics" class="nav-icon">
             <span>Analytics</span>
           </router-link>
-          <router-link :to="{ name: 'BudgetsPage', params: { tripID: tripID } }" class="nav-item">
+          <router-link :to="{ name: 'BudgetsPage', query: { tripName: this.tripName }, params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/budgetstab.png" alt="Budgets" class="nav-icon">
             <span>Budgets</span>
           </router-link>
-          <router-link :to="{ name: 'MembersPage', params: { tripID: tripID } }" class="nav-item">
+          <router-link :to="{ name: 'MembersPage', query: { tripName: this.tripName }, params: { tripID: tripID } }" class="nav-item">
             <img src="@/assets/memberstab.png" alt="Members" class="nav-icon">
             <span>Members</span>
           </router-link>
@@ -37,7 +37,6 @@ export default {
   data() { 
     return { 
       user: false, 
-      tripName: "",
       tripUID: ""
     }
   },

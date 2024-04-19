@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <SideNavBar :tripName="trip.TripName" :tripID="$route.params.tripID"></SideNavBar>
+    <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
     <div class="main-content" v-if="user">
       <!-- Group Members Section -->
       <div class="group-members-section">
@@ -113,6 +113,7 @@ export default {
               initials: memberData.FirstName[0] + memberData.LastName[0],
               username: memberData.Username,
               email: memberData.Email, 
+              name: memberData.FirstName + " " + memberData.LastName,
               UID:  memberId
             };
             console.log("this user exists:", memberObject)
@@ -201,6 +202,7 @@ async handleAddMember() {
           this.Members.push( { 
             initials: memberData.FirstName[0] + memberData.LastName[0],
             username: memberData.Username,
+            name: memberData.FirstName + memberData.LastName,
             email: memberData.Email, 
             UID:  usernameDocSnap.data().UID
           })
@@ -276,8 +278,8 @@ mounted() {
 }
 
 .main-content {
-  padding: 100px;
-  width: 100%;
+  margin: auto; 
+  margin-top: 100px;
 }
 
 .group-members-section {
@@ -286,6 +288,7 @@ mounted() {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
+  width: 1000px;
 }
 
 .group-members-header {
