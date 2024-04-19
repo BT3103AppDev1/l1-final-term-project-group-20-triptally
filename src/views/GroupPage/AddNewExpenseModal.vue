@@ -356,7 +356,7 @@ export default {
 <style scoped>
 
 .main-container { 
-  background: #307A8D; 
+  background: #166978; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
   height: 600px;
