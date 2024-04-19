@@ -1,6 +1,8 @@
 <template>
   <div class="main-content">
-    <div class="back-button" @click="goBack"><</div>
+    <div class="back-button" @click="goBack">
+      <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+    </div>
     <div class="debt-list">
       <h1 class="debt-heading">Clear Debt</h1>
       <div v-if="debtsYouOwe.length === 0" class="no-debt-message">
@@ -197,6 +199,12 @@ export default {
   cursor: pointer;
   font-size: 24px;
   color: white;
+}
+
+.backbutton-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 
 .debt-heading {
