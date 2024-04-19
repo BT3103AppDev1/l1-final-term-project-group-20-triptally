@@ -187,7 +187,7 @@ export default {
 }
 
 .main-content {
-  margin-left: 20%;
+  margin-left: 5%;
   margin-top: -30%;
 }
 

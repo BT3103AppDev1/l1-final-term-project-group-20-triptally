@@ -74,6 +74,11 @@ export default {
     return {
       selectedCurrency: "", 
       user: false, 
+      currentUser: {
+        FirstName: '',
+        LastName: '',
+        UID: ''
+      },
       trip: { 
         TripName: "",
         Members: [],
@@ -110,6 +115,20 @@ export default {
       // Assuming 'trip.Currency' is loaded here or via a prop
       if (this.trip.Currency) {
         this.selectedCurrency = this.trip.Currency;
+      }
+    },
+    async fetchCurrentUserDetails(uid) {
+      const userDocRef = doc(db, "Users", uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        this.currentUser.FirstName = userData.FirstName;
+        this.currentUser.LastName = userData.LastName;
+        this.currentUser.UID = uid;
+        // Set the default paidBy to the user's UID
+        this.expense.paidBy = uid;
+      } else {
+        console.error("No user found with UID:", uid);
       }
     },
     returnToMainExpensesPage() { 
