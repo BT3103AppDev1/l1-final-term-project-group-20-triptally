@@ -198,12 +198,12 @@ export default {
     })
   },
   watch: {
-  '$route'() {
-    console.log("Route changed, fetching budget items...");
-    this.fetchBudgetItems();
-    this.fetchTripDetails();
+    '$route'() {
+      console.log("Route changed, fetching budget items...");
+      this.fetchBudgetItems();
+      this.fetchTripDetails();
+    },
   },
-},
 }
 </script>
 
