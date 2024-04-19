@@ -1,11 +1,13 @@
 <template>
   <div class="app-container">
-    <SideNavBar :key="trip.TripName" :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
+    <SideNavBar :key="trip.TripName" :tripID="$route.params.tripID" :tripName="$route.query.tripName"></SideNavBar>
     <div class="main-content">
       <p v-if="showSuccessMessage" class="success-message">Budget saved successfully!</p>
       <div class="edit-budget-card">
         <div class="header">
-          <router-link :to="`/group/${tripID}/budgets`" class="budget-page-link">←</router-link>
+          <router-link :to="{ path: `/group/${tripID}/budgets`, name: 'BudgetsPage', query: { tripName: this.trip.TripName }, params: { tripID: this.tripID } }" class="budget-page-link">
+            <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+          </router-link>
           <h1>Edit Budget</h1>
         </div>
         <div class="budget-fields">
@@ -89,7 +91,7 @@ export default {
         const querySnapshot = await getDocs(budgetsRef);
         let fetchedBudgets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const order = ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodations', 'Miscellaneous'];
+        const order = ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodation', 'Miscellaneous'];
         // Sort the fetched budgets according to the order array
         this.budget = order.map(category => fetchedBudgets.find(item => item.category === category));
 
@@ -144,17 +146,16 @@ export default {
 
 h1 {
   color: white;
-  font-size:x-large;
   flex-grow: 1;
   margin-top: 35px;
 }
 
 /* Centered card layout */
 .edit-budget-card {
-  background: #307A8D; 
+  background: #166978; 
   border-radius: 15px;
   width: 700px; /* Adjust width as needed */
-  height: 470px;
+  height: 550px;
   margin: 0 auto; /* Center the card horizontally */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
@@ -167,6 +168,8 @@ h1 {
   align-items: center;
   height: 30px;
   padding: 20px;
+  padding-top: 50px;
+  padding-bottom: 40px;
   /* Style your header */
 }
 
@@ -192,12 +195,11 @@ h1 {
   background-color: #e3be43; /* A slightly darker shade for hover state */
 }
 
-.budget-page-link {
-  color: white;
-  font-family: Montserrat, sans-serif;
-  font-weight: 1000;
-  font-size:x-large;
-  text-decoration: none;
+.backbutton-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  padding-left: 20px;
 }
 .budget-fields {
   display: flex;
