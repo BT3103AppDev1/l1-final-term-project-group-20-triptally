@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
-    <SideNavBar :key="trip.TripName" :tripID="$route.params.tripID" :tripName="trip.TripName"></SideNavBar>
+    <SideNavBar :key="trip.TripName" :tripID="$route.params.tripID" :tripName="$route.query.tripName"></SideNavBar>
     <div class="main-content">
       <p v-if="showSuccessMessage" class="success-message">Budget saved successfully!</p>
       <div class="edit-budget-card">
         <div class="header">
-          <router-link :to="`/group/${tripID}/budgets`" class="budget-page-link">
+          <router-link :to="{ path: `/group/${tripID}/budgets`, name: 'BudgetsPage', query: { tripName: this.trip.TripName }, params: { tripID: this.tripID } }" class="budget-page-link">
             <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
           </router-link>
           <h1>Edit Budget</h1>

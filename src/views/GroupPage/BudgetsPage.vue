@@ -120,7 +120,11 @@ export default {
       return colors[category] || '#cccccc'; // Default color if the category is not found
     },
     editBudget() {
-      this.$router.push({ name: 'EditBudgetPage' });
+      this.$router.push({
+        name: 'EditBudgetPage',
+        params: { tripID: this.$route.params.tripID }, 
+        query: { tripName: this.$route.query.tripName } // Assuming you want to pass '123' as the tripID
+      });
     },
     checkBudgetExceeded() {
       this.budget.forEach((item, index) => {
