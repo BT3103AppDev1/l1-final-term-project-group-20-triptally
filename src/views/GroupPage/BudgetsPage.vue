@@ -347,7 +347,7 @@ h1 {
 
 .amount-left {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   padding: 2px 0; /* Add some padding for better spacing */
   color: #333; /* Adjust the color if needed */
   font-size: small; /* Adjust the font size if needed */
