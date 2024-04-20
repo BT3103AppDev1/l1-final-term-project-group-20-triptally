@@ -59,7 +59,7 @@
           </div>
         </div>
         <div class="fifth-row">
-          <span>Upload Receipt      </span>
+          <img src="@/assets/receipt-icon.png" class="receipt-icon"><span>Upload Receipt      </span>
           <input type="file" accept="image/*" @change="handlePhotoChange">
         </div>
       </div>
@@ -414,7 +414,7 @@ export default {
   background: #16697A; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
-  height: 650px;
+  height: 680px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
@@ -603,5 +603,14 @@ button:hover {
   padding-right: 8px;
   border-radius: 10px;
   background-color: rgb(241, 180, 174); 
+}
+
+.receipt-icon { 
+  height: 30px;
+  vertical-align:bottom;
+}
+
+.fifth-row { 
+  margin-bottom: 5px;
 }
 </style>
