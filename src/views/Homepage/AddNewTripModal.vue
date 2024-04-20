@@ -80,6 +80,7 @@ export default {
       searchTerm: '',
       showDropdown: false,
       filteredUsers: [],
+      image: "",
     }
   },
   computed: {
@@ -152,7 +153,8 @@ export default {
         const tripDocRef = await addDoc(collection(db, "Trips"), {
           Members: userIDs, // Assuming you want to add all userIDs, not just this.members
           TripName: this.tripName,
-          Currency: this.currency
+          Currency: this.currency,
+          Image: "",
         });
         this.tripID = tripDocRef.id;
         console.log('New trip added with ID: ' + this.tripID);

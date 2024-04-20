@@ -63,7 +63,7 @@
                 <span v-else-if="expense.category === 'Shopping'">🛍️</span>
                 <span v-else-if="expense.category === 'Transport'">🚌</span>
                 <span v-else-if="expense.category === 'Entertainment'">🎭</span>
-                <span v-else-if="expense.category === 'Accommodation'">🏨</span>
+                <span v-else-if="expense.category === 'Accommodations'">🏨</span>
                 <span v-else>📦</span> 
                 </div>
                 <div class="expense-details">
