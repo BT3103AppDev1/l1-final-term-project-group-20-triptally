@@ -102,7 +102,7 @@
         <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :tripID="trip.UID"/>
       </div>
       <div v-else>
-        <AddNewExpenseModal @returnToMainPage="togglePage" :tripID="trip.UID"></AddNewExpenseModal>
+        <AddNewExpenseModal @returnToMainPage="showAddExpenseModal = false" :tripID="trip.UID"></AddNewExpenseModal>
       </div>
     </div>
   </div>
@@ -114,7 +114,7 @@ import SideNavBar from './SideNavBar.vue';
 import ClearDebtPage from './ClearDebtPage.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
@@ -192,8 +192,26 @@ export default {
     },
   },
   methods: {
-    togglePage() { 
-      this.showAddExpenseModal = false;
+    // Generate a unique key for each trip
+    generateStorageKey(key) {
+      return `${this.trip.UID}-${key}`;
+    },
+
+    // Updated methods to use dynamic keys
+    getFromSessionStorage(key) {
+      const uniqueKey = this.generateStorageKey(key);
+      const cachedData = sessionStorage.getItem(uniqueKey);
+      return cachedData ? JSON.parse(cachedData) : null;
+    },
+
+    saveToSessionStorage(key, data) {
+      const uniqueKey = this.generateStorageKey(key);
+      sessionStorage.setItem(uniqueKey, JSON.stringify(data));
+    },
+
+    clearSessionStorage(key) {
+      const uniqueKey = this.generateStorageKey(key);
+      sessionStorage.removeItem(uniqueKey);
     },
     removeClearDebtPage() { 
       this.showClearDebtPage = false;
@@ -207,8 +225,9 @@ export default {
       return sum.toFixed(2);
     },
     async fetchExpensesData() {
+      console.log('fetchExpensesData method called')
       // Fetch all the expenses logged for this trip
-      const tripRef = doc(db, "Trips", this.trip.UID);
+      const tripRef = doc(db, "Trips", this.$route.params.tripID);
       const expensesRef = collection(tripRef, "Expenses");
 
       // Create a query against the collection, ordering by the 'date' field in descending order
@@ -251,6 +270,7 @@ export default {
       this.groupExpensesByDate(expenses);
     }, 
     async groupExpensesByDate(expenses) { 
+      console.log('groupedExpensesByDate called')
       const groupedExpenses = expenses.reduce((acc, expense) => {
       // Format the date as 'dd/mm/yyyy'
       const expenseDate = expense.date.toLocaleDateString('en-GB');  // Change locale as needed
@@ -291,12 +311,13 @@ export default {
 
       // Update your component state or data object
       this.groupedExpenses = groupedExpenses;
+      this.saveToSessionStorage('groupedExpenses', this.groupedExpenses);
       console.log(groupedExpenses);
     },
     async fetchDebtData() { 
       // lets fetch the debts that the user owes and the debts that others owe the user! 
       console.log("fetchDebtData called");
-      const tripRef = doc(db, "Trips", this.trip.UID);
+      const tripRef = doc(db, "Trips", this.$route.params.tripID);
       const debtsRef = collection(tripRef, "Debts");
       const userDebtRef = doc(debtsRef, this.user.uid);
 
@@ -372,7 +393,15 @@ export default {
 
       const whoOwesYou = await Promise.all(whoOwesUserPromises);
       this.debtsOwedToYou = whoOwesYou;
-      this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou)
+      this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou);
+      console.log(this.totalDebtOwedToYou)
+
+      this.saveToSessionStorage('debts', { 
+        owedToYou: this.debtsOwedToYou, 
+        owedByYou: this.debtsYouOwe,
+        totalDebtOwedToYou: this.totalDebtOwedToYou,
+        totalDebtYouOwe: this.totalDebtYouOwe
+      })
     }, 
     async fetchTripData() { 
       // fetch trip data based on tripID
@@ -431,6 +460,28 @@ export default {
     cancelReminder() {
       this.showReminderConfirmation = false;
       this.selectedUser = null;
+    },
+    // Fetch debts and expenses only if they aren't cached
+    async initializeData() {
+      console.log('initialiseData method called');
+      const cachedDebts = this.getFromSessionStorage('debts');
+      const cachedExpenses = this.getFromSessionStorage('groupedExpenses');
+
+      if (cachedDebts) {
+        this.debtsOwedToYou = cachedDebts.owedToYou;
+        this.debtsYouOwe = cachedDebts.owedByYou;
+        this.totalDebtOwedToYou = cachedDebts.totalDebtOwedToYou; 
+        this.totalDebtYouOwe = cachedDebts.totalDebtYouOwe;
+      } else {
+        await this.fetchDebtData();
+      }
+
+      if (cachedExpenses) {
+        this.groupedExpenses = cachedExpenses;
+      } else {
+        console.log('need to call fetchExpensesData')
+        await this.fetchExpensesData();
+      }
     }
   }, 
   mounted() {
@@ -439,9 +490,8 @@ export default {
       if (user) {
         this.user = user;
         console.log(this.$route.query.tripName);
-        await this.fetchTripData(); 
-        await this.fetchDebtData();
-        await this.fetchExpensesData();
+        await this.fetchTripData();
+        await this.initializeData();
       }
     })
   }
