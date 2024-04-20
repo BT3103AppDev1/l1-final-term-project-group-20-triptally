@@ -200,7 +200,7 @@ export default {
 
 .chart-container {
   flex-grow: 1; /* Take up remaining space */
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   padding: 20px;
   border-radius: 25px;
   display: flex;

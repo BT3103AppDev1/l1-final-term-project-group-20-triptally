@@ -1,17 +1,52 @@
 <template>
-
+<canvas id="expensesGraph" height="500" width="700"></canvas>
 </template>
 
 <script>
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from '@/firebase';
 import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc } from 'firebase/firestore';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  plugins
+} from 'chart.js';
+import Chart from 'chart.js/auto';
+import { Line } from 'vue-chartjs';
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default { 
   name: 'ExpensesAnalytics', 
   data() { 
     return { 
       user: false, 
+      chartData: null,
+      chart: null,
+      options: {
+        scales: { 
+          xAxes: [{
+            type: 'time'
+          }]
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       expenses: {},
       trip: { 
         Currency: "",
@@ -19,13 +54,14 @@ export default {
         Members: [], 
         UID: ""
       }, 
-      groupedExpenses: {},
-      datasets: [
-      ]
+      groupedExpenses: {}
     }
   },
   props: {
     tripID: String 
+  },
+  components: {
+    Line
   },
   methods: { 
     async fetchExpensesData() {
@@ -34,7 +70,7 @@ export default {
       const expensesRef = collection(tripRef, "Expenses");
 
       // Create a query against the collection, ordering by the 'date' field in descending order
-      const q = query(expensesRef, orderBy("date", "desc"));
+      const q = query(expensesRef, orderBy("date", "asc"));
       const querySnapshot = await getDocs(q);
       const userCache = {};
 
@@ -73,7 +109,7 @@ export default {
       this.groupExpensesByDate(expenses);
     }, 
     async groupExpensesByDate(expenses) { 
-      const groupedExpenses = expenses.reduce((acc, expense) => {
+      const tempGroupedExpenses = expenses.reduce((acc, expense) => {
       // Format the date as 'dd/mm/yyyy'
       const expenseDate = expense.date.toLocaleDateString('en-GB');  // Change locale as needed
 
@@ -109,9 +145,15 @@ export default {
       return acc;
       }, {});
 
+      // Now sort the keys of tempGroupedExpenses in ascending order and rebuild the groupedExpenses
+      const sortedDates = Object.keys(tempGroupedExpenses).sort((a, b) => new Date(a) - new Date(b));
+      this.groupedExpenses = sortedDates.reduce((sortedAcc, date) => {
+        sortedAcc[date] = tempGroupedExpenses[date];
+        return sortedAcc;
+      }, {});
+
       // Update your component state or data object
-      this.groupedExpenses = groupedExpenses;
-      console.log(groupedExpenses);
+      console.log(this.groupedExpenses);
       this.calculateDailyTotals();
     },
     async fetchTripData() { 
@@ -136,14 +178,92 @@ export default {
 
       // Store the totals in the component state if needed or handle them as needed
       console.log("Daily Totals:", totals);
+      this.plotLineGraph(totals);
+    }, 
+    plotLineGraph(totals) { 
+      const dates = Object.keys(totals);
+      const expenses = Object.values(totals);
+      console.log(dates);
+      console.log(expenses); 
+
+      this.chartData = { 
+        labels: dates, 
+        datasets: [
+          { 
+            label: "Total Daily Expenses",
+            tension: 0.3,
+            pointRadius: 0,
+            backgroundColor: '#16697A',
+            borderColor: "#16697A",
+            data: Object.values(totals)
+          }
+        ]
+      }
+
+      console.log(this.chartData);
+
     }
   }, 
   mounted() { 
     const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
-        this.fetchExpensesData();
+        await this.fetchExpensesData();
+        const config = { 
+          type: 'line',
+          data: this.chartData, 
+          options: { 
+            responsive: true,
+            interaction: { 
+              intersect: false,
+            },
+            plugins: { 
+              legend: { 
+                display: false
+              },
+              title: { 
+                display: true,
+                text: "Total Daily Expenses",
+                color: 'black',
+                font: { 
+                  weight: 'bold',
+                  size: 18
+                }
+              }
+            },
+            scales: {
+              y: {
+                ticks: {
+                  color: "",
+                },
+                grid: {
+                  drawTicks: false,
+                },
+                border: {
+                  dash: [5, 10],
+                },
+              },
+              x: {
+                ticks: {
+                  color: "",
+                },
+                grid: {
+                  display: false,
+                },
+                border: {
+                  display: false,
+                },
+              },
+            },
+            maintainAspectRatio: false
+          }
+        }
+        const canvasTag = document.getElementById("expensesGraph");
+        const expensesGraph = new Chart(
+          canvasTag,
+          config
+        )
 
       }
     })
@@ -151,3 +271,12 @@ export default {
 }
 
 </script>
+
+<style>
+#expensesGraph { 
+  background-color: rgba(255, 255, 255, 0.588);
+  padding: 10px;
+  margin-top: 10%;
+  margin-bottom: 5%;
+}
+</style>

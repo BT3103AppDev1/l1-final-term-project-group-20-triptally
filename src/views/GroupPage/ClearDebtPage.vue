@@ -87,7 +87,6 @@ export default {
           // must convert expense to USD first, then from USD convert to the user's default currency 
           const expenseInUSD = debtData.totalAmount / (response.data.data[expenseCurrency]);
           expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
-          console.log(response.data.data)
         } else { 
           expenseInUserCurrency = debtData.totalAmount;
         }
@@ -105,15 +104,13 @@ export default {
             ConvertedAmount: expenseInUserCurrency
           }
         } else { 
-          return { 
-            ...document.data(), 
-            UID: document.id
-          }
+          return 
         }
       })
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
+      console.log(this.debtsYouOwe);
        
     },
     async payUp(debt) { 
