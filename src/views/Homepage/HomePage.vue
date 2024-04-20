@@ -160,7 +160,7 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
-      this.dropdownVisible = true;
+      this.selectedTrip.dropdownVisible = true;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
