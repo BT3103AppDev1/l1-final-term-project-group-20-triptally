@@ -70,7 +70,7 @@ export default {
       const expensesRef = collection(tripRef, "Expenses");
 
       // Create a query against the collection, ordering by the 'date' field in descending order
-      const q = query(expensesRef, orderBy("date", "desc"));
+      const q = query(expensesRef, orderBy("date", "asc"));
       const querySnapshot = await getDocs(q);
       const userCache = {};
 
@@ -187,7 +187,7 @@ export default {
       console.log(expenses); 
 
       this.chartData = { 
-        labels: dates.reverse(), 
+        labels: dates, 
         datasets: [
           { 
             label: "Total Daily Expenses",
@@ -195,7 +195,7 @@ export default {
             pointRadius: 0,
             backgroundColor: '#16697A',
             borderColor: "#16697A",
-            data: Object.values(totals).reverse()
+            data: Object.values(totals)
           }
         ]
       }

@@ -177,7 +177,7 @@ export default {
           // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
 
           const paidMemberData = memberDocSnapshot.data();
-          if (paidMemberData.totalAmount >= amountOwed) { 
+          if (paidMemberData.totalAmount > amountOwed) { 
             // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
             //  we will minus away amountOwed from paidMemberData.totalAmount 
             try { 
@@ -202,17 +202,10 @@ export default {
 
               const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, memberID);
               const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
-              await updateDoc(paidMemberUserOwesWhoDoc, { 
-                totalAmount: 0, 
-                expenses: {}
-              })
+              await deleteDoc(paidMemberUserOwesWhoDoc);
 
               // delete all the expenses in here!
-              
-              await updateDoc(owedMemberWhoOwesUserDoc, { 
-                totalAmount: 0,
-                expenses: {}
-              })
+              await deleteDoc(owedMemberWhoOwesUserDoc);
 
               const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
               const docSnapshot = await getDoc(oweUserDoc);
@@ -355,6 +348,11 @@ export default {
 </script>
 
 <style scoped>
+
+.app-container { 
+  width: 100%; 
+  height: 100%;
+}
 
 .main-container { 
   background: #16697A; 
