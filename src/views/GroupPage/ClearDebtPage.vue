@@ -16,7 +16,9 @@
               <div class="user-email">{{ debt.Email }}</div>
             </div>
             <div v-if="debt.currency === userCurrency" class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
-            <div v-else class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
+            <div v-else class="debt-description">
+              <div h1>You owe</div> 
+              {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
           </div>
           <button @click="confirmPayUp(debt)" class="payUpButton">Pay Up</button>
         </div>
@@ -85,7 +87,6 @@ export default {
           // must convert expense to USD first, then from USD convert to the user's default currency 
           const expenseInUSD = debtData.totalAmount / (response.data.data[expenseCurrency]);
           expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
-          console.log(response.data.data)
         } else { 
           expenseInUserCurrency = debtData.totalAmount;
         }
@@ -103,15 +104,13 @@ export default {
             ConvertedAmount: expenseInUserCurrency
           }
         } else { 
-          return { 
-            ...document.data(), 
-            UID: document.id
-          }
+          return 
         }
       })
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
+      console.log(this.debtsYouOwe);
        
     },
     async payUp(debt) { 
@@ -187,7 +186,7 @@ export default {
 }
 
 .main-content {
-  margin-left: 20%;
+  margin-left: 5%;
   margin-top: -30%;
 }
 
@@ -217,7 +216,7 @@ export default {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
-  width: 1000px;
+  width: 800px;
 }
 
 .debt-details {
@@ -234,9 +233,10 @@ export default {
 
 .debt-description {
   margin-left: auto;
-  margin-right: 20px;
+  margin-right: 170px;
   color: #e61b1b;
   font-weight: bold;
+  text-align: center;
 }
 
 .debt-details::before {
@@ -275,13 +275,6 @@ export default {
 .user-email {
   font-size: small;
   color: #666; 
-}
-
-.debt-description {
-  margin-top: 8px; 
-  font-size: medium; 
-  color: #e61b1b; 
-  font-weight: bold;
 }
 
 .payUpButton { 

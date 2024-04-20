@@ -1,63 +1,66 @@
 <template> 
 <div class="app-container">
-  <div class="main-container">
-    <div class="header">
-      <div class="back-button" @click="returnToMainExpensesPage">
-        <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
-      </div>
-      <h1>Add New Expense</h1>
-    </div> 
-    <div class="form-container">
-      <div class="first-row">
-        <input type="date" v-model="expense.date" placeholder="Choose Date">
-      </div>
-      <div class="second-row">
-        <select v-model="expense.category" class="expense-category">
-          <option value="Food">🍽️</option>
-          <option value="Shopping">🛍️</option>
-          <option value="Transport">🚌</option>
-          <option value="Entertainment">🎭</option>
-          <option value="Accommodations">🏨</option>
-          <option value="Miscellaneous">📦</option>
-        </select>
-        <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
-      </div>
-      <div class="third-row">
-        <select v-model="selectedCurrency" class="currency-category">
-          <option value="" disabled selected>Select Currency</option>
-          <option value="SGD">SGD</option>
-          <option value="AUD">AUD</option>
-          <option value="CAD">CAD</option>
-          <option value="CHF">CHF</option>
-          <option value="CNY">CNY</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-          <option value="JPY">JPY</option>
-          <option value="KRW">KRW</option>
-          <option value="MYR">MYR</option>
-          <option value="NZD">NZD</option>
-          <option value="SEK">SEK</option>
-          <option value="USD">USD</option>
-        </select>
-        <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
-      </div>
-      <div class="fourth-row">
-        <div class="paid-by">
-        <span>Paid by</span>
-        <select class="payer" v-model="expense.paidBy">
-          <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
-            {{ member.FirstName }} {{ member.LastName }}
-          </option>
-        </select>
-        <span>and split between</span>
-        <select class="split-between" v-model="expense.splitBetween">
-        <!--Ideally user should be able to either select 'Everyone' or manually add members one by one - members involved in the expense will be added to this.expense.owedMembers -->
-        <option value="Everyone">Everyone</option>
-        </select>
+  <div class="main-content">
+    <p v-if="showSuccessMessage" class="success-message">Expense added successfully!</p>
+    <p v-if="showErrorMessage" class="error-message">All fields must be filled!</p>
+    <div class="main-container">
+      <div class="header">
+        <div class="back-button" @click="returnToMainExpensesPage">
+          <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+        </div>
+        <h1>Add New Expense</h1>
+      </div> 
+      <div class="form-container">
+        <div class="first-row">
+          <input type="date" v-model="expense.date" placeholder="Choose Date">
+        </div>
+        <div class="second-row">
+          <select v-model="expense.category" class="expense-category">
+            <option value="Food">🍽️</option>
+            <option value="Shopping">🛍️</option>
+            <option value="Transport">🚌</option>
+            <option value="Entertainment">🎭</option>
+            <option value="Accomodations">🏨</option>
+            <option value="Miscellaneous">📦</option>
+          </select>
+          <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
+        </div>
+        <div class="third-row">
+          <div class="currency-category">
+            <p>{{ selectedCurrency }}</p>
+          </div>
+          <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
+        </div>
+        <div class="fourth-row">
+          <div class="paid-by">
+          <span>Paid by</span>
+          <select class="payer" v-model="expense.paidBy">
+            <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
+              {{ member.FirstName }} {{ member.LastName }}
+            </option>
+          </select>
+          <span>and split between</span>
+          <div class="select-wrapper">
+            <div class="selected-items">
+              <span v-if="!expense.owedMembers.length" class="placeholder">Add Members</span>
+              <div v-for="(member, index) in expense.owedMembers" :key="index" class="selected-item">
+                {{ member.FirstName }} {{ member.LastName }}
+                <span @click="removeSelectedMember(index)">x</span>
+              </div>
+            </div>
+            <select @change="addSelectedMember" class="custom-select">
+              <option disabled selected value="">Select</option>
+              <option
+                v-for="member in availableMembers" :key="member.UID" :value="member.UID">
+                {{ member.FirstName }} {{ member.LastName }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <button type="submit" @click="addExpense">Add Expense!</button>  
+      <button type="submit" @click="addExpense">Add Expense!</button>  
+    </div>
   </div>
 </div>
   
@@ -65,15 +68,24 @@
 
 <script>
 import { db } from '@/firebase';
-import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+
 
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
     return {
+      showSuccessMessage: false,
+      showErrorMessage: false,
       selectedCurrency: "", 
       user: false, 
+      currentUser: {
+        FirstName: '',
+        LastName: '',
+        UID: ''
+      },
       trip: { 
         TripName: "",
         Members: [],
@@ -87,8 +99,8 @@ export default {
         amount: "", 
         paidBy: "",
         category: "Food",
-        splitBetween: "Everyone",
-        owedMembers: []
+        splitBetween: "",
+        owedMembers: [],
         // this represents the userIDs of the members that owe the person that paid for this expense money 
       }
     }
@@ -103,13 +115,46 @@ export default {
         code,
         symbol
       }));
-    }
+    },
+    availableMembers() {
+      const filteredMembers = this.trip.MemberDetails.filter(member => 
+        !this.expense.owedMembers.some(owedMember => owedMember.UID === member.UID)
+      );
+      console.log('Filtered Members:', filteredMembers);
+      return filteredMembers;
+    },
   },
   methods: { 
     initializeCurrency() {
       // Assuming 'trip.Currency' is loaded here or via a prop
       if (this.trip.Currency) {
         this.selectedCurrency = this.trip.Currency;
+      }
+    },
+    addSelectedMember(event) {
+    const selectedUserID = event.target.value;
+    const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
+    if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
+      this.expense.owedMembers.push(selectedUser);
+    }
+    // Reset the select dropdown
+      event.target.value = "";
+    },
+    removeSelectedMember(index) {
+      this.expense.owedMembers.splice(index, 1);
+    },
+    async fetchCurrentUserDetails(uid) {
+      const userDocRef = doc(db, "Users", uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        this.currentUser.FirstName = userData.FirstName;
+        this.currentUser.LastName = userData.LastName;
+        this.currentUser.UID = uid;
+        // Set the default paidBy to the user's UID
+        this.expense.paidBy = uid;
+      } else {
+        console.error("No user found with UID:", uid);
       }
     },
     returnToMainExpensesPage() { 
@@ -177,7 +222,7 @@ export default {
           // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
 
           const paidMemberData = memberDocSnapshot.data();
-          if (paidMemberData.totalAmount >= amountOwed) { 
+          if (paidMemberData.totalAmount > amountOwed) { 
             // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
             //  we will minus away amountOwed from paidMemberData.totalAmount 
             try { 
@@ -202,17 +247,10 @@ export default {
 
               const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, memberID);
               const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
-              await updateDoc(paidMemberUserOwesWhoDoc, { 
-                totalAmount: 0, 
-                expenses: {}
-              })
+              await deleteDoc(paidMemberUserOwesWhoDoc);
 
               // delete all the expenses in here!
-              
-              await updateDoc(owedMemberWhoOwesUserDoc, { 
-                totalAmount: 0,
-                expenses: {}
-              })
+              await deleteDoc(owedMemberWhoOwesUserDoc);
 
               const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
               const docSnapshot = await getDoc(oweUserDoc);
@@ -268,36 +306,32 @@ export default {
         }
       }
     }, 
-    async deleteAllFieldsWithWord(docRef, word) {
-        const docSnap = await getDoc(docRef);
+    async handlePhotoChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            let updates = {};
-            let shouldUpdate = false;
+        try {
+          const response = await fetch('http://localhost:3000/upload', {
+            method: 'POST',
+            body: formData,
+          });
 
-            // Check each field in the document
-            for (const key in data) {
-                if (typeof data[key] === 'number' && key.includes(word)) {
-                    // Prepare to delete the field
-                    updates = {
-                      ...updates, 
-                      [key]: deleteField()
-                    };
-                    shouldUpdate = true;
-                }
-            }
-
-            // If there are fields to delete, perform the update
-            if (shouldUpdate) {
-                await updateDoc(docRef, updates);
-                console.log("Fields containing the word have been deleted.");
-            } else {
-                console.log("No fields contained the word.");
-            }
-        } else {
-            console.log("Document does not exist.");
+          const data = await response.json();
+          console.log('Received data:', data.totalAmount);
+          if (data) {
+            this.expense.amount = data.totalAmount.toFixed(2);
+            this.expense.date = new Date(data.date); // Update your form's data
+            alert('Receipt processed. Total: ' + data.total);
+          } else {
+            alert('Receipt processing failed.');
+          }
+        } catch (error) {
+          console.error('Error uploading and processing image:', error);
+          alert('Error processing the receipt');
         }
+      }
     },
     async addExpense() {
       // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
@@ -317,13 +351,15 @@ export default {
           UID: expenseDocRef.id, 
           owedMembers: this.expense.owedMembers
         })
+        this.showSuccessMessage = true;
         console.log("Expense added successfully!");
 
         // Update the used amount in the corresponding budget category
-        const budgetCategoryRef = doc(db, "Trips", this.trip.UID, "Budgets", this.expense.category);
-        await updateDoc(budgetCategoryRef, {
+        const budgetRef = collection(tripRef, "Budgets"); 
+        const budgetCategoryRef = doc(budgetRef, this.expense.category);
+        await setDoc(budgetCategoryRef, {
           used: increment(Number(this.expense.amount)),
-        });
+        }, { merge: true });
 
         // Reset the form fields
         this.expense.date = "";
@@ -336,6 +372,7 @@ export default {
 
       } catch (error) { 
         console.error("Error adding expense: " + error);
+        this.showErrorMessage = true;
       }
     }
   }, 
@@ -346,6 +383,7 @@ export default {
       if (user) {
         this.user = user;
         await this.fetchTripData();
+        await this.fetchCurrentUserDetails(user.uid);
         await this.convertMembersArray();
       }
     })
@@ -355,11 +393,16 @@ export default {
 
 <style scoped>
 
+.app-container { 
+  width: 100%; 
+  height: 100%;
+}
+
 .main-container { 
   background: #16697A; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
-  height: 600px;
+  height: 650px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
@@ -446,7 +489,14 @@ input[placeholder="Choose Date"] {
   width: 100px;
   height: 60px;
   margin-right: 20px;
-  padding-left: 22px;
+  background-color: rgb(222, 221, 221);
+  border-radius: 10px;
+  color: black;
+  margin-top: 10px;
+  display: flex;             /* Enable Flexbox */
+  justify-content: center;   /* Center horizontally */
+  align-items: center;
+  font-weight: 600; 
 }
 
 .expense-title, .expense-amount {
@@ -466,10 +516,31 @@ input[placeholder="Choose Date"] {
   display: flex;
 }
 
+.fourth-row {
+  margin-top: 15px;
+}
+
 .payer, .split-between {
   width: 140px;
   margin-left: 10px;
   margin-right: 10px;
+}
+
+.selected-items {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: 1px solid #ddd; 
+  border-radius: 10px; 
+  min-height: 38px; 
+  width: calc(60% - 10px); 
+  margin-bottom: -10px;
+  background-color: white;
+  font-size: 14px;
+}
+
+.select-wrapper {
+  width: 800px;
 }
 
 .form-container h1 { 
@@ -480,7 +551,7 @@ button {
   background-color: #82C0CC; /* Replace with your color */
   color: white;
   border: none;
-  padding: 20px 30px;
+  padding: 15px 30px;
   font-size: 22px;
   cursor: pointer;
   margin-bottom: 55px;
@@ -491,5 +562,34 @@ button:hover {
   background-color: #71a9b4; /* Replace with your color */
 }
 
-
+.success-message {
+  color: rgb(2, 89, 40); /* Simple styling */
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: large;
+  z-index: 100; 
+  padding: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  background-color: rgb(176, 244, 205);
+}
+.error-message {
+  color: rgb(165, 17, 3); /* Simple styling */
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: large;
+  z-index: 100;
+  padding: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  background-color: rgb(241, 180, 174); 
+}
 </style>

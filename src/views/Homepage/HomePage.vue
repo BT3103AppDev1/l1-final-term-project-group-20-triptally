@@ -15,6 +15,7 @@
             <!-- Dropdown Menu -->
             <div class="dropdown-menu" v-if="trip.dropdownVisible">
               <div class="dropdown-item" @click="renameGroup(trip)">Rename Group</div>
+              <div class="dropdown-item" @click="changeGroupImage(trip)">Change Group Image</div>
               <div class="dropdown-item" @click="confirmLeaveGroup(trip)">Leave Group</div>
             </div>
               <!-- Leave Group Confirmation Modal -->
@@ -39,8 +40,30 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Change Group Photo Popup -->
+              <div class="change-image-popup" v-if="showChangeGroupImage">
+                <div class="popup-content">
+                  <h2 class="change-image">Change Trip Cover Image</h2>
+          
+                    <div class="photo-form">
+                        <label class="photo-label" for="photo-input">Upload Photo:</label>
+                        <input type="file" accept="image/*" @change="tempDisplayPhoto">
+                    </div>
+
+                    <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
+
+
+                    <div class="button-container">
+                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm</button>
+                        <button class="cancel-photo" @click="cancelChangePhoto">Cancel</button>
+                    </div>
+
+                </div>
+              </div>
+
           </div>
-          <img :src="trip.image" :alt="trip.TripName" class="trip-image">
+          <img :src="getTripImage(trip)" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
       </router-link>
@@ -58,14 +81,21 @@
       </h1>
     </div>
 </template>
- 
- <script>
-import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, getDocs } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import AddNewTripModal from './AddNewTripModal.vue'
-import { db, auth } from '@/firebase';
 
- export default {
+<script>
+
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, getDocs } from 'firebase/firestore';
+import AddNewTripModal from './AddNewTripModal.vue';
+import { firebaseApp, db, auth, storage } from '@/firebase'; // Assuming db and auth are exported from '@/firebase'
+import defaultTripImage from '@/assets/default-trip-image.jpg';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+
+import 'firebase/app'
+import 'firebase/storage'
+
+export default {
   name: 'TripList',
   data() {
      return {
@@ -74,20 +104,28 @@ import { db, auth } from '@/firebase';
       showModal: false,
       showLeaveGroupConfirmation: false,
       showEditTripNamePopup: false,
+      showChangeGroupImage: false,
       selectedTrip: null,
+      defaultTripImage,
       trips: [], 
       tripLength: 0,
-        //  { id: 1, name: 'Grad Trip <3', image: gradTripImage },
-        //  { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
-        //  { id: 3, name: 'Bali Trip', image: baliTripImage },
-        //  { id: 4, name: 'Weekend in KL', image: weekendKLImage }
-         // ... more trips
+
+      tempSelectedImage: null,
+      tempSelectedPhotoName: null,
+      tempFile: null,
      };
    },
   components: { 
     AddNewTripModal
   },
   methods: {
+    getTripImage(trip) {
+      if (trip.image) {
+        return trip.image; // If image URL exists, return it directly
+      } else {
+        return defaultTripImage;
+      } 
+  },
     toggleDropdown(uid) {
       const trip = this.trips.find(t => t.UID === uid);
       if (trip) {
@@ -108,7 +146,6 @@ import { db, auth } from '@/firebase';
       this.selectedTrip = trip;
       this.newTripName = trip.TripName;
       trip.dropdownVisible = false; 
-
     },
     async updateTripName() {
       this.selectedTrip.TripName = this.newTripName;
@@ -125,13 +162,61 @@ import { db, auth } from '@/firebase';
       } catch (error) { 
         console.log(error);
       }
-
       this.selectedTrip = null; 
     },
+
+    tempDisplayPhoto(event){
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.tempSelectedImage = e.target.result;
+            this.tempSelectedPhotoName = file.name;
+          };      
+          reader.readAsDataURL(file);
+          this.tempFile = file;
+          
+        } catch (error) {
+          console.error('Error reading image file:', error);
+        }
+      }
+    },
+   
+    async confirmChangePhoto() {
+      if (this.tempFile){
+        try {
+          const storage = getStorage();         
+          const storageRef = ref(storage, `image/${this.tempSelectedPhotoName}`);        
+          const snapshot = await uploadBytes(storageRef, this.tempFile);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          this.selectedTrip.image = downloadURL;
+          this.selectedPhotoName = this.tempSelectedPhotoName;
+        
+          const tripDocRef = doc(db, "Trips", this.selectedTrip.UID);
+          await updateDoc(tripDocRef, {
+            image: downloadURL
+          });
+    
+          console.log("step")
+          this.showChangeGroupImage = false;
+
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        }
+      }
+    },
     cancelEditTripName() {
-      this.selectedTrip.dropdownVisible = false;
       this.selectedTrip = null; 
       this.showEditTripNamePopup = false;
+    },
+    changeGroupImage(trip){
+      this.selectedTrip = trip;
+      this.showChangeGroupImage = true;
+    },
+    cancelChangePhoto(){
+      this.tempSelectedImage = null;
+      this.showChangeGroupImage = false;
     },
     async leaveGroup(trip) {
       //logic to leave group 
@@ -166,6 +251,7 @@ import { db, auth } from '@/firebase';
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
+      this.dropdownVisible = true;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
@@ -174,7 +260,6 @@ import { db, auth } from '@/firebase';
        this.isPopupVisible = !this.isPopupVisible
      }, 
     async fetchUserTrips(newTripID) { 
-
       const tripDocRef = doc(db, "Trips", newTripID); 
       try { 
         const docSnap = await getDoc(tripDocRef); 
@@ -191,7 +276,6 @@ import { db, auth } from '@/firebase';
       }
     },
     async fetchUserData() {
-  
       const docRef = doc(db, "Users", this.user.uid);
       try {
         const userDoc = await getDoc(docRef);
@@ -222,19 +306,23 @@ import { db, auth } from '@/firebase';
           // }
 
           for (const tripID of userDoc.data().GroupTrips) {
-            const tripDocRef = doc(db, "Trips", tripID);
-            try {
-              const docSnap = await getDoc(tripDocRef);
-              this.trips.push({ 
-                Currency: docSnap.data().Currency, 
-                Members: docSnap.data().Members, 
-                TripName: docSnap.data().TripName,
-                UID: tripID 
-              });
-            } catch (error) {
-              console.error("Error retrieving trip ", error);
-            }
+          const tripDocRef = doc(db, "Trips", tripID);
+          try {
+            const docSnap = await getDoc(tripDocRef);
+            const imageData = docSnap.data().image !== undefined ? docSnap.data().image : '';
+            console.log(docSnap.data().image);
+            this.trips.push({ 
+              Currency: docSnap.data().Currency, 
+              Members: docSnap.data().Members, 
+              TripName: docSnap.data().TripName,
+              image: imageData,
+              UID: tripID
+            });
+          } catch (error) {
+            console.error("Error retrieving trip ", error);
           }
+        }
+
 
         } else {
           console.error("User document does not exist.");
@@ -245,7 +333,6 @@ import { db, auth } from '@/firebase';
       }
     },
   mounted() {
-  
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -393,14 +480,7 @@ import { db, auth } from '@/firebase';
 .confirm-button, .cancel-button {
   font-weight: 500;
   font-size: 15px;
-  display: flex; /* Enables flexbox */
-  justify-content: center; /* Centers content horizontally */
-  align-items: center; /* Centers content vertically */
-  padding: 15px 24px;
-  height: 35px;
-  width: 330px;
   background-color: white;
-  border-radius: 0%;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 
@@ -414,7 +494,7 @@ import { db, auth } from '@/firebase';
 }
 
 .confirm-button:hover, .cancel-button:hover {
-  background-color: #f2f2f2; /* Light grey background on hover */
+  background-color: #f2f2f2; 
 }
 
 .edit-name-popup {
@@ -438,6 +518,34 @@ import { db, auth } from '@/firebase';
   font-size: 15px;
   font-weight: 300;
   color: white;
+}
+
+.change-image-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height:250px;
+  padding: 30px;
+  background-color: #16697A;
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 10;
+  font-size: 15px;
+  font-weight: 300;
+  color: white;
+}
+
+.temp-image {
+  max-width: 100%; /* Adjust as needed */
+  max-height: 300px; /* Adjust as needed */
 }
 
 .edit-name {
@@ -469,12 +577,12 @@ import { db, auth } from '@/firebase';
 
 
 .button-container {
-  text-align: center; /* Align buttons to the center */
+  text-align: center; 
   padding-top:5px;
   width: 330px;
-  display: flex; /* Display buttons in the same line */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 }
 
 .button-container button {
@@ -506,6 +614,7 @@ import { db, auth } from '@/firebase';
 
 .save-edit:hover, .cancel-edit:hover {
   background-color: #105664;
+  border-radius: 20px;
 }
 </style>
   

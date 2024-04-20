@@ -106,6 +106,7 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 56px;
   padding: 5px;
+  width: 100%;
 }
 
 .tt_logo {
