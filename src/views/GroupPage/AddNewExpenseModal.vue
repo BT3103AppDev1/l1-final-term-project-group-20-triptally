@@ -65,7 +65,7 @@
 
 <script>
 import { db } from '@/firebase';
-import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default { 
@@ -261,36 +261,32 @@ export default {
         }
       }
     }, 
-    async deleteAllFieldsWithWord(docRef, word) {
-        const docSnap = await getDoc(docRef);
+    async handlePhotoChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            let updates = {};
-            let shouldUpdate = false;
+        try {
+          const response = await fetch('http://localhost:3000/upload', {
+            method: 'POST',
+            body: formData,
+          });
 
-            // Check each field in the document
-            for (const key in data) {
-                if (typeof data[key] === 'number' && key.includes(word)) {
-                    // Prepare to delete the field
-                    updates = {
-                      ...updates, 
-                      [key]: deleteField()
-                    };
-                    shouldUpdate = true;
-                }
-            }
-
-            // If there are fields to delete, perform the update
-            if (shouldUpdate) {
-                await updateDoc(docRef, updates);
-                console.log("Fields containing the word have been deleted.");
-            } else {
-                console.log("No fields contained the word.");
-            }
-        } else {
-            console.log("Document does not exist.");
+          const data = await response.json();
+          console.log('Received data:', data.totalAmount);
+          if (data) {
+            this.expense.amount = data.totalAmount.toFixed(2);
+            this.expense.date = new Date(data.date); // Update your form's data
+            alert('Receipt processed. Total: ' + data.total);
+          } else {
+            alert('Receipt processing failed.');
+          }
+        } catch (error) {
+          console.error('Error uploading and processing image:', error);
+          alert('Error processing the receipt');
         }
+      }
     },
     async addExpense() {
       // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
