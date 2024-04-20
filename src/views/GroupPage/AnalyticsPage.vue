@@ -13,7 +13,7 @@
     </div>
       <div class="expense-wrapper">
         <div class="expenses-analytics">
-          <ExpensesAnalytics :tripID="$route.params.tripID"/>
+          <ExpensesAnalytics :tripCurrency="currencySymbols[trip.Currency]" :tripID="$route.params.tripID"/>
         </div>
       </div>
   </div>
@@ -40,6 +40,22 @@ export default {
         UID: ""
       },
       user: false, 
+      currencySymbols: {
+        USD: "$",
+        JPY: "¥",
+        SGD: "S$",
+        AUD: "A$",
+        CAD: "C$",
+        CHF: "₣",
+        CNY: "¥",
+        EUR: "€",
+        GBP: "£",
+        KRW: "₩",
+        MYR: "RM",
+        NZD: "NZ$",
+        SEK: "kr",
+        // Add more currencies as needed
+      },
       groupedExpenses: {}
     }
   },

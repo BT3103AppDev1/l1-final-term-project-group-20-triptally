@@ -58,7 +58,8 @@ export default {
     }
   },
   props: {
-    tripID: String 
+    tripID: String,
+    tripCurrency: String
   },
   components: {
     Line
@@ -255,6 +256,17 @@ export default {
                   display: false,
                 },
               },
+            },
+            tooltips: { 
+              callbacks: { 
+                label(tooltipItem, data) { 
+                  // Get the dataset label.
+                  const label = data.datasets[tooltipItem.datasetIndex].label;
+
+                  const value = numeral(tooltipItem.yLabel).format('$0, 0');
+                  return `${label} : ${value}`;
+                }
+              }
             },
             maintainAspectRatio: false
           }
