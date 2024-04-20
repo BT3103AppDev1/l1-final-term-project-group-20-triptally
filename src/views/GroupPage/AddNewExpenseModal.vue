@@ -320,10 +320,11 @@ export default {
         console.log("Expense added successfully!");
 
         // Update the used amount in the corresponding budget category
-        const budgetCategoryRef = doc(db, "Trips", this.trip.UID, "Budgets", this.expense.category);
-        await updateDoc(budgetCategoryRef, {
+        const budgetRef = collection(tripRef, "Budgets"); 
+        const budgetCategoryRef = doc(budgetRef, this.expense.category);
+        await setDoc(budgetCategoryRef, {
           used: increment(Number(this.expense.amount)),
-        });
+        }, { merge: true });
 
         // Reset the form fields
         this.expense.date = "";

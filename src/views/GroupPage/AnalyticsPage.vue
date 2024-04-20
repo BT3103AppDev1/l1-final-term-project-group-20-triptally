@@ -10,12 +10,12 @@
         <div class="budget-analytics">
             <BudgetAnalytics :tripID="$route.params.tripID" @update:totalExpense="totalExpense = $event" @update:totalBudget="totalBudget = $event" />
         </div>
+    </div>
       <div class="expense-wrapper">
         <div class="expenses-analytics">
-          <ExpensesAnalytics :tripID="trip.UID"/>
+          <ExpensesAnalytics :tripID="$route.params.tripID"/>
         </div>
       </div>
-    </div>
   </div>
 </div>
 </template>
@@ -109,7 +109,6 @@ export default {
 }
 
 .content-container {
-  margin-top: -200px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;

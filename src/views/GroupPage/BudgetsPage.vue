@@ -254,7 +254,6 @@ h1 {
   font-weight: 700;
   text-align: center;
   color: #333;
-  margin-top: 100px; /* Adjust as needed */
 }
 
 .budget-categories {
