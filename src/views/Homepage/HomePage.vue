@@ -51,8 +51,11 @@
                         <input type="file" accept="image/*" @change="tempDisplayPhoto">
                     </div>
 
+                    <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
+
+
                     <div class="button-container">
-                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm Image</button>
+                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm</button>
                         <button class="cancel-photo" @click="cancelChangePhoto">Cancel</button>
                     </div>
 
@@ -212,7 +215,7 @@ export default {
       this.showChangeGroupImage = true;
     },
     cancelChangePhoto(){
-      //this.selectedPhoto = null;
+      this.tempSelectedImage = null;
       this.showChangeGroupImage = false;
     },
     async leaveGroup(trip) {
@@ -523,7 +526,7 @@ export default {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 300px;
-  height:150px;
+  height:250px;
   padding: 30px;
   background-color: #16697A;
   border-radius: 20px;
@@ -538,6 +541,11 @@ export default {
   font-size: 15px;
   font-weight: 300;
   color: white;
+}
+
+.temp-image {
+  max-width: 100%; /* Adjust as needed */
+  max-height: 300px; /* Adjust as needed */
 }
 
 .edit-name {
