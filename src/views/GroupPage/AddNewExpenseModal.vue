@@ -68,7 +68,7 @@
 
 <script>
 import { db } from '@/firebase';
-import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
@@ -222,7 +222,7 @@ export default {
           // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
 
           const paidMemberData = memberDocSnapshot.data();
-          if (paidMemberData.totalAmount >= amountOwed) { 
+          if (paidMemberData.totalAmount > amountOwed) { 
             // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
             //  we will minus away amountOwed from paidMemberData.totalAmount 
             try { 
@@ -247,17 +247,10 @@ export default {
 
               const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, memberID);
               const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
-              await updateDoc(paidMemberUserOwesWhoDoc, { 
-                totalAmount: 0, 
-                expenses: {}
-              })
+              await deleteDoc(paidMemberUserOwesWhoDoc);
 
               // delete all the expenses in here!
-              
-              await updateDoc(owedMemberWhoOwesUserDoc, { 
-                totalAmount: 0,
-                expenses: {}
-              })
+              await deleteDoc(owedMemberWhoOwesUserDoc);
 
               const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
               const docSnapshot = await getDoc(oweUserDoc);
@@ -313,36 +306,32 @@ export default {
         }
       }
     }, 
-    async deleteAllFieldsWithWord(docRef, word) {
-        const docSnap = await getDoc(docRef);
+    async handlePhotoChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            let updates = {};
-            let shouldUpdate = false;
+        try {
+          const response = await fetch('http://localhost:3000/upload', {
+            method: 'POST',
+            body: formData,
+          });
 
-            // Check each field in the document
-            for (const key in data) {
-                if (typeof data[key] === 'number' && key.includes(word)) {
-                    // Prepare to delete the field
-                    updates = {
-                      ...updates, 
-                      [key]: deleteField()
-                    };
-                    shouldUpdate = true;
-                }
-            }
-
-            // If there are fields to delete, perform the update
-            if (shouldUpdate) {
-                await updateDoc(docRef, updates);
-                console.log("Fields containing the word have been deleted.");
-            } else {
-                console.log("No fields contained the word.");
-            }
-        } else {
-            console.log("Document does not exist.");
+          const data = await response.json();
+          console.log('Received data:', data.totalAmount);
+          if (data) {
+            this.expense.amount = data.totalAmount.toFixed(2);
+            this.expense.date = new Date(data.date); // Update your form's data
+            alert('Receipt processed. Total: ' + data.total);
+          } else {
+            alert('Receipt processing failed.');
+          }
+        } catch (error) {
+          console.error('Error uploading and processing image:', error);
+          alert('Error processing the receipt');
         }
+      }
     },
     async addExpense() {
       // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
@@ -366,10 +355,11 @@ export default {
         console.log("Expense added successfully!");
 
         // Update the used amount in the corresponding budget category
-        const budgetCategoryRef = doc(db, "Trips", this.trip.UID, "Budgets", this.expense.category);
-        await updateDoc(budgetCategoryRef, {
+        const budgetRef = collection(tripRef, "Budgets"); 
+        const budgetCategoryRef = doc(budgetRef, this.expense.category);
+        await setDoc(budgetCategoryRef, {
           used: increment(Number(this.expense.amount)),
-        });
+        }, { merge: true });
 
         // Reset the form fields
         this.expense.date = "";
@@ -403,8 +393,13 @@ export default {
 
 <style scoped>
 
+.app-container { 
+  width: 100%; 
+  height: 100%;
+}
+
 .main-container { 
-  background: #166978; 
+  background: #16697A; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
   height: 650px;

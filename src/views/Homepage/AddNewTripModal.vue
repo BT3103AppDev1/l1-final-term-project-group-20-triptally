@@ -5,23 +5,22 @@
       <h2>New Group Trip</h2>
       <input v-model="tripName" type="text" id="tripName" placeholder="Enter Trip Name"><br>
       <div class="select-wrapper">
+        <input type="text" class='search-input' v-model="searchTerm" placeholder="Search username"
+               @focus="showDropdown = true" @blur="keepDropdownOpen">
+        <div v-if="showDropdown" class="custom-dropdown">
+          <div v-for="user in filteredUsers" :key="user.userID"
+               @click="selectUser(user)"
+               class="dropdown-item">
+            {{ user.username }}
+          </div>
+        </div>
         <div class="selected-items">
-          <span v-if="!selectedMembers.length" class="placeholder">Add Members</span>
+          <span v-if="!selectedMembers.length" class="placeholder">Members</span>
           <div v-for="(user, index) in selectedMembers" :key="index" class="selected-item">
             {{ user.username }}
             <span @click="removeSelectedMember(index)">x</span>
           </div>
         </div>
-        <select @change="addSelectedMember" class="custom-select">
-          <option disabled selected value="">Select</option>
-          <option 
-            v-for="user in availableUsers" 
-            :key="user.userID" 
-            :value="user.userID"
-            :disabled="selectedMembers.some(member => member.userID === user.userID)">
-              {{ user.username }}
-          </option>
-        </select>
       </div>
       <select v-model="currency" class="select-currency">
         <option value="" disabled selected hidden>Select Default Currency</option>
@@ -78,6 +77,10 @@ export default {
       currency: "",
       allUsers: [], // Array to hold all users with their usernames and user IDs
       tripID: "",
+      searchTerm: '',
+      showDropdown: false,
+      filteredUsers: [],
+      image: "",
     }
   },
   computed: {
@@ -86,12 +89,41 @@ export default {
         !this.selectedMembers.some(member => member.userID === user.userID)
       );
     },
+    filteredUsers() {
+      if (!this.searchTerm) {
+        return this.availableUsers;
+      }
+      const lowerSearchTerm = this.searchTerm.toLowerCase();
+      return this.availableUsers.filter(user => 
+        user.username.toLowerCase().includes(lowerSearchTerm)
+      );
+    },
+  },
+  watch: {
+    searchTerm(newVal) {
+      if (newVal.length > 0) {
+        this.showDropdown = true;
+      } else {
+        this.showDropdown = false;
+      }
+    }
+  },
+  async created() {
+    await this.fetchUsers();
   },
   emits: ['update:isVisible', 'refreshTrips'],
   async created() {
     await this.fetchUsers();
   },
   methods: {
+    keepDropdownOpen(event) {
+      event.preventDefault();
+    },
+    selectUser(user) {
+      this.selectedMembers.push(user);
+      this.searchTerm = ''; 
+      this.showDropdown = false; 
+    },
     async fetchUsers() {
       const usersRef = collection(db, "Usernames");
       const querySnapshot = await getDocs(usersRef);
@@ -110,18 +142,6 @@ export default {
       this.selectedMembers.splice(index, 1);
     },
     async createTrip() {
-      //this below part doesnt matter anymore bc they can only choose frm a list of existing usernames
-      /*console.log(this.members);
-      // search for the username and the user's corresponding UID 
-      const docRef = doc(db, "Usernames", this.members); 
-      const docSnap = await getDoc(docRef); 
-
-      if (docSnap.exists()) { 
-        console.log(docSnap.data().UID); 
-        this.userIDs.push(docSnap.data().UID);
-      } else { 
-        alert("User entered does not exist."); 
-      }*/ 
       await this.fetchUserData();
 
       var userIDs = this.selectedMembers.map(member => member.userID);
@@ -133,7 +153,8 @@ export default {
         const tripDocRef = await addDoc(collection(db, "Trips"), {
           Members: userIDs, // Assuming you want to add all userIDs, not just this.members
           TripName: this.tripName,
-          Currency: this.currency
+          Currency: this.currency,
+          Image: "",
         });
         this.tripID = tripDocRef.id;
         console.log('New trip added with ID: ' + this.tripID);
@@ -144,6 +165,7 @@ export default {
             await updateDoc(userRef, {
               GroupTrips: arrayUnion(this.tripID)
             });
+            this.closeModal();
             console.log("Trip added to user with userID: " + userID);
   
           } catch (error) {
@@ -180,6 +202,7 @@ export default {
       this.tripName = "";
       this.selectedMembers = [];
       this.currency = "";
+      this.showDropdown = false;
       this.$emit('update:isVisible', false);
     }, 
     userList() { 
@@ -233,15 +256,32 @@ export default {
   background-color: transparent;
 }
 
+.custom-dropdown {
+  position: absolute;
+  width: 57.5%;
+  margin-top: 50px;
+  border-radius: 10px;
+  background-color: #82C0CC;
+  border: 1px solid #ccc;
+  z-index: 100;
+}
 
-input[placeholder="Enter Trip Name"], input[placeholder="Add 1st member"], input[placeholder="Add 2nd member"], #searchUser, select {
+.dropdown-item {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #1b4851;
+  border-radius: 10px;
+}
+
+input[placeholder="Enter Trip Name"], input[placeholder="Search username"], select {
   width: 58%;
-  /* Full width minus padding */
   height: 100%;
   padding: 10px;
   margin-top: 10px;
   margin-bottom: 20px;
-  /* Space between inputs */
   border: 0px solid #ddd;
   border-radius: 10px;
   font-size: medium;
@@ -254,6 +294,7 @@ input[placeholder="Enter Trip Name"], input[placeholder="Add 1st member"], input
 
 .createTrip { 
   background-color: #82C0CC;
+  color: white;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
 }
@@ -280,24 +321,12 @@ input[placeholder="Enter Trip Name"], input[placeholder="Add 1st member"], input
   background-color: white;
 }
 
-.custom-select {
-  width: 60.3%;
-  height: 100%;
-  margin-top: 0px; 
-  border: 0px solid #ddd;
-  border-bottom-left-radius: 10px; 
-  border-bottom-right-radius: 10px; 
-  border-top-left-radius: 0; 
-  border-top-right-radius: 0; 
-  font-size: medium;
-  font-family: 'Montserrat', sans-serif;
-  background-color: #a2eefd;
-  color: black;
-}
-
 .selected-items {
   display: flex;
   flex-wrap: wrap;
+  margin-bottom: 10px;
+  width: 58.5%;
+  background-color: #1b4851;
 }
 
 .selected-item {

@@ -120,7 +120,11 @@ export default {
       return colors[category] || '#cccccc'; // Default color if the category is not found
     },
     editBudget() {
-      this.$router.push({ name: 'EditBudgetPage' });
+      this.$router.push({
+        name: 'EditBudgetPage',
+        params: { tripID: this.$route.params.tripID }, 
+        query: { tripName: this.$route.query.tripName } // Assuming you want to pass '123' as the tripID
+      });
     },
     checkBudgetExceeded() {
       this.budget.forEach((item, index) => {
@@ -194,12 +198,12 @@ export default {
     })
   },
   watch: {
-  '$route'() {
-    console.log("Route changed, fetching budget items...");
-    this.fetchBudgetItems();
-    this.fetchTripDetails();
+    '$route'() {
+      console.log("Route changed, fetching budget items...");
+      this.fetchBudgetItems();
+      this.fetchTripDetails();
+    },
   },
-},
 }
 </script>
 
@@ -250,7 +254,6 @@ h1 {
   font-weight: 700;
   text-align: center;
   color: #333;
-  margin-top: 100px; /* Adjust as needed */
 }
 
 .budget-categories {
