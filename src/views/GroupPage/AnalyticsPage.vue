@@ -4,25 +4,20 @@
   <div v-if="user">
     <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
   </div>
-  <!-- <div class="content-container">
+  <div class="content-container">
       <h1>Analytics & Reports</h1>
-      <div class="wrapper">
-      <div class="budgetExpenseWrapper">
-        <div class="budgetTot">
-          <h3>Total Budget</h3>
-          <h2>{{ currency }} {{ totalBudget }}</h2>
+      <div class="budget-wrapper">
+        <div class="budget-analytics">
+            <BudgetAnalytics :tripID="$route.params.tripID" @update:totalExpense="totalExpense = $event" @update:totalBudget="totalBudget = $event" />
         </div>
-        <div class="expenseTot">
-          <h3>Total Expense</h3>
-          <h2>{{ currency }} {{ totalExpense }}</h2>
+      <div class="expense-wrapper">
+        <div class="expenses-analytics">
+          <ExpensesAnalytics :tripID="trip.UID"/>
         </div>
       </div>
-      <div class="spending">
-        <h3>Spending This Trip</h3>
-      </div>
-    </div> --->
+    </div>
   </div>
-  <!-- </div> -->
+</div>
 </template>
 
 <script>
@@ -31,6 +26,8 @@ import SideNavBar from './SideNavBar.vue';
 import { auth, db } from '@/firebase';
 import { getDoc, doc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import ExpensesAnalytics from './ExpensesAnalytics.vue';
+import BudgetAnalytics from './BudgetAnalytics.vue';
 
 export default {
   name: 'AnalyticsPage',
@@ -43,6 +40,7 @@ export default {
         UID: ""
       },
       user: false, 
+      groupedExpenses: {}
     }
   },
   setup() {
@@ -58,12 +56,6 @@ export default {
         if (currencyDoc.exists()) {
           currency.value = currencyDoc.data().SelectedCurrency;
         }
-        // Dummy values for budget and expense, adjust as necessary
-        totalBudget.value = 1500;
-        totalExpense.value = 999;
-        tripName.value = "dummy until we implement trip collection";
-        //there was no issue with the formatting, the trip name was just hardcoded 
-        //so it disappeared on this page bc it extracts info from firebase.
       }
     });
 
@@ -75,7 +67,9 @@ export default {
     };
   },
   components: {
-    SideNavBar
+    SideNavBar, 
+    BudgetAnalytics,
+    ExpensesAnalytics
   }, 
   methods: { 
     async fetchTripData() { 
@@ -115,16 +109,15 @@ export default {
 }
 
 .content-container {
+  margin-top: -200px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 2rem;
   align-items: center;
-  justify-content: flex-start;
 }
 
 h1 {
-
+  position: relative;
   color: black;
   
 }
@@ -135,30 +128,9 @@ h3 {
   color: gray;
 }
 
-.wrapper {
+.budget-wrapper, .expense-wrapper {
   display: flex;
-  flex-direction: row; 
-  justify-content: space-around;
-  margin-top: 2rem;
-}
-
-.budgetExpenseWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.budgetTot,
-.expenseTot {
-  width: 200px;
-  height: 120px;
-  padding: 15px;
-  border-radius: 25px;
-  background-color: white;
-  margin: 10px;
-  text-align: center;
-  font-weight: 700;
-  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  flex-direction: column; 
 }
 
 .spending {

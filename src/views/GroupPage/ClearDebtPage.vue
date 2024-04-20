@@ -1,6 +1,8 @@
 <template>
   <div class="main-content">
-    <div class="back-button" @click="goBack"><</div>
+    <div class="back-button" @click="goBack">
+      <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+    </div>
     <div class="debt-list">
       <h1 class="debt-heading">Clear Debt</h1>
       <div v-if="debtsYouOwe.length === 0" class="no-debt-message">
@@ -14,7 +16,9 @@
               <div class="user-email">{{ debt.Email }}</div>
             </div>
             <div v-if="debt.currency === userCurrency" class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
-            <div v-else class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
+            <div v-else class="debt-description">
+              <div h1>You owe</div> 
+              {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
           </div>
           <button @click="confirmPayUp(debt)" class="payUpButton">Pay Up</button>
         </div>
@@ -186,7 +190,7 @@ export default {
 
 .main-content {
   margin-left: 20%;
-  margin-top: -30%;
+  margin-top: -60%;
 }
 
 .back-button {
@@ -199,6 +203,12 @@ export default {
   color: white;
 }
 
+.backbutton-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
 .debt-heading {
   color: white;
 }
@@ -209,7 +219,7 @@ export default {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
-  width: 1000px;
+  width: 800px;
 }
 
 .debt-details {
@@ -226,9 +236,10 @@ export default {
 
 .debt-description {
   margin-left: auto;
-  margin-right: 20px;
+  margin-right: 170px;
   color: #e61b1b;
   font-weight: bold;
+  text-align: center;
 }
 
 .debt-details::before {
@@ -267,13 +278,6 @@ export default {
 .user-email {
   font-size: small;
   color: #666; 
-}
-
-.debt-description {
-  margin-top: 8px; 
-  font-size: medium; 
-  color: #e61b1b; 
-  font-weight: bold;
 }
 
 .payUpButton { 

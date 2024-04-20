@@ -40,7 +40,7 @@
                 </div>
               </div>
           </div>
-          <img :src="trip.image" :alt="trip.TripName" class="trip-image">
+          <img :src="trip.image || defaultTripImage" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
       </router-link>
@@ -64,6 +64,7 @@ import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewTripModal from './AddNewTripModal.vue'
 import { db, auth } from '@/firebase';
+import defaultTripImage from '@/assets/default-trip-image.jpg';
 
  export default {
   name: 'TripList',
@@ -75,13 +76,9 @@ import { db, auth } from '@/firebase';
       showLeaveGroupConfirmation: false,
       showEditTripNamePopup: false,
       selectedTrip: null,
+      defaultTripImage,
       trips: [], 
       tripLength: 0,
-        //  { id: 1, name: 'Grad Trip <3', image: gradTripImage },
-        //  { id: 2, name: 'Winter Exchange in Seoul', image: winterExchangeImage },
-        //  { id: 3, name: 'Bali Trip', image: baliTripImage },
-        //  { id: 4, name: 'Weekend in KL', image: weekendKLImage }
-         // ... more trips
      };
    },
   components: { 
@@ -108,7 +105,6 @@ import { db, auth } from '@/firebase';
       this.selectedTrip = trip;
       this.newTripName = trip.TripName;
       trip.dropdownVisible = false; 
-
     },
     async updateTripName() {
       this.selectedTrip.TripName = this.newTripName;
@@ -125,11 +121,9 @@ import { db, auth } from '@/firebase';
       } catch (error) { 
         console.log(error);
       }
-
       this.selectedTrip = null; 
     },
     cancelEditTripName() {
-      this.selectedTrip.dropdownVisible = false;
       this.selectedTrip = null; 
       this.showEditTripNamePopup = false;
     },
@@ -166,6 +160,7 @@ import { db, auth } from '@/firebase';
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
+      this.dropdownVisible = true;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
@@ -393,14 +388,7 @@ import { db, auth } from '@/firebase';
 .confirm-button, .cancel-button {
   font-weight: 500;
   font-size: 15px;
-  display: flex; /* Enables flexbox */
-  justify-content: center; /* Centers content horizontally */
-  align-items: center; /* Centers content vertically */
-  padding: 15px 24px;
-  height: 35px;
-  width: 330px;
   background-color: white;
-  border-radius: 0%;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
 }
 
@@ -414,7 +402,7 @@ import { db, auth } from '@/firebase';
 }
 
 .confirm-button:hover, .cancel-button:hover {
-  background-color: #f2f2f2; /* Light grey background on hover */
+  background-color: #f2f2f2; 
 }
 
 .edit-name-popup {
@@ -469,12 +457,12 @@ import { db, auth } from '@/firebase';
 
 
 .button-container {
-  text-align: center; /* Align buttons to the center */
+  text-align: center; 
   padding-top:5px;
   width: 330px;
-  display: flex; /* Display buttons in the same line */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 }
 
 .button-container button {
@@ -506,6 +494,7 @@ import { db, auth } from '@/firebase';
 
 .save-edit:hover, .cancel-edit:hover {
   background-color: #105664;
+  border-radius: 20px;
 }
 </style>
   

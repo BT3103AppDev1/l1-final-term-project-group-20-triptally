@@ -120,7 +120,11 @@ export default {
       return colors[category] || '#cccccc'; // Default color if the category is not found
     },
     editBudget() {
-      this.$router.push({ name: 'EditBudgetPage' });
+      this.$router.push({
+        name: 'EditBudgetPage',
+        params: { tripID: this.$route.params.tripID }, 
+        query: { tripName: this.$route.query.tripName } // Assuming you want to pass '123' as the tripID
+      });
     },
     checkBudgetExceeded() {
       this.budget.forEach((item, index) => {
@@ -194,12 +198,12 @@ export default {
     })
   },
   watch: {
-  '$route'() {
-    console.log("Route changed, fetching budget items...");
-    this.fetchBudgetItems();
-    this.fetchTripDetails();
+    '$route'() {
+      console.log("Route changed, fetching budget items...");
+      this.fetchBudgetItems();
+      this.fetchTripDetails();
+    },
   },
-},
 }
 </script>
 
@@ -347,7 +351,7 @@ h1 {
 
 .amount-left {
   font-family: 'MontserratRegular', Montserrat, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   padding: 2px 0; /* Add some padding for better spacing */
   color: #333; /* Adjust the color if needed */
   font-size: small; /* Adjust the font size if needed */
