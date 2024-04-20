@@ -17,7 +17,7 @@
           <option value="Shopping">🛍️</option>
           <option value="Transport">🚌</option>
           <option value="Entertainment">🎭</option>
-          <option value="Accomodations">🏨</option>
+          <option value="Accommodations">🏨</option>
           <option value="Miscellaneous">📦</option>
         </select>
         <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
