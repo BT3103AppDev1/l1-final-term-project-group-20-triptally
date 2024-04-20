@@ -188,7 +188,7 @@ export default {
       if (user) {
         this.user = user;
         await this.fetchUserData();
-        this.fetchCurrencyRates();
+        await this.fetchCurrencyRates();
         //await this.fetchDebtData();
       }
     })
