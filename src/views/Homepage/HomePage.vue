@@ -48,11 +48,14 @@
           
                     <div class="photo-form">
                         <label class="photo-label" for="photo-input">Upload Photo:</label>
-                        <input type="file" accept="image/*" @change="handlePhotoChange">
+                        <input type="file" accept="image/*" @change="tempDisplayPhoto">
                     </div>
 
+                    <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
+
+
                     <div class="button-container">
-                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm Image</button>
+                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm</button>
                         <button class="cancel-photo" @click="cancelChangePhoto">Cancel</button>
                     </div>
 
@@ -106,6 +109,10 @@ export default {
       defaultTripImage,
       trips: [], 
       tripLength: 0,
+
+      tempSelectedImage: null,
+      tempSelectedPhotoName: null,
+      tempFile: null,
      };
    },
   components: { 
@@ -117,8 +124,7 @@ export default {
         return trip.image; // If image URL exists, return it directly
       } else {
         return defaultTripImage;
-      }
-    
+      } 
   },
     toggleDropdown(uid) {
       const trip = this.trips.find(t => t.UID === uid);
@@ -158,46 +164,46 @@ export default {
       }
       this.selectedTrip = null; 
     },
-    async handlePhotoChange(event) {
+
+    tempDisplayPhoto(event){
       const file = event.target.files[0];
       if (file) {
         try {
-          const storage = getStorage();
-          const storageRef = ref(storage, `image/${file.name}`);
-          const snapshot = await uploadBytes(storageRef, file);
-          console.log('Upload successful:', snapshot);
-
-          const downloadURL = await getDownloadURL(snapshot.ref);
-          console.log('Download URL:', downloadURL);
-
-          this.selectedTrip.image = downloadURL;
-          this.selectedPhotoName = file.name;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.tempSelectedImage = e.target.result;
+            this.tempSelectedPhotoName = file.name;
+          };      
+          reader.readAsDataURL(file);
+          this.tempFile = file;
+          
         } catch (error) {
-          console.error('Error uploading image:', error);
+          console.error('Error reading image file:', error);
         }
       }
     },
+   
     async confirmChangePhoto() {
-      try {
-        const storage = getStorage();
-        const storageRef = ref(storage, `image/${this.selectedPhotoName}`); // Use the stored photo name
+      if (this.tempFile){
+        try {
+          const storage = getStorage();         
+          const storageRef = ref(storage, `image/${this.tempSelectedPhotoName}`);        
+          const snapshot = await uploadBytes(storageRef, this.tempFile);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          this.selectedTrip.image = downloadURL;
+          this.selectedPhotoName = this.tempSelectedPhotoName;
         
-        console.log("Storage reference:", storageRef);
-        const snapshot = await uploadBytes(storageRef, this.selectedPhoto);
+          const tripDocRef = doc(db, "Trips", this.selectedTrip.UID);
+          await updateDoc(tripDocRef, {
+            image: downloadURL
+          });
+    
+          console.log("step")
+          this.showChangeGroupImage = false;
 
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log('Download URL:', downloadURL);
-
-        const tripDocRef = doc(db, "Trips", this.selectedTrip.UID);
-        await updateDoc(tripDocRef, {
-          image: downloadURL
-        });
-        
-        this.selectedPhotoName = "";
-        this.showChangeGroupImage = false;
-
-      } catch (error) {
-        console.error('Error uploading image:', error);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        }
       }
     },
     cancelEditTripName() {
@@ -209,7 +215,7 @@ export default {
       this.showChangeGroupImage = true;
     },
     cancelChangePhoto(){
-      this.selectedPhoto = null;
+      this.tempSelectedImage = null;
       this.showChangeGroupImage = false;
     },
     async leaveGroup(trip) {
@@ -520,7 +526,7 @@ export default {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 300px;
-  height:150px;
+  height:250px;
   padding: 30px;
   background-color: #16697A;
   border-radius: 20px;
@@ -535,6 +541,11 @@ export default {
   font-size: 15px;
   font-weight: 300;
   color: white;
+}
+
+.temp-image {
+  max-width: 100%; /* Adjust as needed */
+  max-height: 300px; /* Adjust as needed */
 }
 
 .edit-name {
