@@ -58,6 +58,10 @@
             </select>
           </div>
         </div>
+        <div class="fifth-row">
+          <span>Upload Receipt      </span>
+          <input type="file" accept="image/*" @change="handlePhotoChange">
+        </div>
       </div>
     </div>
       <button type="submit" @click="addExpense">Add Expense!</button>  
