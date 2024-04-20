@@ -15,6 +15,7 @@
             <!-- Dropdown Menu -->
             <div class="dropdown-menu" v-if="trip.dropdownVisible">
               <div class="dropdown-item" @click="renameGroup(trip)">Rename Group</div>
+              <div class="dropdown-item" @click="changeGroupImage(trip)">Change Group Image</div>
               <div class="dropdown-item" @click="confirmLeaveGroup(trip)">Leave Group</div>
             </div>
               <!-- Leave Group Confirmation Modal -->
@@ -39,8 +40,27 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Change Group Photo Popup -->
+              <div class="change-image-popup" v-if="showChangeGroupImage">
+                <div class="popup-content">
+                  <h2 class="change-image">Change Trip Cover Image</h2>
+          
+                    <div class="photo-form">
+                        <label class="photo-label" for="photo-input">Upload Photo:</label>
+                        <input type="file" accept="image/*" @change="handlePhotoChange">
+                    </div>
+
+                    <div class="button-container">
+                        <button class="confirm-photo" @click="confirmChangePhoto">Confirm Image</button>
+                        <button class="cancel-photo" @click="cancelChangePhoto">Cancel</button>
+                    </div>
+
+                </div>
+              </div>
+
           </div>
-          <img :src="trip.image || defaultTripImage" :alt="trip.TripName" class="trip-image">
+          <img :src="getTripImage(trip)" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
       </router-link>
@@ -58,15 +78,21 @@
       </h1>
     </div>
 </template>
- 
- <script>
-import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, getDocs } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import AddNewTripModal from './AddNewTripModal.vue'
-import { db, auth } from '@/firebase';
-import defaultTripImage from '@/assets/default-trip-image.jpg';
 
- export default {
+<script>
+
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, collection, setDoc, updateDoc, arrayRemove, query, where, getDocs } from 'firebase/firestore';
+import AddNewTripModal from './AddNewTripModal.vue';
+import { firebaseApp, db, auth, storage } from '@/firebase'; // Assuming db and auth are exported from '@/firebase'
+import defaultTripImage from '@/assets/default-trip-image.jpg';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+
+import 'firebase/app'
+import 'firebase/storage'
+
+export default {
   name: 'TripList',
   data() {
      return {
@@ -75,6 +101,7 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
       showModal: false,
       showLeaveGroupConfirmation: false,
       showEditTripNamePopup: false,
+      showChangeGroupImage: false,
       selectedTrip: null,
       defaultTripImage,
       trips: [], 
@@ -85,6 +112,12 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
     AddNewTripModal
   },
   methods: {
+    getTripImage(trip) {
+      if (trip.image) {
+        return trip.image; // If image URL exists, return it directly
+      } 
+    
+  },
     toggleDropdown(uid) {
       const trip = this.trips.find(t => t.UID === uid);
       if (trip) {
@@ -123,9 +156,59 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
       }
       this.selectedTrip = null; 
     },
+    async handlePhotoChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const storage = getStorage();
+          const storageRef = ref(storage, `image/${file.name}`);
+          const snapshot = await uploadBytes(storageRef, file);
+          console.log('Upload successful:', snapshot);
+
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          console.log('Download URL:', downloadURL);
+
+          this.selectedTrip.image = downloadURL;
+          this.selectedPhotoName = file.name;
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        }
+      }
+    },
+    async confirmChangePhoto() {
+      try {
+        const storage = getStorage();
+        const storageRef = ref(storage, `image/${this.selectedPhotoName}`); // Use the stored photo name
+        
+        console.log("Storage reference:", storageRef);
+        const snapshot = await uploadBytes(storageRef, this.selectedPhoto);
+
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('Download URL:', downloadURL);
+
+        const tripDocRef = doc(db, "Trips", this.selectedTrip.UID);
+        await updateDoc(tripDocRef, {
+          image: downloadURL
+        });
+        
+        this.selectedPhotoName = "";
+        this.showChangeGroupImage = false;
+
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    },
     cancelEditTripName() {
       this.selectedTrip = null; 
       this.showEditTripNamePopup = false;
+    },
+    changeGroupImage(trip){
+      this.selectedTrip = trip;
+      this.showChangeGroupImage = true;
+    },
+    cancelChangePhoto(){
+      this.selectedPhoto = null;
+      this.showChangeGroupImage = false;
     },
     async leaveGroup(trip) {
       //logic to leave group 
@@ -169,7 +252,6 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
        this.isPopupVisible = !this.isPopupVisible
      }, 
     async fetchUserTrips(newTripID) { 
-
       const tripDocRef = doc(db, "Trips", newTripID); 
       try { 
         const docSnap = await getDoc(tripDocRef); 
@@ -186,7 +268,6 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
       }
     },
     async fetchUserData() {
-  
       const docRef = doc(db, "Users", this.user.uid);
       try {
         const userDoc = await getDoc(docRef);
@@ -217,19 +298,23 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
           // }
 
           for (const tripID of userDoc.data().GroupTrips) {
-            const tripDocRef = doc(db, "Trips", tripID);
-            try {
-              const docSnap = await getDoc(tripDocRef);
-              this.trips.push({ 
-                Currency: docSnap.data().Currency, 
-                Members: docSnap.data().Members, 
-                TripName: docSnap.data().TripName,
-                UID: tripID 
-              });
-            } catch (error) {
-              console.error("Error retrieving trip ", error);
-            }
+          const tripDocRef = doc(db, "Trips", tripID);
+          try {
+            const docSnap = await getDoc(tripDocRef);
+            const imageData = docSnap.data().image !== undefined ? docSnap.data().image : '';
+            console.log(docSnap.data().image);
+            this.trips.push({ 
+              Currency: docSnap.data().Currency, 
+              Members: docSnap.data().Members, 
+              TripName: docSnap.data().TripName,
+              image: imageData,
+              UID: tripID
+            });
+          } catch (error) {
+            console.error("Error retrieving trip ", error);
           }
+        }
+
 
         } else {
           console.error("User document does not exist.");
@@ -240,7 +325,6 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
       }
     },
   mounted() {
-  
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -406,6 +490,29 @@ import defaultTripImage from '@/assets/default-trip-image.jpg';
 }
 
 .edit-name-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height:150px;
+  padding: 30px;
+  background-color: #16697A;
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  z-index: 10;
+  font-size: 15px;
+  font-weight: 300;
+  color: white;
+}
+
+.change-image-popup {
   position: fixed;
   left: 50%;
   top: 50%;
