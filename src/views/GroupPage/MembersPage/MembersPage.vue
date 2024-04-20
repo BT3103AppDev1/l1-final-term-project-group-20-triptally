@@ -10,23 +10,14 @@
             :src="addMemberIcon"
             alt="Add Member"
             class="add-member-btn"
-            @click="showAddNewMemberInput = !showAddNewMemberInput"
+            @click="toggleAddMember"
           />
         </div>
-        <!-- New Member Input Box -->
-        <div v-if="showAddNewMemberInput" class="new-member-input-box">
-          <input
-            type="text"
-            v-model="newMemberUsername"
-            placeholder="Enter new member username"
-            @keyup.enter="handleAddMember"
-          />
-          <button @click="handleAddMember">+</button>
-        </div>
+        <AddMember v-if="showAddNewMemberInput" :tripID="trip.UID" @member-added="fetchMembers"></AddMember>
         <!-- Group Members List -->
         <div class="group-members-list">
           <!-- Group Member Item -->
-          <div class="group-member" v-for="member in Members" :key="member.initials">
+          <div class="group-member" v-for="member in Members" :key="member.UID">
             <div class="member-initials">{{ member.initials }}</div>
             <div class="member-info">
               <div class="member-name">{{ member.name }}</div>
@@ -47,7 +38,6 @@
 
     <!-- DeleteMember Modal -->
     <delete-member
-    
       v-if="showDeleteMemberModal"
       :tripName="trip.TripName"
       :isVisible="showDeleteMemberModal"
@@ -66,11 +56,13 @@ import addMemberIcon from '@/assets/add-member.png';
 import DeleteMember from './DeleteMember.vue';
 import { doc, getDoc, getDocs, updateDoc, getFirestore, arrayRemove, arrayUnion} from 'firebase/firestore';
 import { db } from '@/firebase';
+import AddMember from './AddMembers.vue';
 
 export default {
   components: {
     SideNavBar,
-    DeleteMember
+    DeleteMember,
+    AddMember
   },
   data() {
     return {
@@ -85,12 +77,14 @@ export default {
       addMemberIcon: addMemberIcon,
       Members: [],
       showAddNewMemberInput: false,
-      newMemberUsername: "",
       showDeleteMemberModal: false,
       selectedMemberToDelete: null,
     };
   },
   methods: {
+  toggleAddMember() {
+    this.showAddNewMemberInput = !this.showAddNewMemberInput;
+  },
   async fetchMembers() {
     try {
       console.log("trying to fetch members")
@@ -173,7 +167,7 @@ export default {
   console.log('Member deleted:', member);
   this.closeDeleteMemberModal();
 },
-async handleAddMember() {
+/*async handleAddMember() {
   if (this.newMemberUsername.trim()) {
     const usernameTemp = this.newMemberUsername.trim();  
 
@@ -234,7 +228,7 @@ async handleAddMember() {
       console.error(error);
     }
   } 
-},
+},*/
 async fetchTripData() {
   const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
   try {
@@ -288,7 +282,7 @@ mounted() {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
-  width: 1000px;
+  width: 700px;
 }
 
 .group-members-header {
@@ -359,41 +353,5 @@ mounted() {
   cursor: pointer;
   width: 40px;
   height: 40px;
-}
-
-.new-member-input-box {
-  display: flex;
-  align-items: center;
-  margin: 10px;
-  background-color: #FFF; 
-  border-radius: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px 10px;
-  margin-bottom: 20px;
-}
-
-.new-member-input-box input {
-  flex-grow: 1;
-  border: none;
-  margin-right: 10px;
-  outline: none;
-  padding: 10px;
-  border-radius: 15px;
-  font-size: 15px;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.new-member-input-box button {
-  background-color: #16697a; 
-  color: white;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-}
-
-.new-member-input-box button:hover {
-  background-color: #144f5a; 
 }
 </style>

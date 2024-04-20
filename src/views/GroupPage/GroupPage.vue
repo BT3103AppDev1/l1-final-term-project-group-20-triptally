@@ -21,7 +21,7 @@
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
               <div class="details">
                 <span class="name">{{ debt.FirstName }} {{ debt.LastName }} owes you</span>
-                <span class="amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
+                <span class="debt-amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
               </div>
               <div class="action-buttons">
                 <button class="remind-btn" @click="showReminderPopup(debt)">Remind</button>
@@ -38,7 +38,7 @@
               <div class="initials">{{ debt.FirstName[0] }}{{ debt.LastName[0] }}</div>
               <div class="details">
                 <span class="name">You owe {{ debt.FirstName }} {{ debt.LastName }}</span>
-                <span class="amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
+                <span class="debt-amount">{{ currencySymbols[this.trip.Currency]  }} {{ debt.totalAmount.toFixed(2) }}</span>
               </div>
               <div class="action-buttons">
                 <button class="clear-btn" @click="clearDebt">Clear Debt</button>
@@ -508,11 +508,11 @@ export default {
 }
 
 .main-container {
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: -80px auto 0;
+  width: 63%;
 }
 
 .debt-overview {
@@ -521,23 +521,24 @@ export default {
 }
 
 .debt-container {
+  flex-grow: 1;
   width: 100%;
   display: flex;
   justify-content: space-between; 
   margin-bottom: 20px;
   margin-right: 40px;
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
 .owed-container,
 .owe-container {
   flex: 1;
-  padding: 2rem; 
+  padding: 30px; 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.902);
   border-radius: 10px;
   background: #fef7ee;
   overflow: hidden; 
-  margin-left: 20px;
+  margin-left: 15px;
   display: flex;
   flex-direction: column;
 }
@@ -545,11 +546,13 @@ export default {
 .owed-container h2,
 .owe-container h2 {
   text-align: center;
+  font-size: large;
 }
 
 .owed-container .amount {
   display: inline; 
   font-weight: bold;
+  font-size: 1.5rem;
   margin-left: 20px;
   margin-right: 20px;
   color: rgb(75, 159, 131);
@@ -558,6 +561,7 @@ export default {
 .owe-container .amount {
   display: inline; 
   font-weight: bold;
+  font-size: 1.5rem;
   margin-left: 20px;
   margin-right: 20px; 
   color:#d9534f;
@@ -572,27 +576,28 @@ export default {
 .debt-details {
   display: flex;
   align-items: center;
-  flex-grow: 1;
+  justify-content: space-between; 
+  width: 100%;
 }
 
 .initials {
   background-color: #CCCCCC; 
   border-radius: 50%;
   color: black; 
-  width: 40px; 
-  height: 40px;
+  width: 30px; 
+  height: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-right: 15px; 
   font-weight: bold;
-  font-size: 1em; 
+  font-size: 0.5em; 
 }
 
 .details {
   display: flex;
   align-items: center;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .action-buttons {
@@ -603,8 +608,9 @@ export default {
 .clear-btn {
   padding: 10px;
   border-radius: 10px;
-  width: 150px;
+  width: 90px;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .remind-btn {
@@ -627,9 +633,12 @@ export default {
   background-color: #87cbe6;
 }
 
-.amount {
-  font-size: 1.5em; 
-  color: #d9534f; 
+.debt-amount {
+  font-size: 13px;
+  margin-left:5px;
+  margin-right: 20px;
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 .no-expense-msg {
@@ -644,7 +653,7 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin: 20px auto; 
   height: 400px; 
-  width: 70rem;
+  width: 70%;
   overflow-y: auto; 
 }
 

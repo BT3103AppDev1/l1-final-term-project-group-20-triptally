@@ -251,7 +251,7 @@ export default {
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
-      this.dropdownVisible = true;
+      this.selectedTrip.dropdownVisible = true;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
