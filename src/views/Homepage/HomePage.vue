@@ -115,7 +115,9 @@ export default {
     getTripImage(trip) {
       if (trip.image) {
         return trip.image; // If image URL exists, return it directly
-      } 
+      } else {
+        return defaultTripImage;
+      }
     
   },
     toggleDropdown(uid) {
