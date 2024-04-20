@@ -91,7 +91,7 @@ export default {
         const querySnapshot = await getDocs(budgetsRef);
         let fetchedBudgets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const order = ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodation', 'Miscellaneous'];
+        const order = ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodations', 'Miscellaneous'];
         // Sort the fetched budgets according to the order array
         this.budget = order.map(category => fetchedBudgets.find(item => item.category === category));
 
