@@ -149,6 +149,7 @@ export default {
     },
     removeSelectedMember(index) {
       this.expense.owedMembers.splice(index, 1);
+      console.log(this.expense.owedMembers);
     },
     async fetchCurrentUserDetails(uid) {
       const userDocRef = doc(db, "Users", uid);
