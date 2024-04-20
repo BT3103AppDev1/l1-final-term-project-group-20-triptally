@@ -1,63 +1,66 @@
 <template> 
 <div class="app-container">
-  <div class="main-container">
-    <div class="header">
-      <div class="back-button" @click="returnToMainExpensesPage">
-        <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
-      </div>
-      <h1>Add New Expense</h1>
-    </div> 
-    <div class="form-container">
-      <div class="first-row">
-        <input type="date" v-model="expense.date" placeholder="Choose Date">
-      </div>
-      <div class="second-row">
-        <select v-model="expense.category" class="expense-category">
-          <option value="Food">🍽️</option>
-          <option value="Shopping">🛍️</option>
-          <option value="Transport">🚌</option>
-          <option value="Entertainment">🎭</option>
-          <option value="Accomodations">🏨</option>
-          <option value="Miscellaneous">📦</option>
-        </select>
-        <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
-      </div>
-      <div class="third-row">
-        <select v-model="selectedCurrency" class="currency-category">
-          <option value="" disabled selected>Select Currency</option>
-          <option value="SGD">SGD</option>
-          <option value="AUD">AUD</option>
-          <option value="CAD">CAD</option>
-          <option value="CHF">CHF</option>
-          <option value="CNY">CNY</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-          <option value="JPY">JPY</option>
-          <option value="KRW">KRW</option>
-          <option value="MYR">MYR</option>
-          <option value="NZD">NZD</option>
-          <option value="SEK">SEK</option>
-          <option value="USD">USD</option>
-        </select>
-        <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
-      </div>
-      <div class="fourth-row">
-        <div class="paid-by">
-        <span>Paid by</span>
-        <select class="payer" v-model="expense.paidBy">
-          <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
-            {{ member.FirstName }} {{ member.LastName }}
-          </option>
-        </select>
-        <span>and split between</span>
-        <select class="split-between" v-model="expense.splitBetween">
-        <!--Ideally user should be able to either select 'Everyone' or manually add members one by one - members involved in the expense will be added to this.expense.owedMembers -->
-        <option value="Everyone">Everyone</option>
-        </select>
+  <div class="main-content">
+    <p v-if="showSuccessMessage" class="success-message">Expense added successfully!</p>
+    <p v-if="showErrorMessage" class="error-message">All fields must be filled!</p>
+    <div class="main-container">
+      <div class="header">
+        <div class="back-button" @click="returnToMainExpensesPage">
+          <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+        </div>
+        <h1>Add New Expense</h1>
+      </div> 
+      <div class="form-container">
+        <div class="first-row">
+          <input type="date" v-model="expense.date" placeholder="Choose Date">
+        </div>
+        <div class="second-row">
+          <select v-model="expense.category" class="expense-category">
+            <option value="Food">🍽️</option>
+            <option value="Shopping">🛍️</option>
+            <option value="Transport">🚌</option>
+            <option value="Entertainment">🎭</option>
+            <option value="Accomodations">🏨</option>
+            <option value="Miscellaneous">📦</option>
+          </select>
+          <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
+        </div>
+        <div class="third-row">
+          <div class="currency-category">
+            <p>{{ selectedCurrency }}</p>
+          </div>
+          <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
+        </div>
+        <div class="fourth-row">
+          <div class="paid-by">
+          <span>Paid by</span>
+          <select class="payer" v-model="expense.paidBy">
+            <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
+              {{ member.FirstName }} {{ member.LastName }}
+            </option>
+          </select>
+          <span>and split between</span>
+          <div class="select-wrapper">
+            <div class="selected-items">
+              <span v-if="!expense.owedMembers.length" class="placeholder">Add Members</span>
+              <div v-for="(member, index) in expense.owedMembers" :key="index" class="selected-item">
+                {{ member.FirstName }} {{ member.LastName }}
+                <span @click="removeSelectedMember(index)">x</span>
+              </div>
+            </div>
+            <select @change="addSelectedMember" class="custom-select">
+              <option disabled selected value="">Select</option>
+              <option
+                v-for="member in availableMembers" :key="member.UID" :value="member.UID">
+                {{ member.FirstName }} {{ member.LastName }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <button type="submit" @click="addExpense">Add Expense!</button>  
+      <button type="submit" @click="addExpense">Add Expense!</button>  
+    </div>
   </div>
 </div>
   
@@ -68,10 +71,14 @@ import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+
+
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
     return {
+      showSuccessMessage: false,
+      showErrorMessage: false,
       selectedCurrency: "", 
       user: false, 
       currentUser: {
@@ -92,8 +99,8 @@ export default {
         amount: "", 
         paidBy: "",
         category: "Food",
-        splitBetween: "Everyone",
-        owedMembers: []
+        splitBetween: "",
+        owedMembers: [],
         // this represents the userIDs of the members that owe the person that paid for this expense money 
       }
     }
@@ -108,7 +115,14 @@ export default {
         code,
         symbol
       }));
-    }
+    },
+    availableMembers() {
+      const filteredMembers = this.trip.MemberDetails.filter(member => 
+        !this.expense.owedMembers.some(owedMember => owedMember.UID === member.UID)
+      );
+      console.log('Filtered Members:', filteredMembers);
+      return filteredMembers;
+    },
   },
   methods: { 
     initializeCurrency() {
@@ -116,6 +130,18 @@ export default {
       if (this.trip.Currency) {
         this.selectedCurrency = this.trip.Currency;
       }
+    },
+    addSelectedMember(event) {
+    const selectedUserID = event.target.value;
+    const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
+    if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
+      this.expense.owedMembers.push(selectedUser);
+    }
+    // Reset the select dropdown
+      event.target.value = "";
+    },
+    removeSelectedMember(index) {
+      this.expense.owedMembers.splice(index, 1);
     },
     async fetchCurrentUserDetails(uid) {
       const userDocRef = doc(db, "Users", uid);
@@ -336,6 +362,7 @@ export default {
           UID: expenseDocRef.id, 
           owedMembers: this.expense.owedMembers
         })
+        this.showSuccessMessage = true;
         console.log("Expense added successfully!");
 
         // Update the used amount in the corresponding budget category
@@ -355,6 +382,7 @@ export default {
 
       } catch (error) { 
         console.error("Error adding expense: " + error);
+        this.showErrorMessage = true;
       }
     }
   }, 
@@ -379,7 +407,7 @@ export default {
   background: #166978; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
-  height: 600px;
+  height: 650px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
@@ -466,7 +494,14 @@ input[placeholder="Choose Date"] {
   width: 100px;
   height: 60px;
   margin-right: 20px;
-  padding-left: 22px;
+  background-color: rgb(222, 221, 221);
+  border-radius: 10px;
+  color: black;
+  margin-top: 10px;
+  display: flex;             /* Enable Flexbox */
+  justify-content: center;   /* Center horizontally */
+  align-items: center;
+  font-weight: 600; 
 }
 
 .expense-title, .expense-amount {
@@ -486,10 +521,31 @@ input[placeholder="Choose Date"] {
   display: flex;
 }
 
+.fourth-row {
+  margin-top: 15px;
+}
+
 .payer, .split-between {
   width: 140px;
   margin-left: 10px;
   margin-right: 10px;
+}
+
+.selected-items {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: 1px solid #ddd; 
+  border-radius: 10px; 
+  min-height: 38px; 
+  width: calc(60% - 10px); 
+  margin-bottom: -10px;
+  background-color: white;
+  font-size: 14px;
+}
+
+.select-wrapper {
+  width: 800px;
 }
 
 .form-container h1 { 
@@ -500,7 +556,7 @@ button {
   background-color: #82C0CC; /* Replace with your color */
   color: white;
   border: none;
-  padding: 20px 30px;
+  padding: 15px 30px;
   font-size: 22px;
   cursor: pointer;
   margin-bottom: 55px;
@@ -511,5 +567,34 @@ button:hover {
   background-color: #71a9b4; /* Replace with your color */
 }
 
-
+.success-message {
+  color: rgb(2, 89, 40); /* Simple styling */
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: large;
+  z-index: 100; 
+  padding: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  background-color: rgb(176, 244, 205);
+}
+.error-message {
+  color: rgb(165, 17, 3); /* Simple styling */
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: large;
+  z-index: 100;
+  padding: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 10px;
+  background-color: rgb(241, 180, 174); 
+}
 </style>
