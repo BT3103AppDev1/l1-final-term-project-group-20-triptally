@@ -186,8 +186,8 @@ export default {
 }
 
 .main-content {
-  margin-left: 20%;
-  margin-top: -60%;
+  margin-left: 5%;
+  margin-top: -30%;
 }
 
 .back-button {
