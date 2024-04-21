@@ -46,9 +46,10 @@
                 <div class="popup-content">
                   <h2 class="change-image">Change Trip Cover Image</h2>
           
-                    <div class="photo-form">
-                        <input type="file" accept="image/*" @change="tempDisplayPhoto">
-                    </div>
+                    <!--default html file upload button-->
+                    <input type="file" accept="image/*" id="actual-btn" @change="tempDisplayPhoto" hidden/>
+                    <!--our custom file upload button-->
+                    <label class="image-upload-btn" for="actual-btn">Choose Image</label>
 
                     <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
 
@@ -108,7 +109,6 @@ export default {
       defaultTripImage,
       trips: [], 
       tripLength: 0,
-
       tempSelectedImage: null,
       tempSelectedPhotoName: null,
       tempFile: null,
@@ -269,6 +269,7 @@ export default {
           TripName: docSnap.data().TripName,
           UID: newTripID,
           dropdownVisible: false,
+          image: docSnap.data().image
         })
         console.log(newTripID + " added to user's group trips");
       } catch (error) {
@@ -524,7 +525,8 @@ export default {
 
 .temp-image {
   max-width: 100%; /* Adjust as needed */
-  max-height: 300px; /* Adjust as needed */
+  max-height: 100%; /* Adjust as needed */
+  border-radius: 10%;
 }
 
 .edit-name {
@@ -594,6 +596,20 @@ export default {
 .save-edit:hover, .cancel-edit:hover {
   background-color: #105664;
   border-radius: 20px;
+}
+
+.image-upload-btn { 
+  background-color: #489fb5;
+  color: white;
+  padding: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.confirm-photo, .cancel-photo { 
+  margin-top: 7px;
 }
 </style>
   
