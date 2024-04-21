@@ -1,7 +1,7 @@
 
 <template>
   <div class="pw-card">
-    <h1>Forgot Password</h1>
+    <h1>Password Reset</h1>
     <text>Enter the email address associated with your account and click the button below to receive an email to reset this account’s password.</text>
     <form @submit.prevent="submitPasswordReset">
       <input type="email" placeholder="Enter Email" v-model="email" />
