@@ -56,11 +56,31 @@ export default {
   },
   emits: ['returnToMainPage','refreshDebtData'],
   props: {
-    tripID: String
+    tripID: String,
+    debts: Array
   },
   methods: { 
     goBack() { 
       this.$emit('returnToMainPage');
+    },
+    async fetchCurrencyRates() {
+       for (let i = 0; i < this.debtsYouOwe.length; i++) { 
+        const debt = this.debtsYouOwe[i];
+        var expenseInUserCurrency;
+
+        if (debt.currency !== this.userCurrency) { 
+          const response = await axios.get('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_iaKyOqNjZI0PjnMBKqchb1UFhMxXh12FLbkCuzNy');
+
+          // must convert expense to USD first, then from USD convert to the user's default currency 
+          const expenseInUSD = debt.totalAmount / (response.data.data[debt.currency]);
+          expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
+          this.debtsYouOwe[i].ConvertedAmount = expenseInUSD * (response.data.data[this.userCurrency]);
+        } else { 
+          expenseInUserCurrency = debt.totalAmount;
+          this.debtsYouOwe[i].ConvertedAmount = expenseInUserCurrency;
+        }
+
+      }
     },
     async fetchDebtData() { 
       // fetch all the debts that user owes other people - this can be found in the "User Owes Who" collection 
@@ -157,6 +177,8 @@ export default {
       const userDocRef = doc(db, "Users", this.user.uid); 
       const userData = await getDoc(userDocRef);
       this.userCurrency = userData.data().Currency;
+      this.debtsYouOwe = this.debts;
+      console.log(this.debts);
     }
 
   }, 
@@ -166,7 +188,8 @@ export default {
       if (user) {
         this.user = user;
         await this.fetchUserData();
-        await this.fetchDebtData();
+        await this.fetchCurrencyRates();
+        //await this.fetchDebtData();
       }
     })
 
