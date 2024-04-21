@@ -46,9 +46,10 @@
                 <div class="popup-content">
                   <h2 class="change-image">Change Trip Cover Image</h2>
           
-                    <div class="photo-form">
-                        <input type="file" accept="image/*" @change="tempDisplayPhoto">
-                    </div>
+                    <!--default html file upload button-->
+                    <input type="file" accept="image/*" id="actual-btn" @change="tempDisplayPhoto" hidden/>
+                    <!--our custom file upload button-->
+                    <label class="image-upload-btn" for="actual-btn">Choose Image</label>
 
                     <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
 
@@ -108,7 +109,6 @@ export default {
       defaultTripImage,
       trips: [], 
       tripLength: 0,
-
       tempSelectedImage: null,
       tempSelectedPhotoName: null,
       tempFile: null,
@@ -214,6 +214,7 @@ export default {
       this.showChangeGroupImage = true;
     },
     cancelChangePhoto(){
+      this.selectedTrip = null;
       this.tempSelectedImage = null;
       this.showChangeGroupImage = false;
     },
@@ -250,7 +251,7 @@ export default {
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
-      this.selectedTrip.dropdownVisible = true;
+      this.selectedTrip.dropdownVisible = false;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
@@ -268,6 +269,7 @@ export default {
           TripName: docSnap.data().TripName,
           UID: newTripID,
           dropdownVisible: false,
+          image: docSnap.data().image
         })
         console.log(newTripID + " added to user's group trips");
       } catch (error) {
@@ -282,27 +284,6 @@ export default {
           const groupTrips = userDoc.data().GroupTrips;
           console.log(groupTrips);
           this.trips = [];
-
-          // // Firestore limits the 'in' query to a maximum of 10 elements in the array
-          // const maxQuerySize = 10;
-          // const tripCollections = collection(db, "Trips");
-          // this.trips = [];
-
-          // // If you have more than 10 trip IDs, you need to split them into chunks of 10
-          // for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
-          //   const chunk = groupTrips.slice(i, i + maxQuerySize);
-          //   const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
-          //   const querySnapshot = await getDocs(tripsQuery);
-            
-          //   querySnapshot.forEach(docSnapshot => {
-          //     this.trips.push({ 
-          //       Currency: docSnapshot.data().Currency, 
-          //       Members: docSnapshot.data().Members, 
-          //       TripName: docSnapshot.data().TripName,
-          //       UID: docSnapshot.id 
-          //     });
-          //   });
-          // }
 
           for (const tripID of userDoc.data().GroupTrips) {
           const tripDocRef = doc(db, "Trips", tripID);
@@ -544,7 +525,8 @@ export default {
 
 .temp-image {
   max-width: 100%; /* Adjust as needed */
-  max-height: 300px; /* Adjust as needed */
+  max-height: 100%; /* Adjust as needed */
+  border-radius: 10%;
 }
 
 .edit-name {
@@ -614,6 +596,20 @@ export default {
 .save-edit:hover, .cancel-edit:hover {
   background-color: #105664;
   border-radius: 20px;
+}
+
+.image-upload-btn { 
+  background-color: #489fb5;
+  color: white;
+  padding: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.confirm-photo, .cancel-photo { 
+  margin-top: 7px;
 }
 </style>
   

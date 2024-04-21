@@ -80,7 +80,6 @@ import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, ge
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
-
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
@@ -142,21 +141,22 @@ export default {
     addSelectedMember(event) {
     const selectedUserID = event.target.value;
     if (selectedUserID === "Everyone") { 
-      this.expense.owedMembers = this.trip.MemberDetails;
+      const array = this.trip.MemberDetails.slice();
+      this.expense.owedMembers = array;
     } else { 
       const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
       if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
         this.expense.owedMembers.push(selectedUser);
       }
     }
-
     console.log(this.expense.owedMembers);
     // Reset the select dropdown
       event.target.value = "";
     },
     removeSelectedMember(index) {
       this.expense.owedMembers.splice(index, 1);
-      console.log(this.expense.owedMembers);
+      console.log("User index: " + index);
+      console.log("Owed members: " + this.expense.owedMembers);
     },
     async fetchCurrentUserDetails(uid) {
       const userDocRef = doc(db, "Users", uid);
@@ -210,11 +210,6 @@ export default {
     async updateDebts(expenseID) { 
       // update debt details for all members involved in the expense - we need to update the WhoOwesUser collection for the payer, and the UserOwesWho collection for the person who owes the money 
 
-      // for now user can only select "Everyone" to split between, cos i'm not too sure how to make the dropdown thingy such that different users can be selected (and more than 1 user) 
-      if (this.expense.splitBetween === "Everyone") { 
-        this.expense.owedMembers = this.trip.Members.filter(memberID => memberID !== this.expense.paidBy);
-      }
-
       // for each member of the owedMembers array, we will update their debt in firebase
       for (const member of this.expense.owedMembers) { 
 
@@ -228,7 +223,7 @@ export default {
           const paidMemberUserOwesWhoRef = collection(paidMemberDocRef, "User Owes Who"); // this is the payer's "User Owes Who" collection
           const owedMemberUserOwesWhoRef = collection(owedMemberDocRef, "User Owes Who"); // this is the ower's "User Owes Who" collection
           const owedMemberWhoOwesUserRef = collection(owedMemberDocRef, "Who Owes User");  // this is the ower's "Who Owes User" collection
-          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
+          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
 
           // check whether the paid member currently owes this member any money - if yes, minus off from there
           const memberDocRef = doc(paidMemberUserOwesWhoRef, member.UID); 
@@ -336,11 +331,9 @@ export default {
           });
 
           const data = await response.json();
-          console.log('Received data:', data.totalAmount);
+          console.log('Received data:', data);
           if (data) {
             this.expense.amount = data.totalAmount.toFixed(2);
-            this.expense.date = new Date(data.date); // Update your form's data
-            alert('Receipt processed. Total: ' + data.total);
           } else {
             alert('Receipt processing failed.');
           }
@@ -424,7 +417,7 @@ export default {
   transform: translateY(20%);
   color: white;
   margin-left: 200px;
-  margin-top: -700px;
+  margin-top: -600px;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -55,14 +55,24 @@
         <option value="USD">USD</option>
         <option value="ZAR">ZAR</option>  
       </select><br>
+      <div class="photo-form">
+        <label>Upload Group Picture </label>
+        <!--default html file upload button-->
+        <input type="file" accept="image/*" id="actual-btn" @change="tempDisplayPhoto" hidden/>
+        <!--our custom file upload button-->
+        <label class="image-upload-btn" for="actual-btn">Choose Image</label>
+        <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
+        <!-- <span><img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage"></span> -->
+      </div><br>
       <button type="submit" class="createTrip" @click="createTrip">Create New Trip!</button>
     </div>
   </div>
 </template>
 
 <script>
-import { auth, db } from "@/firebase"; 
 import { doc, getDoc, collection, addDoc, arrayUnion, updateDoc, getDocs } from "firebase/firestore";
+import { firebaseApp, db, auth, storage } from '@/firebase'; // Assuming db and auth are exported from '@/firebase'
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as firebase from 'firebase/app';
 
 export default {
@@ -80,7 +90,9 @@ export default {
       searchTerm: '',
       showDropdown: false,
       filteredUsers: [],
-      image: "",
+      tempSelectedImage: null,
+      tempSelectedPhotoName: null,
+      tempFile: null,
     }
   },
   computed: {
@@ -150,14 +162,38 @@ export default {
       }
 
       try {
+
+        if (this.tempFile){
+
+
+          const storage = getStorage();         
+          const storageRef = ref(storage, `image/${this.tempSelectedPhotoName}`);        
+          const snapshot = await uploadBytes(storageRef, this.tempFile);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          this.selectedPhotoName = this.tempSelectedPhotoName;
+        
+          const tripDocRef = await addDoc(collection(db, "Trips"), {
+            Members: userIDs, // Assuming you want to add all userIDs, not just this.members
+            TripName: this.tripName,
+            Currency: this.currency,
+            image: downloadURL
+          });
+
+          this.tripID = tripDocRef.id;
+          console.log('New trip added with ID: ' + this.tripID);
+
+      } else { 
         const tripDocRef = await addDoc(collection(db, "Trips"), {
           Members: userIDs, // Assuming you want to add all userIDs, not just this.members
           TripName: this.tripName,
-          Currency: this.currency,
-          Image: "",
+          Currency: this.currency, 
+          image: ""
         });
+
         this.tripID = tripDocRef.id;
         console.log('New trip added with ID: ' + this.tripID);
+
+      }
 
         for (const userID of userIDs) {
           const userRef = doc(db, "Users", userID);
@@ -173,7 +209,7 @@ export default {
           }
         }
 
-        const budgetsRef = collection(db, "Trips", tripDocRef.id, "Budgets");
+        const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
 
         const defaultBudgetItems = [
           { category: 'Food', allocated: 0, used: 0, order: 1 },
@@ -216,12 +252,29 @@ export default {
       } else {
         console.error("No user is currently authenticated.");
       }
+    },
+    tempDisplayPhoto(event){
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.tempSelectedImage = e.target.result;
+            this.tempSelectedPhotoName = file.name;
+          };      
+          reader.readAsDataURL(file);
+          this.tempFile = file;
+          
+        } catch (error) {
+          console.error('Error reading image file:', error);
+        }
+      }
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -349,5 +402,28 @@ input[placeholder="Enter Trip Name"], input[placeholder="Search username"], sele
     color: #999;
     padding: 7px 10px;
 }
+
+input[type='file'] { 
+  display: none
+}
+
+.image-upload-btn { 
+  background-color: #489fb5;
+  color: white;
+  padding: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.temp-image {
+  max-width: 100px; /* Adjust as needed */
+  max-height: 100px; /* Adjust as needed */
+  border-radius: 50%;
+}
+
+
+
 
 </style>
