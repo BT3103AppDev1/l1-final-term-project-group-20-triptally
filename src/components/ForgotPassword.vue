@@ -7,7 +7,7 @@
       <input type="email" placeholder="Enter Email" v-model="email" />
       <br>
       <button type="submit">Reset My Password</button>
-      <router-link to="/" class="go-login-link">← Back to Login.</router-link>
+      <router-link to="/login" class="go-login-link">← Back to Login.</router-link>
     </form>
   </div>
 </template>

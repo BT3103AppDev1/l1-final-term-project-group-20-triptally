@@ -12,11 +12,15 @@ import MembersPage from '@/views/GroupPage/MembersPage/MembersPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
 import EditBudgetPage from '@/views/GroupPage/EditBudgetPage.vue';
 import AddNewExpenseModal from '@/views/GroupPage/AddNewExpenseModal.vue';
+import LandingPage from '@/views/LandingPage.vue';
 
 const routes = [
     {
       path: '/',
-      redirect: '/login', // Redirect root to /login
+      name: 'LandingPage',
+      component: LandingPage,
+      meta: { disallowAuthed: true }
+      // redirect: '/login', // Redirect root to /login
     },
     {
       path: '/login',

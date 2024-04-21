@@ -353,7 +353,8 @@ export default {
             UID: document.id, 
             FirstName: additionalDocSnapshot.data().FirstName,
             LastName: additionalDocSnapshot.data().LastName,
-            Username: additionalDocSnapshot.data().Username
+            Username: additionalDocSnapshot.data().Username,
+            Email: additionalDocSnapshot.data().Email
           }
         } else { 
           return { 
@@ -365,7 +366,7 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
-      console.log("User's debts: " + this.debtsYouOwe);
+      console.log(this.debtsYouOwe);
       this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
 
       // debts that other members owe the user 
