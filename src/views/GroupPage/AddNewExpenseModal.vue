@@ -33,12 +33,12 @@
         </div>
         <div class="fourth-row">
           <div class="paid-by">
-          <span>Paid by</span>
-          <select class="payer" v-model="expense.paidBy">
-            <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
-              {{ member.FirstName }} {{ member.LastName }}
-            </option>
-          </select>
+            <span>Paid by</span>
+            <select class="payer" v-model="expense.paidBy">
+              <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
+                {{ member.FirstName }} {{ member.LastName }}
+              </option>
+            </select>
           <span>and split between</span>
           <div class="select-wrapper">
             <div class="selected-items">
@@ -50,12 +50,17 @@
             </div>
             <select @change="addSelectedMember" class="custom-select">
               <option disabled selected value="">Select</option>
+              <option value="Everyone">Everyone</option>
               <option
                 v-for="member in availableMembers" :key="member.UID" :value="member.UID">
                 {{ member.FirstName }} {{ member.LastName }}
               </option>
             </select>
           </div>
+        </div>
+        <div class="fifth-row">
+          <img src="@/assets/receipt-icon.png" class="receipt-icon"><span>Upload Receipt      </span>
+          <input type="file" accept="image/*" @change="handlePhotoChange">
         </div>
       </div>
     </div>
@@ -133,15 +138,22 @@ export default {
     },
     addSelectedMember(event) {
     const selectedUserID = event.target.value;
-    const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
-    if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
-      this.expense.owedMembers.push(selectedUser);
+    if (selectedUserID === "Everyone") { 
+      this.expense.owedMembers = this.trip.MemberDetails;
+    } else { 
+      const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
+      if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
+        this.expense.owedMembers.push(selectedUser);
+      }
     }
+
+    console.log(this.expense.owedMembers);
     // Reset the select dropdown
       event.target.value = "";
     },
     removeSelectedMember(index) {
       this.expense.owedMembers.splice(index, 1);
+      console.log(this.expense.owedMembers);
     },
     async fetchCurrentUserDetails(uid) {
       const userDocRef = doc(db, "Users", uid);
@@ -201,108 +213,110 @@ export default {
       }
 
       // for each member of the owedMembers array, we will update their debt in firebase
-      for (const memberID of this.expense.owedMembers) { 
-      
-        const tripRef = doc(db, "Trips", this.trip.UID);
-        const owedMemberDocRef = doc(collection(tripRef, "Debts"), memberID); // this is the person that owes the payer money 
-        const paidMemberDocRef = doc(collection(tripRef, "Debts"), this.expense.paidBy); // this is the person that has paid first 
+      for (const member of this.expense.owedMembers) { 
 
-        // Now create/access the "Who Owes User" collection for the payer and the "User Owes Who" collection for the person that owes the payer money 
-        const paidMemberWhoOwesUserRef = collection(paidMemberDocRef, "Who Owes User"); // this is the payer's "Who Owes User" collection
-        const paidMemberUserOwesWhoRef = collection(paidMemberDocRef, "User Owes Who"); // this is the payer's "User Owes Who" collection
-        const owedMemberUserOwesWhoRef = collection(owedMemberDocRef, "User Owes Who"); // this is the ower's "User Owes Who" collection
-        const owedMemberWhoOwesUserRef = collection(owedMemberDocRef, "Who Owes User");  // this is the ower's "Who Owes User" collection
-        const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
+        if (member.UID !== this.expense.paidBy) { 
+          const tripRef = doc(db, "Trips", this.trip.UID);
+          const owedMemberDocRef = doc(collection(tripRef, "Debts"), member.UID); // this is the person that owes the payer money 
+          const paidMemberDocRef = doc(collection(tripRef, "Debts"), this.expense.paidBy); // this is the person that has paid first 
 
-        // check whether the paid member currently owes this member any money - if yes, minus off from there
-        const memberDocRef = doc(paidMemberUserOwesWhoRef, memberID); 
-        const memberDocSnapshot = await getDoc(memberDocRef);
+          // Now create/access the "Who Owes User" collection for the payer and the "User Owes Who" collection for the person that owes the payer money 
+          const paidMemberWhoOwesUserRef = collection(paidMemberDocRef, "Who Owes User"); // this is the payer's "Who Owes User" collection
+          const paidMemberUserOwesWhoRef = collection(paidMemberDocRef, "User Owes Who"); // this is the payer's "User Owes Who" collection
+          const owedMemberUserOwesWhoRef = collection(owedMemberDocRef, "User Owes Who"); // this is the ower's "User Owes Who" collection
+          const owedMemberWhoOwesUserRef = collection(owedMemberDocRef, "Who Owes User");  // this is the ower's "Who Owes User" collection
+          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
 
-        if (memberDocSnapshot.exists()) { 
-          // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
+          // check whether the paid member currently owes this member any money - if yes, minus off from there
+          const memberDocRef = doc(paidMemberUserOwesWhoRef, member.UID); 
+          const memberDocSnapshot = await getDoc(memberDocRef);
 
-          const paidMemberData = memberDocSnapshot.data();
-          if (paidMemberData.totalAmount > amountOwed) { 
-            // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
-            //  we will minus away amountOwed from paidMemberData.totalAmount 
-            try { 
-              // update the "User Owes Who" collection for the paid member to reflect the updated total amount owed 
-              await updateDoc(doc(paidMemberUserOwesWhoRef, memberID), { 
-                totalAmount: increment(-amountOwed)
-              })
+          if (memberDocSnapshot.exists()) { 
+            // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
 
-              // update the "Who Owes User" collection for the owing member, to reflect the updated total amount that the paid member still owes him/her
-              await updateDoc(doc(owedMemberWhoOwesUserRef, this.expense.paidBy), { 
-                totalAmount: increment(-amountOwed)
-              })
-            } catch (error) { 
-              console.error(error);
-            }
-            
-          } else { 
-            // if the amount that the payer currently owes the ower is smaller than the the amount that the ower owes the payer, then 
-            // we will minus away the amount that the payer currently owes the ower, 
-            // and record in firebase the remaining amount that the ower owes the payer 
-            try { 
+            const paidMemberData = memberDocSnapshot.data();
+            if (paidMemberData.totalAmount > amountOwed) { 
+              // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
+              //  we will minus away amountOwed from paidMemberData.totalAmount 
+              try { 
+                // update the "User Owes Who" collection for the paid member to reflect the updated total amount owed 
+                await updateDoc(doc(paidMemberUserOwesWhoRef, member.UID), { 
+                  totalAmount: increment(-amountOwed)
+                })
 
-              const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, memberID);
-              const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
-              await deleteDoc(paidMemberUserOwesWhoDoc);
-
-              // delete all the expenses in here!
-              await deleteDoc(owedMemberWhoOwesUserDoc);
-
-              const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
-              const docSnapshot = await getDoc(oweUserDoc);
-              const docData = docSnapshot.data();
-
-              let updates = {
-                expenses: { [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount) },
-                totalAmount: increment(amountOwed - paidMemberData.totalAmount),
-                currency: this.trip.Currency
-              };
-
-              if (!docData || docData.reminder === undefined) { 
-                updates.reminder = false;
+                // update the "Who Owes User" collection for the owing member, to reflect the updated total amount that the paid member still owes him/her
+                await updateDoc(doc(owedMemberWhoOwesUserRef, this.expense.paidBy), { 
+                  totalAmount: increment(-amountOwed)
+                })
+              } catch (error) { 
+                console.error(error);
               }
               
-              await setDoc(oweUserDoc, updates, { merge: true });
-              console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`); 
+            } else { 
+              // if the amount that the payer currently owes the ower is smaller than the the amount that the ower owes the payer, then 
+              // we will minus away the amount that the payer currently owes the ower, 
+              // and record in firebase the remaining amount that the ower owes the payer 
+              try { 
 
-              await setDoc(doc(paidMemberWhoOwesUserRef, memberID), { 
-                expenses: {[`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount)},
-                totalAmount: increment(amountOwed - paidMemberData.totalAmount),
-                currency: this.trip.Currency 
-              }, { merge: true });
+                const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, member.UID);
+                const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
+                await deleteDoc(paidMemberUserOwesWhoDoc);
 
-            } catch (error) { 
-              console.error(error);
+                // delete all the expenses in here!
+                await deleteDoc(owedMemberWhoOwesUserDoc);
+
+                const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
+                const docSnapshot = await getDoc(oweUserDoc);
+                const docData = docSnapshot.data();
+
+                let updates = {
+                  expenses: { [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount) },
+                  totalAmount: increment(amountOwed - paidMemberData.totalAmount),
+                  currency: this.trip.Currency
+                };
+
+                if (!docData || docData.reminder === undefined) { 
+                  updates.reminder = false;
+                }
+                
+                await setDoc(oweUserDoc, updates, { merge: true });
+                console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`); 
+
+                await setDoc(doc(paidMemberWhoOwesUserRef, member.UID), { 
+                  expenses: {[`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount)},
+                  totalAmount: increment(amountOwed - paidMemberData.totalAmount),
+                  currency: this.trip.Currency 
+                }, { merge: true });
+
+              } catch (error) { 
+                console.error(error);
+              }
             }
+          } else { 
+            // this is if paid member currently does not owe the owing member any money
+            const oweUserDoc = doc(paidMemberWhoOwesUserRef, member.UID); 
+            const userOwesDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
+
+            try { 
+            await setDoc(oweUserDoc, { 
+              expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
+              totalAmount: increment(amountOwed),
+              currency: this.trip.Currency,  
+            }, { merge: true });
+            console.log(`${member.UID} owes ${this.expense.paidBy} $${amountOwed}`);
+
+            await setDoc(userOwesDoc, { 
+              expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
+              totalAmount: increment(amountOwed),
+              currency: this.trip.Currency, 
+              reminder: false
+            }, { merge: true });
+            console.log(`${this.expense.paidBy} has a debtor with memberID ${member.UID} who owes him/her $${amountOwed}`);
+
+          } catch (error) { 
+            console.error(error); 
           }
-        } else { 
-          // this is if paid member currently does not owe the owing member any money
-          const oweUserDoc = doc(paidMemberWhoOwesUserRef, memberID); 
-          const userOwesDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
-
-          try { 
-          await setDoc(oweUserDoc, { 
-            expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
-            totalAmount: increment(amountOwed),
-            currency: this.trip.Currency,  
-          }, { merge: true });
-          console.log(`${memberID} owes ${this.expense.paidBy} $${amountOwed}`);
-
-          await setDoc(userOwesDoc, { 
-            expenses: {[`expenses.${expenseID}`]: increment(amountOwed)},
-            totalAmount: increment(amountOwed),
-            currency: this.trip.Currency, 
-            reminder: false
-          }, { merge: true });
-          console.log(`${this.expense.paidBy} has a debtor with memberID ${memberID} who owes him/her $${amountOwed}`);
-
-        } catch (error) { 
-          console.error(error); 
-        }
+          }
         }
       }
     }, 
@@ -402,7 +416,7 @@ export default {
   background: #16697A; 
   border-radius: 15px;
   width: 820px; /* Adjust width as needed */
-  height: 650px;
+  height: 680px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
   top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
@@ -534,13 +548,21 @@ input[placeholder="Choose Date"] {
   border-radius: 10px; 
   min-height: 38px; 
   width: calc(60% - 10px); 
-  margin-bottom: -10px;
+  margin-bottom: -22px;
   background-color: white;
   font-size: 14px;
 }
 
 .select-wrapper {
   width: 800px;
+}
+
+.custom-select {
+  width: 482px;
+  color: white;
+  background-color: #82C0CC;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
 }
 
 .form-container h1 { 
@@ -591,5 +613,14 @@ button:hover {
   padding-right: 8px;
   border-radius: 10px;
   background-color: rgb(241, 180, 174); 
+}
+
+.receipt-icon { 
+  height: 30px;
+  vertical-align:bottom;
+}
+
+.fifth-row { 
+  margin-bottom: 5px;
 }
 </style>

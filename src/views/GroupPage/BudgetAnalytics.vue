@@ -2,11 +2,11 @@
   <div class="budget-analytics-container">
     <div class="totals-container">
       <div class="budgetTot">
-        <h3>Total Budget</h3>
+        <div class="budget-label">Total Budget</div>
         <h2>{{ currencySymbols[this.trip.Currency] }}{{ totalBudget }}</h2>
       </div>
       <div class="expenseTot">
-        <h3>Total Expense</h3>
+        <div class="budget-label">Total Expense</div>
         <h2>{{ currencySymbols[this.trip.Currency] }}{{ totalExpense }}</h2>
       </div>
     </div>
@@ -21,6 +21,7 @@
 import { Chart, registerables } from 'chart.js';
 import { db } from '@/firebase';
 import { doc, collection, getDocs, getDoc, query } from 'firebase/firestore';
+import { setBlockTracking } from 'vue';
 Chart.register(...registerables);
 
 
@@ -57,12 +58,12 @@ export default {
       totalExpense: 0, // Define totalExpense here
       categoryOrder: ['Food', 'Shopping', 'Transport', 'Entertainment', 'Accommodations', 'Miscellaneous'],
       categoryColors: {
-        'Food': '#B2DFAB',
-        'Shopping': '#F0E694',
-        'Transport': '#ABD9EA',
-        'Entertainment': '#DDC9F7',
-        'Accommodations': '#FCC2AB',
-        'Miscellaneous': '#EDA5B9',
+        'Food': '#16697A',
+        'Shopping': '#489FB5',
+        'Transport': '#82C0CC',
+        'Entertainment': '#EDE7E3',
+        'Accommodations': '#B8D4D8',
+        'Miscellaneous': '#FFA62B',
       },
     };
   },
@@ -158,9 +159,24 @@ export default {
 
       const ctx = this.$refs.expensesChart.getContext('2d');
       this.chart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data,
-        options
+        options: {
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'black',
+                font: { 
+                  family: "'Montserrat', sans-serif",
+                  weight: 500,
+                  size: 12,
+                }
+              }
+            }
+          },
+          cutout: '60%',
+        }
       });
     }
   },
@@ -195,23 +211,31 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* Align text to the left */
-  background-color: white;
-  padding: 20px; /* Add some padding */
-  border-radius: 25px; /* Rounded corners */
-  margin-right: 20px; /* Add space between the totals and the chart */
+  margin-right: 5%;
+}
+
+.budget-label {
+  display: flex;
+  align-items: left;
+  font-size: 13px;
+  color: grey;
 }
 
 .budgetTot,
 .expenseTot {
   width: 200px; /* You might need to adjust this based on your content */
-  height: 120px;
+  height: 80px;
   padding: 15px;
   border-radius: 25px;
   background-color: white;
-  margin-bottom: 10px; /* Space between budget and expense totals */
   text-align: center;
   font-weight: 700;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1); 
+}
+
+.expenseTot {
+  margin-top: 25px; /* Space between budget and expense totals */
 }
 
 .chart-container {
@@ -223,16 +247,18 @@ export default {
   flex-direction: column; /* Align items vertically */
   align-items: center; /* Center the chart */
   width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1); 
 }
 
 .chart-header {
   margin-bottom: 10px; /* Add space between the chart header and the chart */
   font-weight: bold;
+  font-size: 25px;
 }
 
 /* Ensure the canvas has a defined height */
 canvas {
-  height: 400px !important; /* Override the Chart.js canvas height */
-  width: 100% !important; /* Full width of the container */
+  height: 300px !important; /* Override the Chart.js canvas height */
+  width: 90% !important; /* Full width of the container */
 }
 </style>

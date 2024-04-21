@@ -47,7 +47,6 @@
                   <h2 class="change-image">Change Trip Cover Image</h2>
           
                     <div class="photo-form">
-                        <label class="photo-label" for="photo-input">Upload Photo:</label>
                         <input type="file" accept="image/*" @change="tempDisplayPhoto">
                     </div>
 
@@ -251,7 +250,7 @@ export default {
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
-      this.dropdownVisible = true;
+      this.selectedTrip.dropdownVisible = true;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },

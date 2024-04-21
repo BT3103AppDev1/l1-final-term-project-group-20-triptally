@@ -148,15 +148,8 @@ h3 {
   flex-direction: column; 
 }
 
-.spending {
-  width: 500px;
-  height: 400px;
-  background-color: white;
-  margin-top: 10px;
-  margin-left: 10px;
-  padding: 15px;
-  border-radius: 25px;
-  text-align: center;
-  font-family: 'MontserratRegular', Montserrat, sans-serif;
+.expense-wrapper {
+  width: 700px;
+  height: 600px;
 }
 </style>

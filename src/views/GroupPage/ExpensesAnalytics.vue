@@ -1,5 +1,5 @@
 <template>
-<canvas id="expensesGraph" height="500" width="700"></canvas>
+<canvas id="expensesGraph" height="400" width="700"></canvas>
 </template>
 
 <script>
@@ -228,8 +228,9 @@ export default {
                 text: "Total Daily Expenses",
                 color: 'black',
                 font: { 
+                  family: "'Montserrat', sans-serif",
                   weight: 'bold',
-                  size: 18
+                  size: 25,
                 }
               }
             },
@@ -237,6 +238,10 @@ export default {
               y: {
                 ticks: {
                   color: "",
+                  font: {
+                    size: 12,
+                    family: "'Montserrat', sans-serif",
+                  }
                 },
                 grid: {
                   drawTicks: false,
@@ -248,6 +253,10 @@ export default {
               x: {
                 ticks: {
                   color: "",
+                  font: {
+                    size: 12,
+                    family: "'Montserrat', sans-serif",
+                  }
                 },
                 grid: {
                   display: false,
@@ -286,9 +295,12 @@ export default {
 
 <style>
 #expensesGraph { 
-  background-color: rgba(255, 255, 255, 0.588);
-  padding: 10px;
-  margin-top: 10%;
+  background-color: white;
+  padding: 20px;
+  margin-top: 5%;
   margin-bottom: 5%;
+  border-radius: 25px;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1); 
 }
 </style>
