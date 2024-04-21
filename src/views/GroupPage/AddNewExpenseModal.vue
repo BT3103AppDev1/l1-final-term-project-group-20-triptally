@@ -333,11 +333,9 @@ export default {
           });
 
           const data = await response.json();
-          console.log('Received data:', data.totalAmount);
+          console.log('Received data:', data);
           if (data) {
             this.expense.amount = data.totalAmount.toFixed(2);
-            this.expense.date = new Date(data.date); // Update your form's data
-            alert('Receipt processed. Total: ' + data.total);
           } else {
             alert('Receipt processing failed.');
           }

@@ -247,6 +247,7 @@ select {
   width: 60%; /* Adjust width as needed */
   height: 80%;
   margin: 0 auto; /* Center the card horizontally */
+  margin-top: 15px;
   position: relative;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* subtle shadow */
   align-items: center; /* Centers flex children horizontally */

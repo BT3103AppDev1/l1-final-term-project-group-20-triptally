@@ -72,7 +72,8 @@
                 </div>
                 <div class="right-side">
                   <div class="delete-expense" @click="showCancelExpensePopup(expense)">
-                    <img src="@/assets/dustbin.png" alt="delete" class="dustbin-icon">
+                    <CIcon :icon="ciTrash" size="xl"/>
+                    <img src="@/assets/dustbin2.png" alt="delete" class="dustbin-icon">
                   </div>
                   <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
                     {{ expense.sideDisplayText }}
@@ -136,6 +137,7 @@ import { db } from '@/firebase';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import ReminderIcon from '@/assets/reminder-icon.png';
+
 
 export default {
   data() { 
@@ -466,15 +468,15 @@ export default {
 
       // for the paid member, check their who owes user collection and find each member's UID document (if it exists)
       const paidMemberDebtsRef = doc(tripDocRef, "Debts", this.toDeleteExpense.paidBy);
+      console.log(this.toDeleteExpense.owedMembers);
       
 
       for (const member of this.toDeleteExpense.owedMembers) { 
         if (member.UID !== this.toDeleteExpense.paidBy) {
           const paidMemberWhoOwesUser = collection(paidMemberDebtsRef, "Who Owes User"); 
-          console.log(member);
+          console.log(member.UID);
           const paidMemberWhoOwesUserDoc = doc(paidMemberWhoOwesUser, member.UID);
-          console.log(paidMemberWhoOwesUserDoc);
-          const paidMemberWhoOwesUserSnapshot = await getDoc(paidMemberWhoOwesUserDoc)
+          const paidMemberWhoOwesUserSnapshot = await getDoc(paidMemberWhoOwesUserDoc);
           if (paidMemberWhoOwesUserSnapshot.exists()) { 
   
             const data = paidMemberWhoOwesUserSnapshot.data();
@@ -879,6 +881,7 @@ h1 {
 
 .right-side {
   display: flex;
+  height: 100%;
   flex-direction: column;
   align-items: flex-end;
 }
