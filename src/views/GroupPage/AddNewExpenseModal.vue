@@ -418,11 +418,10 @@ export default {
   width: 820px; /* Adjust width as needed */
   height: 680px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
-  top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
   color: white;
   margin-left: 200px;
-  margin-top: -350px;
+  margin-top: -650px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -459,6 +458,7 @@ h1 {
   text-align: center;
   margin-top: 35px;
   font-size: 40px;
+  font-size: xx-large;
 }
 
 .form-container { 
