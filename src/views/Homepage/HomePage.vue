@@ -525,7 +525,7 @@ export default {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 300px;
-  height:250px;
+  height:fit-content;
   padding: 30px;
   background-color: #16697A;
   border-radius: 20px;
