@@ -70,8 +70,13 @@
                   <div class="expense-title">{{ expense.title }}</div>
                   <div class="expense-subtitle">{{ expense.subtitle }}</div>
                 </div>
-                <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
-                  {{ expense.sideDisplayText }}
+                <div class="right-side">
+                  <div class="delete-expense" @click="showCancelExpensePopup">
+                    <img src="@/assets/dustbin.png" alt="delete" class="dustbin-icon">
+                  </div>
+                  <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
+                    {{ expense.sideDisplayText }}
+                  </div>
                 </div>
                 <div class="expense-balance" v-if="expense.balance">
                   {{ expense.balance }}
@@ -82,6 +87,18 @@
         </div>
         <!-- Add Expense Button -->
         <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
+      </div>
+      <!-- Cancel expense Confirmation popup -->
+      <div v-if="showCancelExpenseConfirmation" class="confirmation-popup">
+        <div class="confirmation-content">
+        <p class="reminder-confirmation">
+          Are you sure you want to delete this expense? 
+        </p>
+        <div class="confirmation-buttons">
+          <button class="confirm-button" @click="deleteExpense(expense)">Delete</button>
+          <button class="cancel-button" @click="cancelConfirmation">Cancel</button>
+        </div>
+      </div>
       </div>
       <!-- Reminder Confirmation Popup -->
     <div v-if="showReminderConfirmation && selectedUser" class="confirmation-popup">
@@ -164,6 +181,7 @@ export default {
       showAddExpenseModal: false,
       showClearDebtPage: false,
       showReminderConfirmation: false,
+      showCancelExpenseConfirmation: false,
       selectedUser: null,
     };
   },
@@ -482,7 +500,21 @@ export default {
         console.log('need to call fetchExpensesData')
         await this.fetchExpensesData();
       }
+    },
+    // Cancel Expense 
+    showCancelExpensePopup() {
+      this.showCancelExpenseConfirmation = true;
+    },
+    cancelConfirmation() {
+      this.showCancelExpenseConfirmation = false;
+    },
+    deleteExpense(expense) {
+      //method to delete expense 
+      this.showCancelExpenseConfirmation = false;
+        // Show success message
+        toast("Expense deleted successfully!", { autoClose: 2000 });
     }
+
   }, 
   mounted() {
     const auth = getAuth();
@@ -812,4 +844,17 @@ h1 {
 .confirm-button:hover, .cancel-button:hover {
   background-color: #f2f2f2; 
 }
+
+.dustbin-icon {
+  height: 18px;
+  width: 18px;
+  cursor: pointer;
+}
+
+.right-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 </style>

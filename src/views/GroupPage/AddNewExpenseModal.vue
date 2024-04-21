@@ -58,9 +58,12 @@
             </select>
           </div>
         </div>
-        <div class="fifth-row">
-          <img src="@/assets/receipt-icon.png" class="receipt-icon"><span>Upload Receipt      </span>
-          <input type="file" accept="image/*" @change="handlePhotoChange">
+        <div class="receipt-upload">
+          <div class="receipt-upload-container">
+            <img src="@/assets/receipt-icon.png" class="receipt-icon">
+            <div class="receipt-title">Upload receipt to scan</div> 
+          </div>
+          <input class="input-file" type="file" accept="image/*" @change="handlePhotoChange">
         </div>
       </div>
     </div>
@@ -416,11 +419,10 @@ export default {
   width: 820px; /* Adjust width as needed */
   height: 680px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
-  top: 60%; /* Adjust this value to control the vertical position */
   transform: translateY(20%);
   color: white;
   margin-left: 200px;
-  margin-top: -350px;
+  margin-top: -600px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -480,7 +482,7 @@ input[placeholder="Choose Date"] {
   /* Full width minus padding */
   padding: 10px;
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   /* Space between inputs */
   border: 0px solid #ddd;
   border-radius: 10px;
@@ -490,21 +492,25 @@ input[placeholder="Choose Date"] {
 
 .expense-category {
   font-size: 35px;
-  width: 100px;
-  height: 60px;
+  width: 80px;
+  height: 50px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   margin-right: 20px;
-  padding-left: 25px;
+  padding-left: 15px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .currency-category {
   font-size: 18px;
-  width: 100px;
-  height: 60px;
+  width: 80px;
+  height: 50px;
   margin-right: 20px;
   background-color: rgb(222, 221, 221);
   border-radius: 10px;
   color: black;
-  margin-top: 10px;
+  margin-top: 5px;
   display: flex;             /* Enable Flexbox */
   justify-content: center;   /* Center horizontally */
   align-items: center;
@@ -513,12 +519,12 @@ input[placeholder="Choose Date"] {
 
 .expense-title, .expense-amount {
   width: 300px;
-  height: 60px;
+  height: 50px;
   border: 0px solid #ddd;
   border-radius: 10px;
   font-size: large;
   font-family: 'Montserrat', sans-serif;
-  margin-top: 10px;
+  margin-top: 5px;
   padding-left: 8px;
   padding-top: 0px;
   padding-bottom: 0px;
@@ -571,7 +577,7 @@ button {
   background-color: #82C0CC; /* Replace with your color */
   color: white;
   border: none;
-  padding: 15px 30px;
+  padding: 12px 30px;
   font-size: 22px;
   cursor: pointer;
   margin-bottom: 55px;
@@ -614,11 +620,30 @@ button:hover {
 }
 
 .receipt-icon { 
-  height: 30px;
+  height: 40px;
   vertical-align:bottom;
 }
 
-.fifth-row { 
-  margin-bottom: 5px;
+.receipt-upload-container {
+  display: flex;
+  flex-direction: row; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  gap: 10px; /* Add space between children */
+}
+
+.input-file {
+  max-width: 250px;
+  font-family: Montserrat, sans-serif;
+}
+
+.receipt-title {
+  margin-left: -10px;
+}
+
+.receipt-upload {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
