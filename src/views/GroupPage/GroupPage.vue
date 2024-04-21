@@ -512,7 +512,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: -80px auto 0;
+  margin: -200px auto 0;
 }
 
 .debt-overview {
