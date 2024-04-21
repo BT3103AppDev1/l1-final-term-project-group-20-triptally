@@ -72,7 +72,6 @@
                 </div>
                 <div class="right-side">
                   <div class="delete-expense" @click="showCancelExpensePopup(expense)">
-                    <CIcon :icon="ciTrash" size="xl"/>
                     <img src="@/assets/dustbin2.png" alt="delete" class="dustbin-icon">
                   </div>
                   <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">

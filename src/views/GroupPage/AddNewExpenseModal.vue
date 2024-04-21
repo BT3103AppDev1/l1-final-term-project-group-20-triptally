@@ -80,7 +80,6 @@ import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, ge
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
-
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
@@ -142,7 +141,7 @@ export default {
     addSelectedMember(event) {
     const selectedUserID = event.target.value;
     if (selectedUserID === "Everyone") { 
-      const array = this.trip.MemberDetails;
+      const array = this.trip.MemberDetails.slice();
       this.expense.owedMembers = array;
     } else { 
       const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
@@ -150,7 +149,6 @@ export default {
         this.expense.owedMembers.push(selectedUser);
       }
     }
-
     console.log(this.expense.owedMembers);
     // Reset the select dropdown
       event.target.value = "";
@@ -419,7 +417,7 @@ export default {
   transform: translateY(20%);
   color: white;
   margin-left: 200px;
-  margin-top: -700px;
+  margin-top: -600px;
   display: flex;
   flex-direction: column;
   align-items: center;

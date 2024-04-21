@@ -214,6 +214,7 @@ export default {
       this.showChangeGroupImage = true;
     },
     cancelChangePhoto(){
+      this.selectedTrip = null;
       this.tempSelectedImage = null;
       this.showChangeGroupImage = false;
     },
@@ -250,7 +251,7 @@ export default {
       this.trips = updatedTrips;
     },
     cancelLeaveGroup() {
-      this.selectedTrip.dropdownVisible = true;
+      this.selectedTrip.dropdownVisible = false;
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
     },
@@ -282,27 +283,6 @@ export default {
           const groupTrips = userDoc.data().GroupTrips;
           console.log(groupTrips);
           this.trips = [];
-
-          // // Firestore limits the 'in' query to a maximum of 10 elements in the array
-          // const maxQuerySize = 10;
-          // const tripCollections = collection(db, "Trips");
-          // this.trips = [];
-
-          // // If you have more than 10 trip IDs, you need to split them into chunks of 10
-          // for (let i = 0; i < groupTrips.length; i += maxQuerySize) {
-          //   const chunk = groupTrips.slice(i, i + maxQuerySize);
-          //   const tripsQuery = query(tripCollections, where('__name__', 'in', chunk));
-          //   const querySnapshot = await getDocs(tripsQuery);
-            
-          //   querySnapshot.forEach(docSnapshot => {
-          //     this.trips.push({ 
-          //       Currency: docSnapshot.data().Currency, 
-          //       Members: docSnapshot.data().Members, 
-          //       TripName: docSnapshot.data().TripName,
-          //       UID: docSnapshot.id 
-          //     });
-          //   });
-          // }
 
           for (const tripID of userDoc.data().GroupTrips) {
           const tripDocRef = doc(db, "Trips", tripID);
