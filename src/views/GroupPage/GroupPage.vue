@@ -116,7 +116,7 @@
     </div>
     <div v-else>
       <div v-if="showClearDebtPage">
-        <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :tripID="trip.UID"/>
+        <ClearDebtPage @refreshDebtData="fetchDebtData" @returnToMainPage="removeClearDebtPage" :debts="debtsYouOwe" :tripID="trip.UID"/>
       </div>
       <div v-else>
         <AddNewExpenseModal @returnToMainPage="showAddExpenseModal = false" :tripID="trip.UID"></AddNewExpenseModal>
@@ -212,7 +212,8 @@ export default {
   methods: {
     // Generate a unique key for each trip
     generateStorageKey(key) {
-      return `${this.trip.UID}-${key}`;
+      const userId = this.user ? this.user.uid : 'unknown';
+      return `${userId}-${this.trip.UID}-${key}`;
     },
 
     // Updated methods to use dynamic keys
@@ -523,7 +524,8 @@ export default {
         this.user = user;
         console.log(this.$route.query.tripName);
         await this.fetchTripData();
-        await this.initializeData();
+        await this.fetchDebtData();
+        await this.fetchExpensesData();
       }
     })
   }

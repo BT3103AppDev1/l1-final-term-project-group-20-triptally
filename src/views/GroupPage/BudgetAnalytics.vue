@@ -104,19 +104,35 @@ export default {
     },
     
     async fetchBudgetItems() {
+      // Ensuring that tripID is available
       if (!this.tripID) {
         console.error("TripID is not provided for fetching budget items.");
         return;
       }
 
+      // Reference to the budgets collection
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
-      const querySnapshot = await getDocs(query(budgetsRef));
 
-      this.totalBudget = querySnapshot.docs.reduce((acc, doc) => acc + Number(doc.data().allocated), 0);
-      console.log("Total budget:", this.totalBudget);
-      this.$emit('update:totalBudget', this.totalBudget);
+      try {
+        // Fetching the budgets
+        const querySnapshot = await getDocs(budgetsRef);
+        // Accumulating the total budget
+        let total = 0;
+        querySnapshot.forEach((doc) => {
+          const budgetAmount = doc.data().allocated;
+          // Only add to total if the budget amount is a number
+          if (typeof budgetAmount === 'number') {
+            total += budgetAmount;
+          }
+        });
+
+        // Updating totalBudget with the accumulated value
+        this.totalBudget = total;
+
+      } catch (error) {
+        console.error("Error fetching budget items:", error);
+      }
     },
-    
     plotChart(categories, amounts) {
       // Filter categories based on the fixed order
       const orderedCategories = this.categoryOrder.filter(cat => categories.includes(cat));
@@ -164,11 +180,11 @@ export default {
       });
     }
   },
-  mounted() {
+  async mounted() {
     if (this.tripID) {
-      this.fetchTripData();
-      this.fetchAndPlotExpenses();
-      this.fetchBudgetItems();
+      await this.fetchTripData();
+      await this.fetchAndPlotExpenses();
+      await this.fetchBudgetItems();
     }
   },
   watch: {

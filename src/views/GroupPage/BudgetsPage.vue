@@ -218,7 +218,7 @@ export default {
 
 .budget-page {
   max-width: 600px;
-  margin: -60px auto 0; /* Adjust top margin */
+  margin: -250px auto 0; /* Adjust top margin */
   font-family: 'Arial', sans-serif;
 }
 
