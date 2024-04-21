@@ -130,6 +130,7 @@ export default {
   methods: {
     keepDropdownOpen(event) {
       event.preventDefault();
+      setTimeout(() => { this.showDropdown = this.searchTerm.trim().length > 0; }, 300);
     },
     selectUser(user) {
       this.selectedMembers.push(user);

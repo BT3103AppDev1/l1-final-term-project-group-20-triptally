@@ -578,6 +578,7 @@ button {
   cursor: pointer;
   margin-bottom: 55px;
   margin-top: 10px;
+  font-family: 'Montserrat', sans-serif;
 }
 
 button:hover {
