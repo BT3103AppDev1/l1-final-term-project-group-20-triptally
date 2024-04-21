@@ -33,12 +33,12 @@
         </div>
         <div class="fourth-row">
           <div class="paid-by">
-          <span>Paid by</span>
-          <select class="payer" v-model="expense.paidBy">
-            <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
-              {{ member.FirstName }} {{ member.LastName }}
-            </option>
-          </select>
+            <span>Paid by</span>
+            <select class="payer" v-model="expense.paidBy">
+              <option v-for="member in this.trip.MemberDetails" :key="member.UID" :value="member.UID">
+                {{ member.FirstName }} {{ member.LastName }}
+              </option>
+            </select>
           <span>and split between</span>
           <div class="select-wrapper">
             <div class="selected-items">
@@ -548,13 +548,21 @@ input[placeholder="Choose Date"] {
   border-radius: 10px; 
   min-height: 38px; 
   width: calc(60% - 10px); 
-  margin-bottom: -10px;
+  margin-bottom: -22px;
   background-color: white;
   font-size: 14px;
 }
 
 .select-wrapper {
   width: 800px;
+}
+
+.custom-select {
+  width: 482px;
+  color: white;
+  background-color: #82C0CC;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
 }
 
 .form-container h1 { 
