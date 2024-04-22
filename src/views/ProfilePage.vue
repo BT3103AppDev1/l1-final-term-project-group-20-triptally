@@ -17,15 +17,17 @@
           <input type="text" id="username" v-model="enteredUsername" @input="onUsernameInput" placeholder="Username" required/>
           <div v-if="saveButtonClicked && (usernameTaken || updateSuccess)" class="error-message">
             <template v-if="updateSuccess">
-              Username successfully updated!
+                <p class="error-message-success">Username successfully updated!</p>
             </template>
-            <template v-else-if="this.enteredUsername === profile.username">
-              This is your current username. Enter a new one?
+            <template v-else-if="enteredUsername === profile.username">
+                <p class="error-message-fail">This is your current username. Enter a new one?</p>
             </template>
             <template v-else>
-              Username already taken. Please choose another one!
+                <p class="error-message-fail">Username already taken. Please choose another one!</p>
             </template>
         </div>
+
+
         </div>
         
         <div class="form-group">
@@ -237,13 +239,25 @@ export default {
 input[type="email"] { 
   margin: 0; 
 }
+
 .error-message {
-  color: rgb(166, 2, 2);
-  width: 60%;
-  margin-left: 5px;
-  margin-bottom: 10px;
-  font-size: 12px;
+    width: 60%;
+    margin-left: 5px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    margin-top: -10px;
 }
+
+.error-message-success {
+  color: green; 
+}
+
+.error-message-fail {
+
+  color: rgb(166, 2, 2); 
+}
+
+
 .profile-content {
   padding: 2rem;
   width: 100%;
