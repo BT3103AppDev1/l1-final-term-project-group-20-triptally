@@ -72,7 +72,7 @@
                 </div>
                 <div class="right-side">
                   <div class="delete-expense" @click="showCancelExpensePopup(expense)">
-                    <img src="@/assets/dustbin2.png" alt="delete" class="dustbin-icon">
+                    <img src="@/assets/dustbin.png" alt="delete" class="dustbin-icon">
                   </div>
                   <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
                     {{ expense.sideDisplayText }}
@@ -873,8 +873,8 @@ h1 {
 }
 
 .dustbin-icon {
-  height: 18px;
-  width: 18px;
+  height: 15px;
+  width: 16px;
   cursor: pointer;
 }
 

@@ -44,7 +44,7 @@
               <!-- Change Group Photo Popup -->
               <div class="change-image-popup" v-if="showChangeGroupImage">
                 <div class="popup-content">
-                  <h2 class="change-image">Change Trip Cover Image</h2>
+                  <h2 class="change-image">Change Group Image</h2>
           
                     <!--default html file upload button-->
                     <input type="file" accept="image/*" id="actual-btn" @change="tempDisplayPhoto" hidden/>

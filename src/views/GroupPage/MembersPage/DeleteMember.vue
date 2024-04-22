@@ -11,8 +11,8 @@
           <div class="member-details">
             <span class="member-name">{{ member.name }}</span>
             <span class="member-email">{{ member.email }}</span>
-            <span class="member-trip">from {{ tripName }} ?</span>
           </div>
+          <span class="member-trip">from {{ tripName }} ?</span>
         </div>
       </div>
       <div class="modal-footer">
@@ -69,7 +69,7 @@ export default {
   border-radius: 15px;
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
   padding: 20px;
-  width: 300px;
+  width: 350px;
   text-align: center;
 }
 
@@ -91,7 +91,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 20px;
+  margin-right: 10px;
   margin-left: 20px;
   font-weight: bold;
   margin-bottom: auto;
@@ -105,15 +105,17 @@ export default {
 
 .member-name {
   font-weight: bold;
+  font-size: 13px;
 }
 
 .member-email {
-  font-size: 0.9em;
+  font-size: 13px;
 }
 
 .member-trip {
-  font-size: 0.8em;
-  margin-top: 20px;
+  font-size: 15px;
+  margin-left: 18px;
+  font-weight: 600;
 }
 
 .modal-footer {

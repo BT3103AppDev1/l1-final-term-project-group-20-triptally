@@ -313,7 +313,7 @@ export default {
 .custom-dropdown {
   position: absolute;
   width: 57.5%;
-  margin-top: 50px;
+  margin-top: 40px;
   border-radius: 10px;
   background-color: #82C0CC;
   border: 1px solid #ccc;
@@ -335,7 +335,7 @@ input[placeholder="Enter Trip Name"], input[placeholder="Search username"], sele
   height: 100%;
   padding: 10px;
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 0px solid #ddd;
   border-radius: 10px;
   font-size: medium;
@@ -351,6 +351,7 @@ input[placeholder="Enter Trip Name"], input[placeholder="Search username"], sele
   color: white;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
+  margin-top: -10px;
 }
 
 .createTrip:hover {
@@ -409,13 +410,21 @@ input[type='file'] {
 }
 
 .image-upload-btn { 
-  background-color: #489fb5;
+  background-color: rgba(27,72,81,255);
   color: white;
-  padding: 0.5rem;
+  padding: 8px;
   font-family: 'Montserrat', sans-serif;
-  border-radius: 0.3rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.852);
   cursor: pointer;
-  margin-top: 1rem;
+  margin-left: 10px;
+}
+
+.photo-form {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .temp-image {
@@ -423,8 +432,5 @@ input[type='file'] {
   max-height: 100px; /* Adjust as needed */
   border-radius: 50%;
 }
-
-
-
 
 </style>
