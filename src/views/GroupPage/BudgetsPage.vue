@@ -3,7 +3,8 @@
     <SideNavBar :tripID="$route.params.tripID" :tripName="$route.query.tripName"></SideNavBar>
     <div class="budget-page"> 
       <button class="edit-button" @click="editBudget">Edit</button>
-      <h1>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
+      <h1 v-if="isLoading" class="loading">Fetching Budget for {{ trip.TripName }}...</h1>
+      <h1 v-else>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
       <div class="budget-categories">
         <div class="category-block" v-for="(item, index) in budget" :key="index">
           <div class="icon-and-category">
@@ -44,6 +45,7 @@ export default {
   name: 'BudgetPage',
   data() {
     return {
+      isLoading: true, // Initially true, indicating data is loading
       user: false,
       trip: { 
         TripName: "", 
@@ -92,7 +94,7 @@ export default {
       }
     },
     progressWidth(item, index) {
-      const percentageUsed = Math.min((item.used / item.allocated) * 100, 100); // Cap at 100%
+      const percentageUsed = (item.used / item.allocated) * 100; // Maximum width of the progress bar is the allocated amount
       // If less than 10%, we'll show the amount outside the progress bar
       this.showAmountOutside[index] = percentageUsed < 10;
       return `${percentageUsed}%`;
@@ -146,6 +148,7 @@ export default {
       });
     },
     async fetchBudgetItems() {
+      this.isLoading = true; // Make sure to set it to true when starting to fetch
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
       const queryRef = query(budgetsRef, orderBy("order"));
 
@@ -180,8 +183,10 @@ export default {
 
         // Calculate the total budget
         this.totalBudget = this.budget.reduce((acc, item) => acc + item.allocated, 0);
+        this.isLoading = false; // Set it to false once data fetching is complete
       } catch (error) {
         console.error("Error fetching budget items:", error);
+        this.isLoading = false; // Set it to false to prevent errors
       }
     }
   },
@@ -383,5 +388,11 @@ h1 {
   font-weight: 600;
   font-size: 0.95em;
   white-space: nowrap;
+}
+
+.loading{
+  color: grey;
+  margin-top: -400px;
+  font-size: x-large;
 }
 </style>

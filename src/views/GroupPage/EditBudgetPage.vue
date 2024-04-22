@@ -244,6 +244,7 @@ input[type="number"] {
 .success-message {
   color: black; /* Simple styling */
   position: fixed;
+  margin-top: 60px;
   left: 50%;
   font-family: Montserrat, sans-serif;
   font-weight: 700;
