@@ -39,6 +39,7 @@ import { auth, db } from '@/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { logoutUser } from '@/authState';
+import eventBus from '@/eventBus';
 
 export default {
   name: 'NavigationBar',
@@ -52,9 +53,19 @@ export default {
       showLogoutPopup: false,
     };
   },
+
+  created() {
+    console.log("created")
+    eventBus.on('usernameUpdated', (newUsername) => {
+      console.log("receive");
+      this.Username = newUsername;
+    });
+  },
+
   components: { 
     NavBar,
   },
+
   methods: {
     async fetchUserData() {
       const user = auth.currentUser;
@@ -69,6 +80,7 @@ export default {
         }
       }
     },
+    
     toggleDropdown() {
       this.isDropdownOpen = true;
     },
@@ -82,21 +94,25 @@ export default {
       event.preventDefault(); 
       logoutUser().then(() => {
         console.log("User is logged out!");
-        this.$router.push('/login'); // Redirect using Vue Router
+        this.$router.push('/login'); 
       });
     }    
   },
+
   mounted() {
     const auth = getAuth(); 
-    onAuthStateChanged(auth, (user) => { 
+    onAuthStateChanged(auth, async (user) => { 
       if (user) { 
         this.user = user; 
+        await this.fetchUserData(); 
       }
-    })
-    this.fetchUserData();
-  }
+    });
+  },
+  
 }
 </script>
+
+
 
 <style scoped>
 .navbar {

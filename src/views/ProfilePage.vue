@@ -13,9 +13,21 @@
           <input type="email" id="email" v-model="profile.email" readonly/>
         </div>
         <div class="form-group">
-          <label for="username">Username:</label>
-          <input type="text" id="username" v-model="enteredUsername" />
+          <label for="username">Username:</label>         
+          <input type="text" id="username" v-model="enteredUsername" @input="onUsernameInput" placeholder="Username" required/>
+          <div v-if="saveButtonClicked && (usernameTaken || updateSuccess)" class="error-message">
+            <template v-if="updateSuccess">
+              Username successfully updated!!
+            </template>
+            <template v-else-if="this.enteredUsername === profile.username">
+              This is your current username.
+            </template>
+            <template v-else>
+              Username already taken. Please choose another one!
+            </template>
         </div>
+        </div>
+        
         <div class="form-group">
           <label for="currency">Default Currency:</label>
           <select id="currency" v-model="profile.currency" >
@@ -66,6 +78,7 @@
 import { auth, db } from '@/firebase';
 import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import eventBus from '@/eventBus';
 
 
 export default {
@@ -80,11 +93,75 @@ export default {
         email: 'invalid@email',
         username: 'xxxxxxxx',
         currency: 'SGD'
-      }
+      },      
+      usernameTaken: { value: false },
+      saveButtonClicked: false,
+      updateSuccess: false
     };
   },
+
+  
   methods: {
-    //check
+    onUsernameInput() {
+      this.saveButtonClicked = false;
+      this.updateSuccess = false;
+            
+    },
+
+    async checkUsernameAvailability() {
+      this.usernameTaken = false;
+      const usernameDocRef = doc(db, "Usernames", this.enteredUsername);
+
+      try {
+        const docSnap = await getDoc(usernameDocRef);
+        this.usernameTaken = docSnap.exists();
+      } catch (error) {
+        console.error("Error checking username uniqueness:", error);
+      }
+    },    
+
+    async updateUsername() {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        try {
+          await updateDoc(docRef, {
+            Username: this.enteredUsername
+          });
+          await deleteDoc(doc(db, "Usernames", this.profile.username)); 
+          this.profile.username = this.enteredUsername;
+          await setDoc(doc(db, "Usernames", this.enteredUsername), { 
+            UID: this.userID
+          });
+          this.updateSuccess = true;
+          eventBus.emit('usernameUpdated', this.enteredUsername);
+          console.log("emit");
+        } catch (error) {
+          console.error("Error updating currency:", error);
+        }
+      }
+    },
+
+
+    async saveChanges() {
+      this.saveButtonClicked = true; 
+      this.updateSuccess = false;
+      await this.checkUsernameAvailability(); 
+      if (!this.usernameTaken) {
+        try {
+          await this.updateUsername();
+          console.log("Username updated successfully.");
+          this.updateSuccess = true;
+         
+        } catch (error) {
+          console.error("Error updating username:", error);
+        }
+      } else {
+        this.updateSuccess = false;
+        console.log("Username is already taken. Please choose a different username.");
+      }
+    },
+
     async updateCurrency() {
       const user = auth.currentUser;
       if (user) {
@@ -99,35 +176,7 @@ export default {
         }
       }
     },
-    async updateUsername() {
-      const user = auth.currentUser;
-      if (user) {
-        const docRef = doc(db, "Users", user.uid);
 
-        try {
-          await updateDoc(docRef, {
-            Username: this.enteredUsername
-          });
-          
-
-          // delete document in "Usernames" collection with original username 
-          await deleteDoc(doc(db, "Usernames", this.profile.username)); 
-
-          this.profile.username = this.enteredUsername
-          // create new document in "Usernames" collection with new username, setting UID as userID 
-          await setDoc(doc(db, "Usernames", this.enteredUsername), { 
-            UID: this.userID
-          })
-
-        } catch (error) {
-          console.error("Error updating currency:", error);
-        }
-      }
-    },
-    async saveChanges() {
-      await this.updateCurrency();
-      await this.updateUsername();
-    },
     async fetchUserData() {
       const user = auth.currentUser;
       console.log(user);
@@ -153,19 +202,23 @@ export default {
       } else {
         console.error("No user is currently authenticated.");
       }
-    }
-      },
-      mounted() {
-        this.fetchUserData();
-        const auth = getAuth();
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            this.user = user;
-            await this.fetchUserData();
-          }
-        })
-      }
-    };
+    },
+
+  },
+
+    mounted() {
+      this.fetchUserData();
+      const auth = getAuth();
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          this.user = user;
+          await this.fetchUserData();
+        }
+      })
+    },
+
+}
+  
 </script>
 
 <style scoped>
