@@ -1,7 +1,6 @@
 <template> 
 <div class="app-container">
   <div class="main-content">
-    <p v-if="showSuccessMessage" class="success-message">Expense added successfully!</p>
     <p v-if="showErrorMessage" class="error-message">All fields must be filled!</p>
     <div class="main-container">
       <div class="header">
@@ -78,6 +77,7 @@
 import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { toast } from 'vue3-toastify';
 
 
 
@@ -370,6 +370,7 @@ export default {
         })
         this.showSuccessMessage = true;
         console.log("Expense added successfully!");
+        
 
         // Update the used amount in the corresponding budget category
         const budgetRef = collection(tripRef, "Budgets"); 
@@ -386,6 +387,8 @@ export default {
         this.expense.category = "";
         this.expense.splitBetween = "";
         this.expense.owedMembers =[]
+        toast("Expense added successfully!", { autoClose: 2000 });
+        this.showErrorMessage = false;
 
       } catch (error) { 
         console.error("Error adding expense: " + error);
@@ -590,26 +593,10 @@ button {
 button:hover {
   background-color: #71a9b4; /* Replace with your color */
 }
-
-.success-message {
-  color: rgb(2, 89, 40); /* Simple styling */
-  position: fixed;
-  top: 10%;
-  left: 50%;
-  font-family: Montserrat, sans-serif;
-  font-weight: 700;
-  font-size: large;
-  z-index: 100; 
-  padding: 5px;
-  padding-left: 8px;
-  padding-right: 8px;
-  border-radius: 10px;
-  background-color: rgb(176, 244, 205);
-}
 .error-message {
   color: rgb(165, 17, 3); /* Simple styling */
   position: fixed;
-  top: 10%;
+  top: 12%;
   left: 50%;
   font-family: Montserrat, sans-serif;
   font-weight: 700;
