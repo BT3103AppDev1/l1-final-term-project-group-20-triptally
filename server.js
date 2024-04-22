@@ -5,7 +5,7 @@ import cors from 'cors';  // Import CORS module
 
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:5174'
+    origin: 'http://localhost:5173'
 }));
 
 // Initialize Mindee client
