@@ -20,7 +20,7 @@
               Username successfully updated!
             </template>
             <template v-else-if="this.enteredUsername === profile.username">
-              This is your current Username. Enter a new one?
+              This is your current username. Enter a new one?
             </template>
             <template v-else>
               Username already taken. Please choose another one!
@@ -99,7 +99,6 @@ export default {
       updateSuccess: false
     };
   },
-
   
   methods: {
     onUsernameInput() {
@@ -133,7 +132,6 @@ export default {
           });
           this.updateSuccess = true;
           eventBus.emit('usernameUpdated', this.enteredUsername);
-          console.log("emit");
         } catch (error) {
           console.error("Error updating currency:", error);
         }
@@ -239,7 +237,13 @@ export default {
 input[type="email"] { 
   margin: 0; 
 }
-
+.error-message {
+  color: rgb(166, 2, 2);
+  width: 60%;
+  margin-left: 5px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
 .profile-content {
   padding: 2rem;
   width: 100%;
