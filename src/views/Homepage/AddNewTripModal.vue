@@ -421,16 +421,16 @@ input[type='file'] {
 }
 
 .photo-form {
-  height: 50px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .temp-image {
-  max-width: 100px; /* Adjust as needed */
-  max-height: 100px; /* Adjust as needed */
-  border-radius: 50%;
+  max-width: 70px; /* Adjust as needed */
+  max-height: 70px; /* Adjust as needed */
+  margin-left: 5px;
 }
 
 </style>

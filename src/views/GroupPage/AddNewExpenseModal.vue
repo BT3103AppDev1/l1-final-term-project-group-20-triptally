@@ -58,11 +58,10 @@
           </div>
         </div>
         <div class="receipt-upload">
-          <div class="receipt-upload-container">
             <img src="@/assets/receipt-icon.png" class="receipt-icon">
-            <div class="receipt-title">Upload receipt to scan</div> 
-          </div>
-          <input class="input-file" type="file" accept="image/*" @change="handlePhotoChange">
+            <input class="input-file" type="file" id="actual-btn" accept="image/*" @change="handleFileChange">
+            <label class="receipt-upload-btn" for="actual-btn">Upload Receipt</label>
+            <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
         </div>
       </div>
     </div>
@@ -88,6 +87,9 @@ export default {
       showErrorMessage: false,
       selectedCurrency: "", 
       user: false, 
+      tempSelectedImage: null,
+      tempSelectedPhotoName: null,
+      tempFile: null,
       currentUser: {
         FirstName: '',
         LastName: '',
@@ -318,6 +320,13 @@ export default {
         }
       }
     }, 
+    async handleFileChange(event) {
+      //call handlePhotoChange(event) to scan the receipt
+      this.handlePhotoChange(event);
+
+      //call tempDisplayPhoto(event) to display the receipt
+      this.tempDisplayPhoto(event);
+    },
     async handlePhotoChange(event) {
       const file = event.target.files[0];
       if (file) {
@@ -340,6 +349,24 @@ export default {
         } catch (error) {
           console.error('Error uploading and processing image:', error);
           alert('Error processing the receipt');
+        }
+      }
+    },
+    tempDisplayPhoto(event){
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.tempSelectedImage = e.target.result;
+            console.log(e.target.result);
+            this.tempSelectedPhotoName = file.name;
+          };      
+          reader.readAsDataURL(file);
+          this.tempFile = file;
+          
+        } catch (error) {
+          console.error('Error reading image file:', error);
         }
       }
     },
@@ -615,9 +642,19 @@ button:hover {
   gap: 10px; /* Add space between children */
 }
 
-.input-file {
-  max-width: 250px;
-  font-family: Montserrat, sans-serif;
+input[type='file'] { 
+  display: none
+}
+.receipt-upload-btn { 
+  background-color: rgba(27,72,81,255);
+  color: white;
+  padding: 8px;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.852);
+  cursor: pointer;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .receipt-title {
@@ -626,8 +663,16 @@ button:hover {
 
 .receipt-upload {
   margin-bottom: 10px;
+  margin-top:8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
+}
+
+.temp-image {
+  max-width: 70px; /* Adjust as needed */
+  max-height: 70px; /* Adjust as needed */
+  margin-left: 5px;
 }
 </style>
