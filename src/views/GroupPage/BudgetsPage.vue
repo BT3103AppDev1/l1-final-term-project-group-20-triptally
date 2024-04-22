@@ -3,7 +3,8 @@
     <SideNavBar :tripID="$route.params.tripID" :tripName="$route.query.tripName"></SideNavBar>
     <div class="budget-page"> 
       <button class="edit-button" @click="editBudget">Edit</button>
-      <h1>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
+      <h1 v-if="isLoading" class="loading">Fetching Budget for {{ trip.TripName }}...</h1>
+      <h1 v-else>Total Budget: {{ currencySymbols[trip.Currency] }}{{ totalBudget }}</h1>
       <div class="budget-categories">
         <div class="category-block" v-for="(item, index) in budget" :key="index">
           <div class="icon-and-category">
@@ -44,6 +45,7 @@ export default {
   name: 'BudgetPage',
   data() {
     return {
+      isLoading: true, // Initially true, indicating data is loading
       user: false,
       trip: { 
         TripName: "", 
@@ -92,7 +94,7 @@ export default {
       }
     },
     progressWidth(item, index) {
-      const percentageUsed = (item.used / item.allocated) * 100;
+      const percentageUsed = (item.used / item.allocated) * 100; // Maximum width of the progress bar is the allocated amount
       // If less than 10%, we'll show the amount outside the progress bar
       this.showAmountOutside[index] = percentageUsed < 10;
       return `${percentageUsed}%`;
@@ -146,6 +148,7 @@ export default {
       });
     },
     async fetchBudgetItems() {
+      this.isLoading = true; // Make sure to set it to true when starting to fetch
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
       const queryRef = query(budgetsRef, orderBy("order"));
 
@@ -180,8 +183,10 @@ export default {
 
         // Calculate the total budget
         this.totalBudget = this.budget.reduce((acc, item) => acc + item.allocated, 0);
+        this.isLoading = false; // Set it to false once data fetching is complete
       } catch (error) {
         console.error("Error fetching budget items:", error);
+        this.isLoading = false; // Set it to false to prevent errors
       }
     }
   },
@@ -296,6 +301,7 @@ h1 {
 .progress-bar {
   height: 20px; /* Increased height */
   border-radius: 5px;
+  max-width: 100%;
   transition: width 0.3s ease;
   position: relative; /* Enable absolute positioning of children */
 }
@@ -368,18 +374,25 @@ h1 {
 
 .text-danger {
   position: absolute;
+  /* Set position at the end of the visible progress bar */
   right: 0;
   top: 50%;
-  transform: translate(-10%, -50%); /* Adjust positioning to inside the progress bar */
-  color: rgb(194, 40, 40); /* Improved visibility against colored backgrounds */
-  background-color: transparent; /* Optional: Adjust based on visibility needs */
-  padding: 0 4px; /* Slight padding on the sides */
-  min-width: 30px; /* Ensure there's enough room for numbers */
-  text-align: center; /* Center the text within the space */
+  transform: translate(-10%, -50%);
+  color: rgb(194, 40, 40);
+  background-color: transparent;
+  padding: 0 4px;
+  min-width: 30px;
+  text-align: center;
   border-radius: 5px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-weight: 600;
-  font-size: 0.95em; /* Adjust font size as necessary */
-  white-space: nowrap; /* Ensure the text doesn't wrap */
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+
+.loading{
+  color: grey;
+  margin-top: -400px;
+  font-size: x-large;
 }
 </style>
