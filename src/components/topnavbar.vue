@@ -34,7 +34,6 @@ User
 </template>
 <script>
 import NavBar from './NavBar.vue';
-import { ref } from 'vue';
 import { auth, db } from '@/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -55,9 +54,7 @@ export default {
   },
 
   created() {
-    console.log("created")
     eventBus.on('usernameUpdated', (newUsername) => {
-      console.log("receive");
       this.Username = newUsername;
     });
   },
@@ -80,7 +77,6 @@ export default {
         }
       }
     },
-    
     toggleDropdown() {
       this.isDropdownOpen = true;
     },
@@ -108,7 +104,6 @@ export default {
       }
     });
   },
-  
 }
 </script>
 
