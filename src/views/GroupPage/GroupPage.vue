@@ -70,8 +70,13 @@
                   <div class="expense-title">{{ expense.title }}</div>
                   <div class="expense-subtitle">{{ expense.subtitle }}</div>
                 </div>
-                <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
-                  {{ expense.sideDisplayText }}
+                <div class="right-side">
+                  <div class="delete-expense" @click="showCancelExpensePopup(expense)">
+                    <img src="@/assets/dustbin.png" alt="delete" class="dustbin-icon">
+                  </div>
+                  <div class="expense-amount" :class="{ 'no-balance': !expense.balance }">
+                    {{ expense.sideDisplayText }}
+                  </div>
                 </div>
                 <div class="expense-balance" v-if="expense.balance">
                   {{ expense.balance }}
@@ -82,6 +87,18 @@
         </div>
         <!-- Add Expense Button -->
         <button class="add-expense-btn" @click="showAddExpenseModal = true">+</button>
+      </div>
+      <!-- Cancel expense Confirmation popup -->
+      <div v-if="showCancelExpenseConfirmation" class="confirmation-popup">
+        <div class="confirmation-content">
+        <p class="reminder-confirmation">
+          Are you sure you want to delete this expense? 
+        </p>
+        <div class="confirmation-buttons">
+          <button class="confirm-button" @click="deleteExpense">Delete</button>
+          <button class="cancel-button" @click="cancelConfirmation">Cancel</button>
+        </div>
+      </div>
       </div>
       <!-- Reminder Confirmation Popup -->
     <div v-if="showReminderConfirmation && selectedUser" class="confirmation-popup">
@@ -114,11 +131,12 @@ import SideNavBar from './SideNavBar.vue';
 import ClearDebtPage from './ClearDebtPage.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc, deleteDoc, deleteField, increment, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import ReminderIcon from '@/assets/reminder-icon.png';
+
 
 export default {
   data() { 
@@ -130,21 +148,13 @@ export default {
         Currency: "", 
         UID: ""
       },
+      toDeleteExpense: null,
       totalDebtOwedToYou: 0.00,
       totalDebtYouOwe: 0.00, 
       debtsOwedToYou: [],
       debtsYouOwe: [],
       reminders: [],
-      groupedExpenses: {
-        // '25/02/2024': [
-        //   { id: 1, title: 'Dinner at Petaling Street Market', subtitle: 'Calista Tan paid MYR 100', amount: 'You borrowed MYR 30.00'},
-        //   { id: 2, title: 'Clothes from thrift store', subtitle: 'You paid MYR 50', amount: 'No balance' }
-        // ],
-        // '24/02/2024': [
-        //   { id: 3, title: 'Karaoke', subtitle: 'Hui Qian Khoo paid MYR 50', amount: 'You borrowed MYR 10' },
-        //   { id: 4, title: 'Lunch by the river', subtitle: 'You paid MYR 100', amount: 'You lent MYR 80.00' }
-        // ]
-      },
+      groupedExpenses: {},
       currencySymbols: {
         USD: "$",
         JPY: "¥",
@@ -164,6 +174,7 @@ export default {
       showAddExpenseModal: false,
       showClearDebtPage: false,
       showReminderConfirmation: false,
+      showCancelExpenseConfirmation: false,
       selectedUser: null,
     };
   },
@@ -192,28 +203,6 @@ export default {
     },
   },
   methods: {
-    // Generate a unique key for each trip
-    generateStorageKey(key) {
-      const userId = this.user ? this.user.uid : 'unknown';
-      return `${userId}-${this.trip.UID}-${key}`;
-    },
-
-    // Updated methods to use dynamic keys
-    getFromSessionStorage(key) {
-      const uniqueKey = this.generateStorageKey(key);
-      const cachedData = sessionStorage.getItem(uniqueKey);
-      return cachedData ? JSON.parse(cachedData) : null;
-    },
-
-    saveToSessionStorage(key, data) {
-      const uniqueKey = this.generateStorageKey(key);
-      sessionStorage.setItem(uniqueKey, JSON.stringify(data));
-    },
-
-    clearSessionStorage(key) {
-      const uniqueKey = this.generateStorageKey(key);
-      sessionStorage.removeItem(uniqueKey);
-    },
     removeClearDebtPage() { 
       this.showClearDebtPage = false;
     },
@@ -281,11 +270,12 @@ export default {
         acc[expenseDate] = [];
       }
 
-      const amountEachUserOwes = (expense.amount / (expense.owedMembers.length + 1)).toFixed(2); 
+      const amountEachUserOwes = (expense.amount / (expense.owedMembers.length)).toFixed(2); 
       //console.log(expense.owedMembers);
       var displayText; 
+      console.log(expense.paidBy);
 
-      if (expense.owedMembers.indexOf(this.user.uid) > -1 ) { 
+      if (expense.owedMembers.some(member => member.UID === this.user.uid) && expense.paidBy !== this.user.uid) { 
         // this means that the user owes the money, so you must display ' you borrowed ....'
         displayText = `You borrowed ${this.trip.Currency} ${amountEachUserOwes}`;
 
@@ -300,7 +290,10 @@ export default {
       // Push the current expense to the array for this date
       acc[expenseDate].push({
         id: expense.id,
+        amount: expense.amount,
         title: expense.title,
+        paidBy: expense.paidBy,
+        owedMembers: expense.owedMembers,
         category: expense.category,
         subtitle: `${expense.paidByFirstName} ${expense.paidByLastName} paid ${expense.currency} ${(expense.amount).toFixed(2)}`,
         sideDisplayText: displayText
@@ -312,7 +305,6 @@ export default {
 
       // Update your component state or data object
       this.groupedExpenses = groupedExpenses;
-      this.saveToSessionStorage('groupedExpenses', this.groupedExpenses);
       console.log(groupedExpenses);
     },
     async fetchDebtData() { 
@@ -353,7 +345,8 @@ export default {
             UID: document.id, 
             FirstName: additionalDocSnapshot.data().FirstName,
             LastName: additionalDocSnapshot.data().LastName,
-            Username: additionalDocSnapshot.data().Username
+            Username: additionalDocSnapshot.data().Username,
+            Email: additionalDocSnapshot.data().Email
           }
         } else { 
           return { 
@@ -365,7 +358,7 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
-      console.log("User's debts: " + this.debtsYouOwe);
+      console.log(this.debtsYouOwe);
       this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
 
       // debts that other members owe the user 
@@ -397,12 +390,6 @@ export default {
       this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou);
       console.log(this.totalDebtOwedToYou)
 
-      this.saveToSessionStorage('debts', { 
-        owedToYou: this.debtsOwedToYou, 
-        owedByYou: this.debtsYouOwe,
-        totalDebtOwedToYou: this.totalDebtOwedToYou,
-        totalDebtYouOwe: this.totalDebtYouOwe
-      })
     }, 
     async fetchTripData() { 
       // fetch trip data based on tripID
@@ -462,28 +449,99 @@ export default {
       this.showReminderConfirmation = false;
       this.selectedUser = null;
     },
-    // Fetch debts and expenses only if they aren't cached
-    async initializeData() {
-      console.log('initialiseData method called');
-      const cachedDebts = this.getFromSessionStorage('debts');
-      const cachedExpenses = this.getFromSessionStorage('groupedExpenses');
+    // Cancel Expense 
+    showCancelExpensePopup(expense) {
+      this.showCancelExpenseConfirmation = true;
+      this.toDeleteExpense = expense;
+    },
+    cancelConfirmation() {
+      this.showCancelExpenseConfirmation = false;
+      this.toDeleteExpense = null;
+    },
+    async deleteExpense() {
+      console.log(this.toDeleteExpense);
+      //method to delete expense 
+      // for each member in the owedMembers array of the expense,  we want to remove the expense from the expenses object of the user's debt collection, 
+      // and update the corresponding totalAmount 
+      const tripDocRef = doc(db, "Trips", this.trip.UID);
+      const expenseDoc = doc(tripDocRef, "Expenses", this.toDeleteExpense.id);
 
-      if (cachedDebts) {
-        this.debtsOwedToYou = cachedDebts.owedToYou;
-        this.debtsYouOwe = cachedDebts.owedByYou;
-        this.totalDebtOwedToYou = cachedDebts.totalDebtOwedToYou; 
-        this.totalDebtYouOwe = cachedDebts.totalDebtYouOwe;
-      } else {
-        await this.fetchDebtData();
+      // for the paid member, check their who owes user collection and find each member's UID document (if it exists)
+      const paidMemberDebtsRef = doc(tripDocRef, "Debts", this.toDeleteExpense.paidBy);
+      console.log(this.toDeleteExpense.owedMembers);
+      
+
+      for (const member of this.toDeleteExpense.owedMembers) { 
+        if (member.UID !== this.toDeleteExpense.paidBy) {
+          const paidMemberWhoOwesUser = collection(paidMemberDebtsRef, "Who Owes User"); 
+          console.log(member.UID);
+          const paidMemberWhoOwesUserDoc = doc(paidMemberWhoOwesUser, member.UID);
+          const paidMemberWhoOwesUserSnapshot = await getDoc(paidMemberWhoOwesUserDoc);
+          if (paidMemberWhoOwesUserSnapshot.exists()) { 
+  
+            const data = paidMemberWhoOwesUserSnapshot.data();
+            console.log(data.expenses);
+            if (data.expenses.hasOwnProperty(`expenses.${this.toDeleteExpense.id}`)) { 
+              const amount = data.expenses[`expenses.${this.toDeleteExpense.id}`]
+              console.log(amount);
+              const totalAmount = data.totalAmount; 
+              if (totalAmount > amount) { 
+                await setDoc(paidMemberWhoOwesUserDoc, { 
+                  expenses: { 
+                    [`expenses.${this.toDeleteExpense.id}`]: deleteField()
+                  },
+                  totalAmount: increment(-amount)
+                }, {merge: true })
+              } else { 
+                await deleteDoc(paidMemberWhoOwesUserDoc);
+              }
+              console.log("Expense removed from paid member's debt data")
+            }
+          }
+
+          // update the owing member's user owes who collection by finding the paid member's UID document 
+          const owingMemberDebtsRef = doc(tripDocRef, "Debts", member.UID);
+          const owingMemberUserOwesWhoDoc = doc(owingMemberDebtsRef, "User Owes Who", this.toDeleteExpense.paidBy);
+          const owingMemberUserOwesWhoSnapshot = await getDoc(owingMemberUserOwesWhoDoc); 
+
+          if (owingMemberUserOwesWhoSnapshot.exists()) { 
+            const debtData = owingMemberUserOwesWhoSnapshot.data();
+
+            if (debtData.expenses.hasOwnProperty(`expenses.${this.toDeleteExpense.id}`)) { 
+              const amount = debtData.expenses[`expenses.${this.toDeleteExpense.id}`]
+
+              if (debtData.totalAmount > amount) { 
+                // update owing member's expenses map 
+                await setDoc(owingMemberUserOwesWhoDoc, { 
+                  expenses: { 
+                    [`expenses.${this.toDeleteExpense.id}`]: deleteField()
+                  },
+                  totalAmount: increment(-amount)
+                }, { merge: true })
+              } else { 
+                await deleteDoc(owingMemberUserOwesWhoDoc);
+              }
+              console.log("Expense removed from owing member's debt data");
+            }
+          }
+        }
+
       }
 
-      if (cachedExpenses) {
-        this.groupedExpenses = cachedExpenses;
-      } else {
-        console.log('need to call fetchExpensesData')
-        await this.fetchExpensesData();
-      }
+
+      // remove the entire expense 
+      await deleteDoc(expenseDoc);
+      
+
+      // for the other members in the owedMembers array, check their user owes who collection and find the paid member's UID document
+      await this.fetchDebtData();
+      await this.fetchExpensesData();
+
+      this.showCancelExpenseConfirmation = false;
+        // Show success message
+        toast("Expense deleted successfully!", { autoClose: 2000 });
     }
+
   }, 
   mounted() {
     const auth = getAuth();
@@ -814,4 +872,18 @@ h1 {
 .confirm-button:hover, .cancel-button:hover {
   background-color: #f2f2f2; 
 }
+
+.dustbin-icon {
+  height: 15px;
+  width: 16px;
+  cursor: pointer;
+}
+
+.right-side {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 </style>

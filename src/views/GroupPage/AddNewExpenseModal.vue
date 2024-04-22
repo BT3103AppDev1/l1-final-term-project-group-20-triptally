@@ -1,7 +1,6 @@
 <template> 
 <div class="app-container">
   <div class="main-content">
-    <p v-if="showSuccessMessage" class="success-message">Expense added successfully!</p>
     <p v-if="showErrorMessage" class="error-message">All fields must be filled!</p>
     <div class="main-container">
       <div class="header">
@@ -58,9 +57,12 @@
             </select>
           </div>
         </div>
-        <div class="fifth-row">
-          <img src="@/assets/receipt-icon.png" class="receipt-icon"><span>Upload Receipt      </span>
-          <input type="file" accept="image/*" @change="handlePhotoChange">
+        <div class="receipt-upload">
+          <div class="receipt-upload-container">
+            <img src="@/assets/receipt-icon.png" class="receipt-icon">
+            <div class="receipt-title">Upload receipt to scan</div> 
+          </div>
+          <input class="input-file" type="file" accept="image/*" @change="handlePhotoChange">
         </div>
       </div>
     </div>
@@ -75,7 +77,7 @@
 import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
+import { toast } from 'vue3-toastify';
 
 
 export default { 
@@ -139,21 +141,22 @@ export default {
     addSelectedMember(event) {
     const selectedUserID = event.target.value;
     if (selectedUserID === "Everyone") { 
-      this.expense.owedMembers = this.trip.MemberDetails;
+      const array = this.trip.MemberDetails.slice();
+      this.expense.owedMembers = array;
     } else { 
       const selectedUser = this.trip.MemberDetails.find(member => member.UID === selectedUserID);
       if (selectedUser && !this.expense.owedMembers.some(member => member.UID === selectedUser.userID)) {
         this.expense.owedMembers.push(selectedUser);
       }
     }
-
     console.log(this.expense.owedMembers);
     // Reset the select dropdown
       event.target.value = "";
     },
     removeSelectedMember(index) {
       this.expense.owedMembers.splice(index, 1);
-      console.log(this.expense.owedMembers);
+      console.log("User index: " + index);
+      console.log("Owed members: " + this.expense.owedMembers);
     },
     async fetchCurrentUserDetails(uid) {
       const userDocRef = doc(db, "Users", uid);
@@ -207,11 +210,6 @@ export default {
     async updateDebts(expenseID) { 
       // update debt details for all members involved in the expense - we need to update the WhoOwesUser collection for the payer, and the UserOwesWho collection for the person who owes the money 
 
-      // for now user can only select "Everyone" to split between, cos i'm not too sure how to make the dropdown thingy such that different users can be selected (and more than 1 user) 
-      if (this.expense.splitBetween === "Everyone") { 
-        this.expense.owedMembers = this.trip.Members.filter(memberID => memberID !== this.expense.paidBy);
-      }
-
       // for each member of the owedMembers array, we will update their debt in firebase
       for (const member of this.expense.owedMembers) { 
 
@@ -225,7 +223,7 @@ export default {
           const paidMemberUserOwesWhoRef = collection(paidMemberDocRef, "User Owes Who"); // this is the payer's "User Owes Who" collection
           const owedMemberUserOwesWhoRef = collection(owedMemberDocRef, "User Owes Who"); // this is the ower's "User Owes Who" collection
           const owedMemberWhoOwesUserRef = collection(owedMemberDocRef, "Who Owes User");  // this is the ower's "Who Owes User" collection
-          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length + 1)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
+          const amountOwed = Number((this.expense.amount / (this.expense.owedMembers.length)).toFixed(2)); // this is the amount that is owed by each user involved in the expense 
 
           // check whether the paid member currently owes this member any money - if yes, minus off from there
           const memberDocRef = doc(paidMemberUserOwesWhoRef, member.UID); 
@@ -333,11 +331,9 @@ export default {
           });
 
           const data = await response.json();
-          console.log('Received data:', data.totalAmount);
+          console.log('Received data:', data);
           if (data) {
             this.expense.amount = data.totalAmount.toFixed(2);
-            this.expense.date = new Date(data.date); // Update your form's data
-            alert('Receipt processed. Total: ' + data.total);
           } else {
             alert('Receipt processing failed.');
           }
@@ -367,6 +363,7 @@ export default {
         })
         this.showSuccessMessage = true;
         console.log("Expense added successfully!");
+        
 
         // Update the used amount in the corresponding budget category
         const budgetRef = collection(tripRef, "Budgets"); 
@@ -383,6 +380,8 @@ export default {
         this.expense.category = "";
         this.expense.splitBetween = "";
         this.expense.owedMembers =[]
+        toast("Expense added successfully!", { autoClose: 2000 });
+        this.showErrorMessage = false;
 
       } catch (error) { 
         console.error("Error adding expense: " + error);
@@ -482,7 +481,7 @@ input[placeholder="Choose Date"] {
   /* Full width minus padding */
   padding: 10px;
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   /* Space between inputs */
   border: 0px solid #ddd;
   border-radius: 10px;
@@ -492,21 +491,25 @@ input[placeholder="Choose Date"] {
 
 .expense-category {
   font-size: 35px;
-  width: 100px;
-  height: 60px;
+  width: 80px;
+  height: 50px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   margin-right: 20px;
-  padding-left: 25px;
+  padding-left: 15px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .currency-category {
   font-size: 18px;
-  width: 100px;
-  height: 60px;
+  width: 80px;
+  height: 50px;
   margin-right: 20px;
   background-color: rgb(222, 221, 221);
   border-radius: 10px;
   color: black;
-  margin-top: 10px;
+  margin-top: 5px;
   display: flex;             /* Enable Flexbox */
   justify-content: center;   /* Center horizontally */
   align-items: center;
@@ -515,12 +518,12 @@ input[placeholder="Choose Date"] {
 
 .expense-title, .expense-amount {
   width: 300px;
-  height: 60px;
+  height: 50px;
   border: 0px solid #ddd;
   border-radius: 10px;
   font-size: large;
   font-family: 'Montserrat', sans-serif;
-  margin-top: 10px;
+  margin-top: 5px;
   padding-left: 8px;
   padding-top: 0px;
   padding-bottom: 0px;
@@ -573,36 +576,21 @@ button {
   background-color: #82C0CC; /* Replace with your color */
   color: white;
   border: none;
-  padding: 15px 30px;
+  padding: 12px 30px;
   font-size: 22px;
   cursor: pointer;
   margin-bottom: 55px;
   margin-top: 10px;
+  font-family: 'Montserrat', sans-serif;
 }
 
 button:hover {
   background-color: #71a9b4; /* Replace with your color */
 }
-
-.success-message {
-  color: rgb(2, 89, 40); /* Simple styling */
-  position: fixed;
-  top: 10%;
-  left: 50%;
-  font-family: Montserrat, sans-serif;
-  font-weight: 700;
-  font-size: large;
-  z-index: 100; 
-  padding: 5px;
-  padding-left: 8px;
-  padding-right: 8px;
-  border-radius: 10px;
-  background-color: rgb(176, 244, 205);
-}
 .error-message {
   color: rgb(165, 17, 3); /* Simple styling */
   position: fixed;
-  top: 10%;
+  top: 12%;
   left: 50%;
   font-family: Montserrat, sans-serif;
   font-weight: 700;
@@ -616,11 +604,30 @@ button:hover {
 }
 
 .receipt-icon { 
-  height: 30px;
+  height: 40px;
   vertical-align:bottom;
 }
 
-.fifth-row { 
-  margin-bottom: 5px;
+.receipt-upload-container {
+  display: flex;
+  flex-direction: row; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  gap: 10px; /* Add space between children */
+}
+
+.input-file {
+  max-width: 250px;
+  font-family: Montserrat, sans-serif;
+}
+
+.receipt-title {
+  margin-left: -10px;
+}
+
+.receipt-upload {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

@@ -28,7 +28,7 @@ export default {
   computed: {
   // Returns true for routes that should show the pre-login NavBar
   shouldShowNavBar() {
-    const isNonAuthRoute = ['LoginPage', 'ForgotPassword', 'SignupPage'].includes(this.$route.name);
+    const isNonAuthRoute = ['LoginPage', 'ForgotPassword', 'SignupPage', 'LandingPage'].includes(this.$route.name);
     console.log(`Route name: ${this.$route.name}, Should show NavBar: ${isNonAuthRoute}`);
     return isNonAuthRoute;
   },

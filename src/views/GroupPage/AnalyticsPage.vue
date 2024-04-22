@@ -134,7 +134,7 @@ export default {
 h1 {
   margin-top: 20px;
   position: relative;
-  color: black;  
+  color: #333;  
 }
 
 h3 {

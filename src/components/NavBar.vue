@@ -2,7 +2,7 @@
     <nav class="navbar">
     <img src="@/assets/triptallylogo.png" class="tt_logo" alt="TripTally">
     <div>
-        <router-link to="/" class="nav-link-login">Log In</router-link>
+        <router-link to="/login" class="nav-link-login">Log In</router-link>
         <router-link to="/signup" class="nav-link-signup">Sign Up</router-link>
     </div>
     </nav>

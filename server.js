@@ -5,7 +5,7 @@ import cors from 'cors';  // Import CORS module
 
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: 'http://localhost:5174'
 }));
 
 // Initialize Mindee client
@@ -26,6 +26,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         const apiResponse = await mindeeClient.parse(product.ReceiptV5, inputSource);
         const totalAmount = apiResponse.document.inference.prediction.totalAmount.value
         const date = apiResponse.document.inference.prediction.date.value;
+        console.log(date);
 
         res.json({totalAmount: totalAmount, date: date});
     } catch (error) {
