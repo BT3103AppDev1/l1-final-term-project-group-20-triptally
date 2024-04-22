@@ -17,10 +17,10 @@
           <input type="text" id="username" v-model="enteredUsername" @input="onUsernameInput" placeholder="Username" required/>
           <div v-if="saveButtonClicked && (usernameTaken || updateSuccess)" class="error-message">
             <template v-if="updateSuccess">
-              Username successfully updated!!
+              Username successfully updated!
             </template>
             <template v-else-if="this.enteredUsername === profile.username">
-              This is your current username.
+              This is your current Username. Enter a new one?
             </template>
             <template v-else>
               Username already taken. Please choose another one!
@@ -104,14 +104,12 @@ export default {
   methods: {
     onUsernameInput() {
       this.saveButtonClicked = false;
-      this.updateSuccess = false;
-            
+      this.updateSuccess = false;    
     },
 
     async checkUsernameAvailability() {
       this.usernameTaken = false;
       const usernameDocRef = doc(db, "Usernames", this.enteredUsername);
-
       try {
         const docSnap = await getDoc(usernameDocRef);
         this.usernameTaken = docSnap.exists();
@@ -141,7 +139,6 @@ export default {
         }
       }
     },
-
 
     async saveChanges() {
       this.saveButtonClicked = true; 
@@ -192,7 +189,6 @@ export default {
             this.profile.username = userData.Username;
             this.profile.currency = userData.Currency;
             this.enteredUsername = userData.Username; 
-           
           } else {
             console.error("User document does not exist.");
           }
@@ -203,7 +199,6 @@ export default {
         console.error("No user is currently authenticated.");
       }
     },
-
   },
 
     mounted() {
@@ -216,7 +211,6 @@ export default {
         }
       })
     },
-
 }
   
 </script>
