@@ -273,8 +273,9 @@ export default {
       const amountEachUserOwes = (expense.amount / (expense.owedMembers.length)).toFixed(2); 
       //console.log(expense.owedMembers);
       var displayText; 
+      console.log(expense.paidBy);
 
-      if (expense.owedMembers.some(member => member.UID === this.user.uid)) { 
+      if (expense.owedMembers.some(member => member.UID === this.user.uid) && expense.paidBy !== this.user.uid) { 
         // this means that the user owes the money, so you must display ' you borrowed ....'
         displayText = `You borrowed ${this.trip.Currency} ${amountEachUserOwes}`;
 
