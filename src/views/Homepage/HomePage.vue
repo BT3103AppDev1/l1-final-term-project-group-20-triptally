@@ -610,6 +610,7 @@ export default {
 
 .confirm-photo, .cancel-photo { 
   margin-top: 7px;
+  font-family: 'Montserrat', sans-serif;
 }
 </style>
   
