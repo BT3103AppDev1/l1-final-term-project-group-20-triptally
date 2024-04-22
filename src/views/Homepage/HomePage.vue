@@ -53,7 +53,6 @@
 
                     <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
 
-
                     <div class="button-container">
                         <button class="confirm-photo" @click="confirmChangePhoto">Confirm</button>
                         <button class="cancel-photo" @click="cancelChangePhoto">Cancel</button>
@@ -515,6 +514,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 30px;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
   z-index: 10;
@@ -524,6 +524,7 @@ export default {
 }
 
 .temp-image {
+  margin-top: 30px; /* Adjust this value as needed to create more space */
   max-width: 100%; /* Adjust as needed */
   max-height: 100%; /* Adjust as needed */
   border-radius: 10%;
