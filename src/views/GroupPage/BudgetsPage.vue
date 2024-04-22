@@ -92,7 +92,7 @@ export default {
       }
     },
     progressWidth(item, index) {
-      const percentageUsed = (item.used / item.allocated) * 100;
+      const percentageUsed = Math.min((item.used / item.allocated) * 100, 100); // Cap at 100%
       // If less than 10%, we'll show the amount outside the progress bar
       this.showAmountOutside[index] = percentageUsed < 10;
       return `${percentageUsed}%`;
@@ -296,6 +296,7 @@ h1 {
 .progress-bar {
   height: 20px; /* Increased height */
   border-radius: 5px;
+  max-width: 100%;
   transition: width 0.3s ease;
   position: relative; /* Enable absolute positioning of children */
 }
@@ -368,18 +369,19 @@ h1 {
 
 .text-danger {
   position: absolute;
+  /* Set position at the end of the visible progress bar */
   right: 0;
   top: 50%;
-  transform: translate(-10%, -50%); /* Adjust positioning to inside the progress bar */
-  color: rgb(194, 40, 40); /* Improved visibility against colored backgrounds */
-  background-color: transparent; /* Optional: Adjust based on visibility needs */
-  padding: 0 4px; /* Slight padding on the sides */
-  min-width: 30px; /* Ensure there's enough room for numbers */
-  text-align: center; /* Center the text within the space */
+  transform: translate(-10%, -50%);
+  color: rgb(194, 40, 40);
+  background-color: transparent;
+  padding: 0 4px;
+  min-width: 30px;
+  text-align: center;
   border-radius: 5px;
   font-family: 'MontserratRegular', Montserrat, sans-serif;
   font-weight: 600;
-  font-size: 0.95em; /* Adjust font size as necessary */
-  white-space: nowrap; /* Ensure the text doesn't wrap */
+  font-size: 0.95em;
+  white-space: nowrap;
 }
 </style>
