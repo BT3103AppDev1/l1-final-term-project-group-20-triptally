@@ -547,6 +547,47 @@ export default {
   max-height: 300px; /* Adjust as needed */
 }
 
+.confirm-photo, .cancel-photo {
+  margin-top: 5px;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 15px 24px;
+  height: 35px;
+  width: 165px;
+  background-color: #16697A;
+  border-radius: 0%;
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+}
+
+input {
+  font-family: 'MontserratRegular', Montserrat, sans-serif;
+  margin-left: 80px;
+}
+
+.photo-form {
+  width: 50px;
+
+}
+
+
+
+.confirm-photo {
+  color: #ffa62b;
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+
+.cancel-photo {
+  color: white;
+  cursor: pointer;
+}
+
+.cancel-photo:hover, .confirm-photo:hover {
+  background-color: #105664;
+  border-radius: 20px;
+}
+
+
 .edit-name {
   margin-top: 0px;
   margin-bottom: 30px;
