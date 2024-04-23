@@ -229,8 +229,8 @@ export default {
 
 .edit-button {
   position: absolute; /* Position the button absolutely within the budget-page */
-  top: 80px; /* Adjust as needed */
-  right: 20px; /* Adjust as needed */
+  top: 15; /* Adjust as needed */
+  right: 5%; /* Adjust as needed */
   padding: 10px 20px;
   background-color: #ffb921; /* Pastel yellow, or choose a color that fits your design */
   color: black;

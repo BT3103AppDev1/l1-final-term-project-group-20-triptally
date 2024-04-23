@@ -18,7 +18,9 @@
             <div v-if="debt.currency === userCurrency" class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
             <div v-else class="debt-description">
               <div h1>You owe</div> 
-              {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
+              <div v-if="debt.ConvertedAmount">{{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
+              <div v-else>{{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = Loading...</div>
+            </div>
           </div>
           <button @click="confirmPayUp(debt)" class="payUpButton">Pay Up</button>
         </div>
@@ -64,74 +66,30 @@ export default {
       this.$emit('returnToMainPage');
     },
     async fetchCurrencyRates() {
-       for (let i = 0; i < this.debtsYouOwe.length; i++) { 
+      for (let i = 0; i < this.debtsYouOwe.length; i++) { 
         const debt = this.debtsYouOwe[i];
         var expenseInUserCurrency;
 
         if (debt.currency !== this.userCurrency) { 
-          const response = await axios.get('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_iaKyOqNjZI0PjnMBKqchb1UFhMxXh12FLbkCuzNy');
+          try {
+            const response = await axios.get('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_iaKyOqNjZI0PjnMBKqchb1UFhMxXh12FLbkCuzNy');
 
-          // must convert expense to USD first, then from USD convert to the user's default currency 
-          const expenseInUSD = debt.totalAmount / (response.data.data[debt.currency]);
-          expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
-          this.debtsYouOwe[i].ConvertedAmount = expenseInUSD * (response.data.data[this.userCurrency]);
+            // Convert expense to USD first, then from USD to the user's default currency 
+            const expenseInUSD = debt.totalAmount / response.data.data[debt.currency];
+            const exchangeRate = response.data.data[this.userCurrency];
+            expenseInUserCurrency = expenseInUSD * exchangeRate;
+            this.debtsYouOwe[i].ConvertedAmount = expenseInUserCurrency;
+  
+          } catch (error) {
+            console.error("Failed to fetch currency rates:", error);
+            this.debtsYouOwe[i].ConvertedAmount = "Error"; // Indicate an error in conversion
+          }
         } else { 
+          // If the currency is the same, no need to convert
           expenseInUserCurrency = debt.totalAmount;
           this.debtsYouOwe[i].ConvertedAmount = expenseInUserCurrency;
         }
-
       }
-    },
-    async fetchDebtData() { 
-      // fetch all the debts that user owes other people - this can be found in the "User Owes Who" collection 
-      const tripRef = doc(db, "Trips", this.$route.params.tripID);
-      const debtsRef = collection(tripRef, "Debts");
-      const userDebtRef = doc(debtsRef, this.user.uid);
-      const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
-      const userOwesWhoSnapshot = await getDocs(userOwesWhoRef);
-
-      this.debtsYouOwe = [];
-      const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
-        const additionalDataRef = doc(db, "Users", document.id); 
-        const additionalDocSnapshot = await getDoc(additionalDataRef);
-        const debtData = document.data();
-
-        // if expense currency is not the same as the user's default currency, then fetch exchange rates  
-        const expenseCurrency = document.data().currency; 
-        var expenseInUserCurrency;
-
-        if (expenseCurrency !== this.userCurrency) { 
-          // fetch current exchange rate from freecurrencyapi
-          const response = await axios.get('https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_iaKyOqNjZI0PjnMBKqchb1UFhMxXh12FLbkCuzNy');
-
-          // must convert expense to USD first, then from USD convert to the user's default currency 
-          const expenseInUSD = debtData.totalAmount / (response.data.data[expenseCurrency]);
-          expenseInUserCurrency = expenseInUSD * (response.data.data[this.userCurrency]);
-        } else { 
-          expenseInUserCurrency = debtData.totalAmount;
-        }
-
-        // fetch paid member data
-        if (additionalDocSnapshot.exists()) { 
-
-          return { 
-            ...document.data(), 
-            UID: document.id, 
-            FirstName: additionalDocSnapshot.data().FirstName,
-            LastName: additionalDocSnapshot.data().LastName,
-            Username: additionalDocSnapshot.data().Username,
-            Email: additionalDocSnapshot.data().Email,
-            ConvertedAmount: expenseInUserCurrency
-          }
-        } else { 
-          return 
-        }
-      })
-
-      const debtsYouOwe = await Promise.all(userOwesWhoPromises);
-      this.debtsYouOwe = debtsYouOwe;
-      console.log(this.debtsYouOwe);
-       
     },
     async payUp(debt) { 
       // change totalAmount owed by the user to the paid member to 0, and delete all expenses! 
@@ -189,7 +147,6 @@ export default {
         this.user = user;
         await this.fetchUserData();
         await this.fetchCurrencyRates();
-        //await this.fetchDebtData();
       }
     })
 
@@ -210,7 +167,7 @@ export default {
 
 .main-content {
   margin-top: -60%;  
-  margin-left: 10%;
+  margin-left: 18%;
 }
 
 
