@@ -16,13 +16,10 @@
           <label for="username">Username:</label>         
           <input type="text" id="username" v-model="enteredUsername" @input="onUsernameInput" placeholder="Username" required/>
           <div v-if="saveButtonClicked && (updateSuccess || usernameTaken || enteredUsername === profile.username)" >
-            <template v-if="updateSuccess">
+            <template v-if="updateSuccess && usernameChanged">
                 <p class="error-message-success">Username successfully updated!</p>
             </template>
-            <template v-else-if="enteredUsername === profile.username">
-                <p class="error-message-fail">No change detected.</p>
-            </template>
-            <template v-else-if="usernameTaken">
+            <template v-else-if="usernameTaken && usernameChanged">
                 <p class="error-message-fail">Username already taken. Please choose another one!</p>
             </template>
           </div>
@@ -30,7 +27,7 @@
         
         <div class="form-group">
           <label for="currency">Default Currency:</label>
-          <select id="currency" v-model="profile.currency" >
+          <select id="currency" v-model="selectedCurrency" >
             <option value="SGD">SGD</option>
             <option value="AUD">AUD</option>
             <option value="BGN">BGN</option>
@@ -63,11 +60,8 @@
             <option value="ZAR">ZAR</option>  
           </select>
           <div v-if="saveButtonClicked" >
-            <template v-if="updateCurrSuccess">
+            <template v-if="updateCurrSuccess && currencyChanged">
                 <p class="error-message-success-b">Currency successfully updated!</p>
-            </template>
-            <template v-else>
-                <p class="error-message-fail-b">No change detected.</p>
             </template>
           </div>
         </div>
@@ -97,12 +91,15 @@ export default {
       user: false,
       userID: "",
       enteredUsername: "",
+      selectedCurrency: "",
       profile: {
         name: 'No Authenticated User',
         email: 'invalid@email',
         username: 'xxxxxxxx',
         currency: 'SGD'
-      },      
+      }, 
+      usernameChanged: false,
+      currencyChanged: false,
       usernameTaken: { value: false },
       saveButtonClicked: false,
       updateSuccess: false,
@@ -150,17 +147,15 @@ export default {
     },
 
     async updateCurrency() {
-      const user = auth.currentUser;
-      if (user) {
-        const docRef = doc(db, "Users", user.uid);
-        try {
-          await updateDoc(docRef, {
-            currency: this.profile.currency
-          });
-        
-        } catch (error) {
-          console.error("Error updating currency:", error);
-        }
+      const docRef = doc(db, "Users", this.user.uid);
+      try {
+        await updateDoc(docRef, {
+          Currency: this.selectedCurrency
+        });
+        console.log('Currency updated');
+      
+      } catch (error) {
+        console.error("Error updating currency:", error);
       }
     },
 
@@ -169,12 +164,13 @@ export default {
       this.updateSuccess = false;
       this.updateCurrSuccess = false;
       this.noChange = false;
+      this.enteredUsername = this.enteredUsername.trim();
       
-      const isUsernameChanged = this.enteredUsername.trim() && this.enteredUsername !== this.profile.username;
-      const isCurrencyChanged = this.profile.currency !== this.initialCurrency;
+      this.usernameChanged = this.enteredUsername !== this.profile.username;
+      this.currencyChanged = this.profile.currency !== this.selectedCurrency;
 
   
-      if (isUsernameChanged) {
+      if (this.usernameChanged) {
         await this.checkUsernameAvailability(); 
         if (!this.usernameTaken) {
           await this.updateUsername();
@@ -187,16 +183,13 @@ export default {
         }
       }
 
-      if (isCurrencyChanged) {
+      if (this.currencyChanged) {
         await this.updateCurrency();
         this.updateCurrSuccess = true;
-        this.initialCurrency = this.profile.currency;
+        this.profile.currency = this.selectedCurrency;
         console.log("Currency updated successfully.");
         
-      } else if (!isUsernameChanged && !isCurrencyChanged) {
-        this.updateCurrSuccess = false;
-        console.log("No change applied.");
-      }    
+      }   
     },
 
 
@@ -215,6 +208,7 @@ export default {
             this.profile.username = userData.Username;
             this.profile.currency = userData.Currency;
             this.enteredUsername = userData.Username; 
+            this.selectedCurrency = userData.Currency;
           } else {
             console.error("User document does not exist.");
           }
