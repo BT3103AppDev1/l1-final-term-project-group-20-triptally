@@ -52,6 +52,17 @@ export default {
   background-color: rgba(88, 85, 79, 0.2);
 }
 
+.container {
+    padding: 20px;
+    min-height: 100vh;
+    text-align: center;
+    align-items: center;
+    background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: rgba(88, 85, 79, 0.2);
+  }
+
+
 /* Centered card layout */
 .login-card {
   background: rgba(255, 255, 255, 0.7); /* semi-transparent white background */

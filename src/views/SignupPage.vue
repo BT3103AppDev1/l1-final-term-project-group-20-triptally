@@ -223,11 +223,13 @@ async function writeUserData(userID, email, username, currency, firstName, lastN
 
 <style scoped> 
 .container {
-  height: 100%;
-  margin: 0;
-  background: url('src/assets/singapore.jpg') no-repeat center center fixed;
-  background-size: cover;
-  background-color: rgba(88, 85, 79, 0.2);
+    padding: 20px;
+    min-height: 100vh;
+    text-align: center;
+    align-items: center;
+    background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: rgba(88, 85, 79, 0.2);
 }
 
 button { 
