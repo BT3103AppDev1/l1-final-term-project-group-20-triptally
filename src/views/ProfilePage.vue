@@ -15,19 +15,17 @@
         <div class="form-group">
           <label for="username">Username:</label>         
           <input type="text" id="username" v-model="enteredUsername" @input="onUsernameInput" placeholder="Username" required/>
-          <div v-if="saveButtonClicked && (usernameTaken || updateSuccess)" class="error-message">
+          <div v-if="saveButtonClicked && (updateSuccess || usernameTaken || enteredUsername === profile.username)" >
             <template v-if="updateSuccess">
                 <p class="error-message-success">Username successfully updated!</p>
             </template>
             <template v-else-if="enteredUsername === profile.username">
-                <p class="error-message-fail">This is your current username. Enter a new one?</p>
+                <p class="error-message-fail">No change detected.</p>
             </template>
-            <template v-else>
+            <template v-else-if="usernameTaken">
                 <p class="error-message-fail">Username already taken. Please choose another one!</p>
             </template>
-        </div>
-
-
+          </div>
         </div>
         
         <div class="form-group">
@@ -64,9 +62,18 @@
             <option value="USD">USD</option>
             <option value="ZAR">ZAR</option>  
           </select>
+          <div v-if="saveButtonClicked" >
+            <template v-if="updateCurrSuccess">
+                <p class="error-message-success-b">Currency successfully updated!</p>
+            </template>
+            <template v-else>
+                <p class="error-message-fail-b">No change detected.</p>
+            </template>
+          </div>
         </div>
       </form>
       <button type="button" @click="saveChanges">Save Changes</button>
+      
     </div>
   </div>
   <div v-else>
@@ -98,7 +105,9 @@ export default {
       },      
       usernameTaken: { value: false },
       saveButtonClicked: false,
-      updateSuccess: false
+      updateSuccess: false,
+      updateCurrSuccess: false,
+      change: false
     };
   },
   
@@ -132,30 +141,11 @@ export default {
           await setDoc(doc(db, "Usernames", this.enteredUsername), { 
             UID: this.userID
           });
-          this.updateSuccess = true;
+         
           eventBus.emit('usernameUpdated', this.enteredUsername);
         } catch (error) {
           console.error("Error updating currency:", error);
         }
-      }
-    },
-
-    async saveChanges() {
-      this.saveButtonClicked = true; 
-      this.updateSuccess = false;
-      await this.checkUsernameAvailability(); 
-      if (!this.usernameTaken) {
-        try {
-          await this.updateUsername();
-          console.log("Username updated successfully.");
-          this.updateSuccess = true;
-         
-        } catch (error) {
-          console.error("Error updating username:", error);
-        }
-      } else {
-        this.updateSuccess = false;
-        console.log("Username is already taken. Please choose a different username.");
       }
     },
 
@@ -165,14 +155,50 @@ export default {
         const docRef = doc(db, "Users", user.uid);
         try {
           await updateDoc(docRef, {
-            Currency: this.profile.currency
+            currency: this.profile.currency
           });
-          // window.location.reload();
+        
         } catch (error) {
           console.error("Error updating currency:", error);
         }
       }
     },
+
+    async saveChanges() {
+      this.saveButtonClicked = true; 
+      this.updateSuccess = false;
+      this.updateCurrSuccess = false;
+      this.noChange = false;
+      
+      const isUsernameChanged = this.enteredUsername.trim() && this.enteredUsername !== this.profile.username;
+      const isCurrencyChanged = this.profile.currency !== this.initialCurrency;
+
+  
+      if (isUsernameChanged) {
+        await this.checkUsernameAvailability(); 
+        if (!this.usernameTaken) {
+          await this.updateUsername();
+          console.log("Username updated successfully.");
+          this.updateSuccess = true;
+         
+        } else {
+          console.log("Username is already taken. Please choose a different username.");
+          return; 
+        }
+      }
+
+      if (isCurrencyChanged) {
+        await this.updateCurrency();
+        this.updateCurrSuccess = true;
+        this.initialCurrency = this.profile.currency;
+        console.log("Currency updated successfully.");
+        
+      } else if (!isUsernameChanged && !isCurrencyChanged) {
+        this.updateCurrSuccess = false;
+        console.log("No change applied.");
+      }    
+    },
+
 
     async fetchUserData() {
       const user = auth.currentUser;
@@ -210,6 +236,7 @@ export default {
           await this.fetchUserData();
         }
       })
+      this.initialCurrency = this.profile.currency;
     },
 }
   
@@ -250,20 +277,40 @@ input[type="email"] {
   margin: 0; 
 }
 
-.error-message {
-    width: 60%;
-    margin-left: 5px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    margin-top: -10px;
-}
 
 .error-message-success {
+  width: 60%;
+  margin-left: 5px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  margin-top: -1px;
   color: green; 
 }
 
 .error-message-fail {
+  width: 60%;
+  margin-left: 5px;
+  margin-top: -1px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: rgb(166, 2, 2); 
+}
 
+.error-message-success-b {
+  width: 60%;
+  margin-left: 5px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  margin-top: -10px;
+  color: green; 
+}
+
+.error-message-fail-b {
+  width: 60%;
+  margin-left: 5px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-size: 12px;
   color: rgb(166, 2, 2); 
 }
 
