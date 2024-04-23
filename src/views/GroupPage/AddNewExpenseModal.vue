@@ -447,7 +447,7 @@ export default {
   transform: translateY(20%);
   color: white;
   margin-left: 200px;
-  margin-top: -700px;
+  margin-top: -600px;
   display: flex;
   flex-direction: column;
   align-items: center;

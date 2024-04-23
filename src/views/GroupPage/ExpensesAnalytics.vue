@@ -193,7 +193,7 @@ export default {
           { 
             label: "Total Daily Expenses",
             tension: 0.3,
-            pointRadius: 0,
+            pointRadius: 2,
             backgroundColor: '#16697A',
             borderColor: "#16697A",
             data: Object.values(totals)
@@ -236,6 +236,7 @@ export default {
             },
             scales: {
               y: {
+                beginAtZero: true,
                 ticks: {
                   color: "",
                   font: {
