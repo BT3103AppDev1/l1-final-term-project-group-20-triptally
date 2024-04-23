@@ -63,7 +63,7 @@ body, html {
   height: 100%;
   margin: 0;
   font-family: 'MontserratBold', Montserrat,sans-serif;
-  background: url('src/assets/singapore.jpg') no-repeat center center fixed;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
 }
 

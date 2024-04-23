@@ -47,7 +47,7 @@ export default {
 .container {
   height: 100%;
   margin: 0;
-  background: url('src/assets/singapore.jpg') no-repeat center center fixed;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
   background-color: rgba(88, 85, 79, 0.2);
 }
