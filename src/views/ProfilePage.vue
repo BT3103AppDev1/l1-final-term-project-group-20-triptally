@@ -222,12 +222,22 @@ export default {
   margin-bottom: 40px;
 }
 
-.main-container { 
+/* .main-container { 
   align-items: center;
   background: url('@/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
   background-color: rgba(88, 85, 79, 0.2);
-}
+} */
+
+.main-container {
+    padding: 20px;
+    min-height: 100vh;
+    text-align: center;
+    align-items: center;
+    background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-color: rgba(88, 85, 79, 0.2);
+  }
 
 .profile-container {
   display: flex;
@@ -256,7 +266,6 @@ input[type="email"] {
 
   color: rgb(166, 2, 2); 
 }
-
 
 .profile-content {
   padding: 2rem;
