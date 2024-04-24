@@ -79,7 +79,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from 'vue3-toastify';
 import axios from 'axios';
 
-
 export default { 
   name: 'AddNewExpenseModal',
   data() { 
@@ -350,14 +349,21 @@ export default {
                     }
                     // get the date
                     if (data.document.inference.prediction.date) { 
-                      const date = new Date(data.document.inference.prediction.date);
-                      this.expense.date = date.toLocaleDateString('en-GB');
+                      const d = new Date(data.document.inference.prediction.date.value);
+                      const year = d.getFullYear();
+                      const month = ('0' + (d.getMonth() + 1)).slice(-2); // Adding 1 because months are zero-indexed
+                      const day = ('0' + d.getDate()).slice(-2);
+                      this.expense.date = `${year}-${month}-${day}`;
                     } else { 
-                      this.expense.date = new Date().toLocaleDateString('en-GB');
+                      const d = new Date();
+                      const year = d.getFullYear();
+                      const month = ('0' + (d.getMonth() + 1)).slice(-2); // Adding 1 because months are zero-indexed
+                      const day = ('0' + d.getDate()).slice(-2);
+                      this.expense.date = `${year}-${month}-${day}`;
                     }
                     // get the category
-                    if (data.document.inference.prediction.category) { 
-                      const category = data.document.inference.prediction.category; 
+                    if (data.document.inference.prediction.category.value) { 
+                      const category = data.document.inference.prediction.category.value; 
                       if (category === "food") { 
                         this.expense.category = "Food";
                       } else if (category === "transport" || category === "parking") { 
