@@ -445,22 +445,20 @@ export default {
 
 <style scoped>
 
-.app-container { 
-  width: 100%; 
-  height: 100%;
-}
+
 
 .main-container { 
   background: #16697A; 
   border-radius: 15px;
-  width: 820px; /* Adjust width as needed */
+  width: 60vw; /* Adjust width as needed */
   height: 680px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* subtle shadow */
-  transform: translateY(20%);
   color: white;
-  margin-left: 200px;
-  margin-top: -600px;
+  margin-top: -450px;
+  margin-left: 12vw;
+  margin-right: 10vw;
   display: flex;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
 }
@@ -471,7 +469,7 @@ export default {
   align-items: center;
   position: relative;
   height: 60px;
-  width: 820px;
+  width: 60vw;
   padding: 20px;
   padding-top: 50px;
   margin-bottom: 0px;
@@ -505,14 +503,14 @@ h1 {
   justify-content: center;
   align-items: center;
   text-align: center;
-  width: 80%;
+  width: 60vw;
   height: 80%;
   position: relative; 
   border-radius: 10px;
 }
 
 .first-row {
-  width: 100%;
+  width: 40vw;
 }
 
 input[placeholder="Choose Date"] {
@@ -570,10 +568,14 @@ input[placeholder="Choose Date"] {
 
 .second-row, .third-row {
   display: flex;
+  width: 50vw;
+  display: flex;
+  justify-content: center;
 }
 
 .fourth-row {
   margin-top: 15px;
+  width: 60vw;
 }
 
 .payer, .split-between {
@@ -596,11 +598,11 @@ input[placeholder="Choose Date"] {
 }
 
 .select-wrapper {
-  width: 800px;
+  width: 60vw;
 }
 
 .custom-select {
-  width: 482px;
+  width: 36.2vw;
   color: white;
   background-color: #82C0CC;
   border-top-left-radius: 0px;
