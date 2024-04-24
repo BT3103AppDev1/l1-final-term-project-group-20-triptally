@@ -331,12 +331,12 @@ export default {
       const file = event.target.files[0];
       if (file) {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
 
         try {
           console.log(formData);
-          const response = await fetch('https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload', {
-            method: 'POST',
+          const response = await fetch("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", {
+            method: "POST",
             body: formData,
           });
 
