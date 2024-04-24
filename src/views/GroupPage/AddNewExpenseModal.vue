@@ -350,7 +350,7 @@ export default {
                     }
                     // get the date
                     if (data.document.inference.prediction.date) { 
-                      const date = new Date(data.document.inference.prediction.date)
+                      const date = new Date(data.document.inference.prediction.date);
                       this.expense.date = date.toLocaleDateString('en-GB');
                     } else { 
                       this.expense.date = new Date().toLocaleDateString('en-GB');
@@ -359,13 +359,13 @@ export default {
                     if (data.document.inference.prediction.category) { 
                       const category = data.document.inference.prediction.category; 
                       if (category === "food") { 
-                        this.expense.category = "Food"
+                        this.expense.category = "Food";
                       } else if (category === "transport" || category === "parking") { 
-                        this.expense.category = "Transport"
+                        this.expense.category = "Transport";
                       } else if (category === "accomodation") { 
-                        this.expense.category = "Accomodations"
+                        this.expense.category = "Accomodations";
                       } else if (category === "miscellaneous") { 
-                        this.expense.category = "Miscellaneous"
+                        this.expense.category = "Miscellaneous";
                       } 
                     }
                     // get subcategory 
