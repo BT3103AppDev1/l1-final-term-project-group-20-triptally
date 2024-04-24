@@ -106,7 +106,7 @@ export default {
       expense: { 
         date: "", 
         title: "", 
-        amount: 0.00, 
+        amount: "", 
         paidBy: "",
         category: "Food",
         splitBetween: "",
@@ -344,7 +344,7 @@ export default {
                   const amount = (data.document.inference.prediction.total_amount.value).toFixed(2);
                   console.log(amount);
                   this.expense.amount = amount; 
-                  console.log(data.document.inference.prediction.date.value)
+                  //console.log(data.document.inference.prediction.date.value)
               }
           });
 
