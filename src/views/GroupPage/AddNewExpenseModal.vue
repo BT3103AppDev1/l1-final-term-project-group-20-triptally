@@ -348,7 +348,7 @@ export default {
                       this.expense.amount = amount;
                     }
                     // get the date
-                    if (data.document.inference.prediction.date) { 
+                    if (data.document.inference.prediction.date.value) { 
                       const d = new Date(data.document.inference.prediction.date.value);
                       const year = d.getFullYear();
                       const month = ('0' + (d.getMonth() + 1)).slice(-2); // Adding 1 because months are zero-indexed
