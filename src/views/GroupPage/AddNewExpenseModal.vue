@@ -342,10 +342,40 @@ export default {
                 console.log(xhr.responseText);
                 try {
                     const data = JSON.parse(xhr.responseText);
-                    if (data.document && data.document.inference && data.document.inference.prediction && data.document.inference.prediction.total_amount) {
-                        const amount = parseFloat(data.document.inference.prediction.total_amount.value).toFixed(2);
-                        this.expense.amount = amount;
+
+                    // get the total amount
+                    if (data.document.inference.prediction.total_amount.value) {
+                      const amount = parseFloat(data.document.inference.prediction.total_amount.value).toFixed(2);
+                      this.expense.amount = amount;
                     }
+                    // get the date
+                    if (data.document.inference.prediction.date) { 
+                      const date = new Date(data.document.inference.prediction.date)
+                      this.expense.date = date.toLocaleDateString('en-GB');
+                    } else { 
+                      this.expense.date = new Date().toLocaleDateString('en-GB');
+                    }
+                    // get the category
+                    if (data.document.inference.prediction.category) { 
+                      const category = data.document.inference.prediction.category; 
+                      if (category === "food") { 
+                        this.expense.category = "Food"
+                      } else if (category === "transport" || category === "parking") { 
+                        this.expense.category = "Transport"
+                      } else if (category === "accomodation") { 
+                        this.expense.category = "Accomodations"
+                      } else if (category === "miscellaneous") { 
+                        this.expense.category = "Miscellaneous"
+                      } 
+                    }
+                    // get subcategory 
+                    if (data.document.inference.prediction.subcategory) { 
+                      const subcategory = data.document.inference.prediction.subcategory; 
+                      if (subcategory === "shopping") { 
+                        this.expense.category = "Shopping"
+                      }
+                    }
+
                 } catch (error) {
                     console.error('Error parsing response:', error);
                 }
