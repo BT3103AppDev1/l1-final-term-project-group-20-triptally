@@ -39,6 +39,8 @@ const upload = multer({storage: multer.memoryStorage()});
 // Use memory storage for file uploads
 
 app.post("/upload", upload.single("file"), async (req, res) => {
+  logger.warn("File:", req.file);
+  logger.warn("Body:", req.body);
   if (!req.file) {
     logger.warn("No file uploaded. Request body:", req.body);
     return res.status(400).send("No file uploaded.");
