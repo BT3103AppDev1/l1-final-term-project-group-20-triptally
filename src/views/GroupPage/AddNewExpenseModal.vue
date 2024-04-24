@@ -340,6 +340,8 @@ export default {
           xhr.addEventListener("readystatechange", function () {
               if (this.readyState === 4) {
                   console.log(this.responseText);
+                  this.expense.amount = this.responseText.document.inference.prediction.totalAmount.value; 
+                  console.log(this.responseText.document.inference.prediction.date.value)
               }
           });
 
