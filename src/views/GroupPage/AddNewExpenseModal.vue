@@ -338,11 +338,9 @@ export default {
           for (var pair of formData.entries()) {
             console.log(pair[0]+ ', ' + pair[1]); 
           }
-          const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            transformRequest: formData => formData} );
-            
-          if (!response.ok) {
+          const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData);
+
+          if (response.status !== 200) {
             // Handle non-2xx HTTP status errors
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
