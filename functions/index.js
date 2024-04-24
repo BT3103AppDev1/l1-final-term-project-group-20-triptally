@@ -28,7 +28,7 @@ const {logger} = require("firebase-functions/logger");
 
 const app = express();
 app.use(cors({
-  origin: true,
+  origin: "https://trip-tally-c943b.web.app/",
 }));
 
 // Initialize Mindee client
