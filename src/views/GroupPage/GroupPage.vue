@@ -287,6 +287,7 @@ export default {
         displayText = 'No balance';
       }
 
+
       // Push the current expense to the array for this date
       acc[expenseDate].push({
         id: expense.id,
@@ -295,7 +296,7 @@ export default {
         paidBy: expense.paidBy,
         owedMembers: expense.owedMembers,
         category: expense.category,
-        subtitle: `${expense.paidByFirstName} ${expense.paidByLastName} paid ${expense.currency} ${(expense.amount).toFixed(2)}`,
+        subtitle: `${expense.paidByFirstName} ${expense.paidByLastName} paid ${expense.currency} ${Number(expense.amount).toFixed(2)}`,
         sideDisplayText: displayText
         // amount: expense.amount  // You might want to format or calculate the amount differently
       });
