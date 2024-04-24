@@ -334,21 +334,33 @@ export default {
         formData.append('file', file);
 
         try {
+          console.log(formData);
           const response = await fetch('https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload', {
             method: 'POST',
             body: formData,
           });
 
+          if (!response.ok) {
+            // Handle non-2xx HTTP status errors
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            // Handle unexpected content type
+            throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
+          }
+
           const data = await response.json();
           console.log('Received data:', data);
-          if (data) {
+          if (data && data.totalAmount !== undefined) {
             this.expense.amount = data.totalAmount.toFixed(2);
           } else {
-            alert('Receipt processing failed.');
+            alert('Receipt processing failed. No amount returned.');
           }
         } catch (error) {
           console.error('Error uploading and processing image:', error);
-          alert('Error processing the receipt');
+          alert('Error processing the receipt: ' + error.message);
         }
       }
     },

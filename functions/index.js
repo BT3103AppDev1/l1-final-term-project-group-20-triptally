@@ -13,7 +13,7 @@ const cors = require("cors");
 const multer = require("multer");
 const {Client, product} = require("mindee");
 
-const {logger} = require("firebase-functions/logger");
+const {logger} = require("firebase-functions");
 
 // import { onRequest } from "firebase-functions/v2/https";
 // import { warn, error as _error } from "firebase-functions/logger";
