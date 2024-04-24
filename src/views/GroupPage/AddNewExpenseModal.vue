@@ -337,16 +337,20 @@ export default {
         try {
           let xhr = new XMLHttpRequest();
 
-          xhr.addEventListener("readystatechange", function () {
-              if (this.readyState === 4) {
-                  console.log(this.responseText);
-                  const data = JSON.parse(this.responseText);
-                  const amount = (data.document.inference.prediction.total_amount.value).toFixed(2);
-                  console.log(amount);
-                  this.expense.amount = amount; 
-                  //console.log(data.document.inference.prediction.date.value)
-              }
-          });
+          xhr.addEventListener("readystatechange", () => {
+            if (xhr.readyState === 4) {
+                console.log(xhr.responseText);
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.document && data.document.inference && data.document.inference.prediction && data.document.inference.prediction.total_amount) {
+                        const amount = parseFloat(data.document.inference.prediction.total_amount.value).toFixed(2);
+                        this.expense.amount = amount;
+                    }
+                } catch (error) {
+                    console.error('Error parsing response:', error);
+                }
+            }
+        });
 
           xhr.open("POST", "https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict");
           xhr.setRequestHeader("Authorization", "Token 293bd60719c7abd1fae2ac2bfae60745");
