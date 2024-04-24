@@ -77,6 +77,7 @@ import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from 'vue3-toastify';
+import axios from 'axios';
 
 
 export default { 
