@@ -54,7 +54,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
   try {
     // Create a document from the uploaded file buffer
-    const i= mindeeClient.docFromBuffer(req.file, req.file.originalname);
+    // const i = mindeeClient.docFromPath("/functions/receipt-uploads/")
+    const i= mindeeClient.docFromPath(req.file, req.file.originalname);
 
     // Parse the document using Mindee's API
     const response = await mindeeClient.parse(product.ReceiptV5, i);

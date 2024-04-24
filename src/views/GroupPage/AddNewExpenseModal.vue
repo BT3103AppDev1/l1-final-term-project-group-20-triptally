@@ -335,29 +335,45 @@ export default {
         formData.append("file", file);
 
         try {
-          for (var pair of formData.entries()) {
-            console.log(pair[0]+ ', ' + pair[1]); 
-          }
-          const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData);
+          let xhr = new XMLHttpRequest();
 
-          if (response.status !== 200) {
-            // Handle non-2xx HTTP status errors
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
+          xhr.addEventListener("readystatechange", function () {
+              if (this.readyState === 4) {
+                  console.log(this.responseText);
+              }
+          });
 
-          // const contentType = response.headers.get('content-type');
-          // if (!contentType || !contentType.includes('application/json')) {
-          //   // Handle unexpected content type
-          //   throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
+          xhr.open("POST", "https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict");
+          xhr.setRequestHeader("Authorization", "Token 293bd60719c7abd1fae2ac2bfae60745");
+          xhr.send(formData);
+
+
+          // const response = await axios.post("https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict", formData, { 
+          //   headers: { 
+          //     'Content-Type': 'multipart/form-data',
+          //     { Authorization: 'Token 293bd60719c7abd1fae2ac2bfae60745'}
+          //   }
+          // })
+          // // const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData);
+
+          // if (response.status !== 200) {
+          //   // Handle non-2xx HTTP status errors
+          //   throw new Error(`HTTP error! Status: ${response.status}`);
           // }
 
-          const data = await response.json();
-          console.log('Received data:', data);
-          if (data && data.totalAmount !== undefined) {
-            this.expense.amount = data.totalAmount.toFixed(2);
-          } else {
-            alert('Receipt processing failed. No amount returned.');
-          }
+          // // const contentType = response.headers.get('content-type');
+          // // if (!contentType || !contentType.includes('application/json')) {
+          // //   // Handle unexpected content type
+          // //   throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
+          // // }
+
+          // const data = await response.json();
+          // console.log('Received data:', data);
+          // if (data && data.totalAmount !== undefined) {
+          //   this.expense.amount = data.totalAmount.toFixed(2);
+          // } else {
+          //   alert('Receipt processing failed. No amount returned.');
+          // }
         } catch (error) {
           console.error('Error uploading and processing image:', error);
           alert('Error processing the receipt: ' + error.message);
