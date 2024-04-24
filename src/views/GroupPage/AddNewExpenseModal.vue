@@ -59,7 +59,7 @@
         </div>
         <div class="receipt-upload">
             <img src="@/assets/receipt-icon.png" class="receipt-icon">
-            <input class="input-file" type="file" id="actual-btn" accept="image/*" @change="handleFileChange">
+            <input class="input-file" name="file" type="file" id="actual-btn" accept="image/*" @change="handleFileChange">
             <label class="receipt-upload-btn" for="actual-btn">Upload Receipt</label>
             <img :src="tempSelectedImage" :alt="tempSelectedPhotoName" class="temp-image" v-if="tempSelectedImage">
         </div>
@@ -338,18 +338,18 @@ export default {
           for (var pair of formData.entries()) {
             console.log(pair[0]+ ', ' + pair[1]); 
           }
-          const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData);
+          const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload/", formData);
 
           if (response.status !== 200) {
             // Handle non-2xx HTTP status errors
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
 
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            // Handle unexpected content type
-            throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
-          }
+          // const contentType = response.headers.get('content-type');
+          // if (!contentType || !contentType.includes('application/json')) {
+          //   // Handle unexpected content type
+          //   throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
+          // }
 
           const data = await response.json();
           console.log('Received data:', data);

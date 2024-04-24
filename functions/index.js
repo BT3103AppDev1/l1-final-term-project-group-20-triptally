@@ -33,8 +33,15 @@ app.use(cors({
 
 // Initialize Mindee client
 const mindeeClient = new Client({apiKey: "293bd60719c7abd1fae2ac2bfae60745"});
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, "/functions/receipt-uploads");
+  },
+});
 
-const upload = multer({storage: multer.memoryStorage()});
+const upload = multer({storage: storage});
+
+// const upload = multer({storage: multer.memoryStorage()});
 // Use memory storage for file uploads
 
 app.post("/upload", upload.single("file"), async (req, res) => {
@@ -47,7 +54,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
   try {
     // Create a document from the uploaded file buffer
-    const i= mindeeClient.docFromBuffer(req.file.buffer, req.file.originalname);
+    const i= mindeeClient.docFromBuffer(req.file, req.file.originalname);
 
     // Parse the document using Mindee's API
     const response = await mindeeClient.parse(product.ReceiptV5, i);
