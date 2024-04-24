@@ -332,7 +332,7 @@ export default {
       const file = event.target.files[0];
       if (file) {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("document", file, file.name);
 
         try {
           let xhr = new XMLHttpRequest();
@@ -346,7 +346,6 @@ export default {
           xhr.open("POST", "https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict");
           xhr.setRequestHeader("Authorization", "Token 293bd60719c7abd1fae2ac2bfae60745");
           xhr.send(formData);
-
 
           // const response = await axios.post("https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict", formData, { 
           //   headers: { 
