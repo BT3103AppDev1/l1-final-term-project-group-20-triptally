@@ -28,8 +28,9 @@ const {logger} = require("firebase-functions/logger");
 
 const app = express();
 app.use(cors({
-  origin: "https://trip-tally-c943b.web.app/",
-}));
+  origin: "https://trip-tally-c943b.web.app",
+  methods: ["GET", "POST"], // Allowed methods
+  allowedHeaders: ["Content-Type", "Authorization"]}));
 
 // Initialize Mindee client
 const mindeeClient = new Client({apiKey: "293bd60719c7abd1fae2ac2bfae60745"});

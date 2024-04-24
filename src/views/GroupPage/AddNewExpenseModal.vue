@@ -334,7 +334,7 @@ export default {
         formData.append('file', file);
 
         try {
-          const response = await fetch('https://us-central1-trip-tally-c943b.cloudfunctions.net/api', {
+          const response = await fetch('https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload', {
             method: 'POST',
             body: formData,
           });
