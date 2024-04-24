@@ -1,10 +1,12 @@
 <template>
   <div class="main-content">
-    <div class="back-button" @click="goBack">
-      <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
-    </div>
     <div class="debt-list">
-      <h1 class="debt-heading">Clear Debt</h1>
+      <div class="back-button" @click="goBack">
+        <img src="@/assets/backbutton.png" alt="Back" class="backbutton-icon">
+      </div>
+      <div class="header">
+        <h1 class="debt-heading">Clear Debt</h1>
+      </div>
       <div v-if="debtsYouOwe.length === 0" class="no-debt-message">
         You don't owe anyone money. Keep it up!
       </div>
@@ -166,15 +168,16 @@ export default {
 }
 
 .main-content {
-  margin-top: -60%;  
-  margin-left: 18%;
+  margin-top: -550px;  
+  margin-left: 13%;
+  margin-right: 18%;
+  width: 60vw;
 }
 
 
 .back-button {
-  position: relative;
-  top: 50px;
-  left: 50px;
+  margin-left: 10px;
+  margin-top: 10px;
   font-weight: bold;
   cursor: pointer;
   font-size: 24px;
@@ -189,6 +192,7 @@ export default {
 
 .debt-heading {
   color: white;
+  margin-top: 0%;
 }
 
 .debt-list {
@@ -197,7 +201,9 @@ export default {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-left: 20px; 
-  width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .debt-details {
@@ -213,8 +219,9 @@ export default {
 }
 
 .debt-description {
+  padding-top: 10px;
   margin-left: auto;
-  margin-right: 170px;
+  margin-right: 8%;
   color: #e61b1b;
   font-weight: bold;
   text-align: center;
@@ -264,7 +271,7 @@ export default {
   padding: 10px 10px;
   border-radius: 15px;
   width: auto;
-  margin-left: auto; 
+  margin-left: 10px; 
   font-family: 'Montserrat', sans-serif;
 }
 

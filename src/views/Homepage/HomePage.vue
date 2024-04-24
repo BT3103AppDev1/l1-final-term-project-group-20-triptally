@@ -436,7 +436,7 @@ export default {
   height:150px;
   padding: 30px;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -506,6 +506,7 @@ export default {
   transform: translate(-50%, -50%);
   width: 300px;
   height:fit-content;
+  min-height: 150px;
   padding: 30px;
   background-color: #16697A;
   border-radius: 20px;
@@ -553,7 +554,6 @@ input {
 }
 
 
-
 .confirm-photo {
   color: #ffa62b;
   cursor: pointer;
@@ -592,6 +592,7 @@ input {
   color: white;
   font-size: medium;
   width: 150px;
+  margin-left: 0px;
 }
 
 .name {
