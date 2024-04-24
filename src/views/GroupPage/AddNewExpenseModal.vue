@@ -106,7 +106,7 @@ export default {
       expense: { 
         date: "", 
         title: "", 
-        amount: "", 
+        amount: 0.00, 
         paidBy: "",
         category: "Food",
         splitBetween: "",
@@ -340,8 +340,9 @@ export default {
           xhr.addEventListener("readystatechange", function () {
               if (this.readyState === 4) {
                   console.log(this.responseText);
-                  this.expense.amount = this.responseText.document.inference.prediction.total_amount.value; 
-                  console.log(this.responseText.document.inference.prediction.date.value)
+                  const data = JSON.parse(this.responseText);
+                  this.expense.amount = (data.document.inference.prediction.total_amount.value).toFixed(2); 
+                  console.log(data.document.inference.prediction.date.value)
               }
           });
 
