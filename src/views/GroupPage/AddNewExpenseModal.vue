@@ -341,7 +341,9 @@ export default {
               if (this.readyState === 4) {
                   console.log(this.responseText);
                   const data = JSON.parse(this.responseText);
-                  this.expense.amount = (data.document.inference.prediction.total_amount.value).toFixed(2); 
+                  const amount = (data.document.inference.prediction.total_amount.value).toFixed(2);
+                  console.log(amount);
+                  this.expense.amount = amount; 
                   console.log(data.document.inference.prediction.date.value)
               }
           });
