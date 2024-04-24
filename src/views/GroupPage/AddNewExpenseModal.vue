@@ -375,8 +375,8 @@ export default {
                       } 
                     }
                     // get subcategory 
-                    if (data.document.inference.prediction.subcategory) { 
-                      const subcategory = data.document.inference.prediction.subcategory; 
+                    if (data.document.inference.prediction.subcategory.value) { 
+                      const subcategory = data.document.inference.prediction.subcategory.value; 
                       if (subcategory === "shopping") { 
                         this.expense.category = "Shopping"
                       }
