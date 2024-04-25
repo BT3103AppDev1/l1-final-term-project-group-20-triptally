@@ -19,7 +19,7 @@
             </div>
             <div v-if="debt.currency === userCurrency" class="debt-description">You owe {{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }}</div>
             <div v-else class="debt-description">
-              <div h1>You owe</div> 
+              <div h1 class="you-owe">You owe</div> 
               <div v-if="debt.ConvertedAmount">{{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = {{ userCurrency }} {{ parseFloat(debt.ConvertedAmount).toFixed(2) }}</div>
               <div v-else>{{ debt.currency }} {{ parseFloat(debt.totalAmount).toFixed(2) }} = Loading...</div>
             </div>
@@ -219,12 +219,11 @@ export default {
 }
 
 .debt-description {
-  padding-top: 10px;
-  margin-left: auto;
-  margin-right: 8%;
+  margin-left: 18vw;
   color: #e61b1b;
   font-weight: bold;
   text-align: center;
+  font-size: 15px;
 }
 
 .debt-details::before {
@@ -238,9 +237,11 @@ export default {
   border-radius: 50%;
   position: absolute;
   left: 10px; 
-  top: 50%;
-  transform: translateY(-50%);
   font-weight: bold;
+}
+
+.you-owe {
+  margin-right: 8px;
 }
 
 .debt-info {
@@ -257,7 +258,6 @@ export default {
 
 .debt-name {
   font-weight: bold;
-  margin-bottom: 4px; 
 }
 
 .user-email {

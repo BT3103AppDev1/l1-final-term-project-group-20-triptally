@@ -54,21 +54,38 @@ export default {
         UID: ""
       },
       currencySymbols: {
-        USD: "$",
-        JPY: "¥",
         SGD: "S$",
         AUD: "A$",
+        BGN: "лв",
+        BRL: "R$",
         CAD: "C$",
-        CHF: "₣",
+        CHF: "CHF",
         CNY: "¥",
+        CZK: "Kč",
+        DKK: "kr",
         EUR: "€",
         GBP: "£",
+        HKD: "HK$",
+        HRK: "kn",
+        HUF: "Ft",
+        IDR: "Rp",
+        ILS: "₪",
+        INR: "₹",
+        ISK: "kr",
+        JPY: "¥",
         KRW: "₩",
         MYR: "RM",
         NZD: "NZ$",
+        PHP: "₱",
+        PLN: "zł",
+        RON: "lei",
         SEK: "kr",
-        // Add more currencies as needed
-      },
+        THB: "฿",
+        TRY: "₺",
+        USD: "$",
+        ZAR: "R",
+        // Add any additional currencies and their symbols here
+      }, 
       totalBudget: 0, // Example total budget
       budget: [], // Array to store budget items
       showAmountOutside: {}, // This will be an object keyed by budget item index
