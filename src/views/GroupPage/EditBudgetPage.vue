@@ -46,7 +46,7 @@ export default {
         Currency: "", 
         UID: ""
       },
-      ccurrencySymbols: {
+      currencySymbols: {
         SGD: "S$",
         AUD: "A$",
         BGN: "лв",
