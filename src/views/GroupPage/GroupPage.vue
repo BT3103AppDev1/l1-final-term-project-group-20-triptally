@@ -309,23 +309,24 @@ export default {
       console.log(groupedExpenses);
     },
     async fetchDebtData() { 
-      // lets fetch the debts that the user owes and the debts that others owe the user! 
-      console.log("fetchDebtData called");
+      // this function fetches the debts that the user owes and the debts that others owe the user in this trip 
       const tripRef = doc(db, "Trips", this.$route.params.tripID);
       const debtsRef = collection(tripRef, "Debts");
       const userDebtRef = doc(debtsRef, this.user.uid);
 
-      // debts that the user owes 
+      // fetch all debts that the user owes others in this trip
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
       const userOwesWhoSnapshot = await getDocs(userOwesWhoRef);
       this.debtsYouOwe = [];
       this.reminders = [];
       const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
+        // document.id refers to the userID of the member that user owes 
         const additionalDataRef = doc(db, "Users", document.id); 
         const additionalDocSnapshot = await getDoc(additionalDataRef);
 
         if (additionalDocSnapshot.exists()) { 
 
+          // if the member that user owes has sent a reminder to the user, add debt details to the reminders array  
           if (document.data().reminder && document.data().totalAmount > 0) { 
             this.reminders.push({
               totalAmount: document.data().totalAmount,
@@ -334,13 +335,7 @@ export default {
             })
           }
 
-          // // check if reminder exists 
-          // if (document.data().reminder) { 
-          //   this.reminders.push({
-          //     totalAmount: document.data().totalAmount, 
-              
-          //   })
-          // } 
+          // save data about the member that the user owes money within the reminders array, together w the debt details
           return { 
             ...document.data(), 
             UID: document.id, 
@@ -359,10 +354,10 @@ export default {
 
       const debtsYouOwe = await Promise.all(userOwesWhoPromises);
       this.debtsYouOwe = debtsYouOwe;
-      console.log(this.debtsYouOwe);
+      // sum up all the debts that user owes to find the total debt that user owes others 
       this.totalDebtYouOwe = this.sumUpDebts(this.debtsYouOwe);
 
-      // debts that other members owe the user 
+      // fetch the debts that other members owe the user 
       const whoOwesUserRef = collection(userDebtRef, "Who Owes User");
       const whoOwesUserSnapshot = await getDocs(whoOwesUserRef);
       this.debtsOwedToYou = [];
@@ -371,6 +366,7 @@ export default {
         const additionalDocSnapshot = await getDoc(additionalDataRef);    
 
         if (additionalDocSnapshot.exists()) { 
+          // add the other members' details to the debtsOwedToYou array, together with the debt details
           return { 
             ...document.data(), 
             UID: document.id, 
@@ -388,9 +384,8 @@ export default {
 
       const whoOwesYou = await Promise.all(whoOwesUserPromises);
       this.debtsOwedToYou = whoOwesYou;
+      // sum up the total debt that other members owe this user
       this.totalDebtOwedToYou = this.sumUpDebts(this.debtsOwedToYou);
-      console.log(this.totalDebtOwedToYou)
-
     }, 
     async fetchTripData() { 
       // fetch trip data based on tripID
@@ -414,15 +409,10 @@ export default {
       // we will add this as an attribute to the document 
 
       const tripDocRef = doc(db, "Trips", this.$route.params.tripID);
-      console.log("tripdocref: " + tripDocRef);
       const debtCollection = collection(tripDocRef, "Debts");
-      console.log("debtCollection: " + debtCollection);
       const userDebtRef = doc(debtCollection, debt.UID); 
-      console.log(userDebtRef);
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who"); 
-      console.log("userOwesWhoRef: " + userOwesWhoRef);
       const userOwesWhoDoc = doc(userOwesWhoRef, this.user.uid); 
-      console.log("userOwesWhoDoc: " + userOwesWhoDoc);
       this.showReminderConfirmation = true;
 
       try { 
@@ -444,6 +434,7 @@ export default {
       }
     }, 
     clearDebt() { 
+      // show ClearDebtPage
       this.showClearDebtPage = true;
     },
     cancelReminder() {
@@ -461,7 +452,7 @@ export default {
     },
     async deleteExpense() {
       console.log(this.toDeleteExpense);
-      //method to delete expense 
+      // method to delete expense 
       // for each member in the owedMembers array of the expense,  we want to remove the expense from the expenses object of the user's debt collection, 
       // and update the corresponding totalAmount 
       const tripDocRef = doc(db, "Trips", this.trip.UID);
@@ -469,19 +460,16 @@ export default {
 
       // for the paid member, check their who owes user collection and find each member's UID document (if it exists)
       const paidMemberDebtsRef = doc(tripDocRef, "Debts", this.toDeleteExpense.paidBy);
-      console.log(this.toDeleteExpense.owedMembers);
-      
 
       for (const member of this.toDeleteExpense.owedMembers) { 
+        // for each member involved in this expense, update the total debt that they owe the paid member (and vice versa)
         if (member.UID !== this.toDeleteExpense.paidBy) {
           const paidMemberWhoOwesUser = collection(paidMemberDebtsRef, "Who Owes User"); 
-          console.log(member.UID);
           const paidMemberWhoOwesUserDoc = doc(paidMemberWhoOwesUser, member.UID);
           const paidMemberWhoOwesUserSnapshot = await getDoc(paidMemberWhoOwesUserDoc);
           if (paidMemberWhoOwesUserSnapshot.exists()) { 
   
             const data = paidMemberWhoOwesUserSnapshot.data();
-            console.log(data.expenses);
             if (data.expenses.hasOwnProperty(`expenses.${this.toDeleteExpense.id}`)) { 
               const amount = data.expenses[`expenses.${this.toDeleteExpense.id}`]
               console.log(amount);
@@ -529,12 +517,10 @@ export default {
 
       }
 
-
-      // remove the entire expense 
+      // remove the entire expense from the "Expenses" collection inside the trip document
       await deleteDoc(expenseDoc);
-      
 
-      // for the other members in the owedMembers array, check their user owes who collection and find the paid member's UID document
+      // update the debt and expenses data displayed 
       await this.fetchDebtData();
       await this.fetchExpensesData();
 
@@ -549,7 +535,6 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
-        console.log(this.$route.query.tripName);
         await this.fetchTripData();
         await this.fetchDebtData();
         await this.fetchExpensesData();

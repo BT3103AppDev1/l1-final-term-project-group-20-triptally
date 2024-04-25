@@ -74,6 +74,7 @@ import { doc, getDoc, collection, addDoc, arrayUnion, updateDoc, getDocs } from 
 import { firebaseApp, db, auth, storage } from '@/firebase'; // Assuming db and auth are exported from '@/firebase'
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as firebase from 'firebase/app';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 export default {
   props: {
@@ -138,6 +139,7 @@ export default {
       this.showDropdown = false; 
     },
     async fetchUsers() {
+      // fectch all users in TripTally from database 
       const usersRef = collection(db, "Usernames");
       const querySnapshot = await getDocs(usersRef);
       this.allUsers = querySnapshot.docs.map(doc => ({ username: doc.id, userID: doc.data().UID }));
@@ -155,8 +157,6 @@ export default {
       this.selectedMembers.splice(index, 1);
     },
     async createTrip() {
-      await this.fetchUserData();
-
       var userIDs = this.selectedMembers.map(member => member.userID);
       if (!userIDs.includes(this.userID)) { 
         userIDs.push(this.userID);
@@ -165,7 +165,6 @@ export default {
       try {
 
         if (this.tempFile){
-
 
           const storage = getStorage();         
           const storageRef = ref(storage, `image/${this.tempSelectedPhotoName}`);        
@@ -196,44 +195,42 @@ export default {
 
       }
 
-        for (const userID of userIDs) {
-          const userRef = doc(db, "Users", userID);
-          try {
-            await updateDoc(userRef, {
-              GroupTrips: arrayUnion(this.tripID)
-            });
-            this.closeModal();
-            console.log("Trip added to user with userID: " + userID);
-  
-          } catch (error) {
-            console.error("Error updating user document: ", error);
-          }
+      for (const userID of userIDs) {
+        const userRef = doc(db, "Users", userID);
+        try {
+          await updateDoc(userRef, {
+            GroupTrips: arrayUnion(this.tripID)
+          });
+          this.closeModal();
+          console.log("Trip added to user with userID: " + userID);
+
+        } catch (error) {
+          console.error("Error updating user document: ", error);
         }
+      }
 
-        const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
+      const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
 
-        const defaultBudgetItems = [
-          { category: 'Food', allocated: 0, used: 0, order: 1 },
-          { category: 'Shopping', allocated: 0, used: 0, order: 2 },
-          { category: 'Transport', allocated: 0, used: 0, order: 3 },
-          { category: 'Entertainment', allocated: 0, used: 0, order: 4 },
-          { category: 'Accommodations', allocated: 0, used: 0, order: 5 },
-          { category: 'Miscellaneous', allocated: 0, used: 0, order: 6 },
-        ];
+      const defaultBudgetItems = [
+        { category: 'Food', allocated: 0, used: 0, order: 1 },
+        { category: 'Shopping', allocated: 0, used: 0, order: 2 },
+        { category: 'Transport', allocated: 0, used: 0, order: 3 },
+        { category: 'Entertainment', allocated: 0, used: 0, order: 4 },
+        { category: 'Accommodations', allocated: 0, used: 0, order: 5 },
+        { category: 'Miscellaneous', allocated: 0, used: 0, order: 6 },
+      ];
 
-        for (const item of defaultBudgetItems) {
-          await addDoc(budgetsRef, item);
-        }
-        this.$emit('refreshTrips', this.tripID);
+      for (const item of defaultBudgetItems) {
+        await addDoc(budgetsRef, item);
+      }
+      // emit to HomePage.vue to update the trips that user is in 
+      this.$emit('refreshTrips', this.tripID);
       } catch (error) {
         console.error('Error adding trip document: ', error);
       }
       this.tripName = "";
       this.selectedMembers = [];
       this.currency = "";     
-      // send all information to firebase 
-      // first create a trip and generate an id for that, then iterate through the members list and add the id to the groups array for each of the members 
-
     },
     closeModal() {
       this.tripName = "";
@@ -242,18 +239,6 @@ export default {
       this.showDropdown = false;
       this.$emit('update:isVisible', false);
     }, 
-    userList() { 
-      // retrieve users from firebase 
-    }, 
-    async fetchUserData() {
-      const user = auth.currentUser;
-      console.log(user);
-      if (user) {
-        this.userID = user.uid;
-      } else {
-        console.error("No user is currently authenticated.");
-      }
-    },
     tempDisplayPhoto(event){
       const file = event.target.files[0];
       if (file) {
@@ -271,6 +256,14 @@ export default {
         }
       }
     }
+  }, 
+  mounted() { 
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.user = user;
+      }
+    })
   }
 }
 </script>

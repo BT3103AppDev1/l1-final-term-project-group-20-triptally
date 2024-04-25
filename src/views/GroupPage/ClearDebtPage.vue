@@ -68,6 +68,7 @@ export default {
       this.$emit('returnToMainPage');
     },
     async fetchCurrencyRates() {
+      // Fetch currency rates for each of the debts 
       for (let i = 0; i < this.debtsYouOwe.length; i++) { 
         const debt = this.debtsYouOwe[i];
         var expenseInUserCurrency;
@@ -110,15 +111,15 @@ export default {
 
       try { 
 
-        // delete the debt
+        // delete the debt from database 
         await deleteDoc(userOwesDoc); 
         await deleteDoc(whoOwesUserDoc);
 
-        // remove the debt from the debts array  
+        // remove the debt from this.debtsYouowe array  
         const updatedDebts = this.debtsYouOwe.filter(d => d.UID !== debt.UID);
         this.debtsYouOwe = updatedDebts;
 
-         // refresh the debt data in GroupPage and ClearDebtPage 
+         // trigger a re-fetch of the debt data in GroupPage  
         this.$emit('refreshDebtData');
         this.showConfirmationPopup = false;
       } catch (error) { 
@@ -127,6 +128,7 @@ export default {
 
     },
     confirmPayUp(selectedUser) {
+      // Display confirmation pop-up 
       this.selectedUser = selectedUser;
       this.showConfirmationPopup = true;
     },
@@ -134,6 +136,7 @@ export default {
       this.showConfirmationPopup = false;
     },
     async fetchUserData() { 
+      // Fetch user data from database 
       const userDocRef = doc(db, "Users", this.user.uid); 
       const userData = await getDoc(userDocRef);
       this.userCurrency = userData.data().Currency;
@@ -151,9 +154,7 @@ export default {
         await this.fetchCurrencyRates();
       }
     })
-
   }
-
 }
 
 </script>

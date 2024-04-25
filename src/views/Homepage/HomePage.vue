@@ -62,6 +62,7 @@
               </div>
 
           </div>
+          <!-- display trip image and trip name -->
           <img :src="getTripImage(trip)" :alt="trip.TripName" class="trip-image">
           <div class="trip-name">{{ trip.TripName }}</div>
         </div>
@@ -72,8 +73,9 @@
       <span>+</span>
     </button>
 
-    <AddNewTripModal @refresh-trips="fetchUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
+    <AddNewTripModal @refresh-trips="updateUserTrips" :is-visible="showModal" @update:isVisible="showModal = $event"></AddNewTripModal>
   </div>
+  <!-- if user is not logged in  -->
     <div v-else>
       <h1>
         You must be logged in to view this!
@@ -89,10 +91,6 @@ import AddNewTripModal from './AddNewTripModal.vue';
 import { firebaseApp, db, auth, storage } from '@/firebase'; // Assuming db and auth are exported from '@/firebase'
 import defaultTripImage from '@/assets/default-trip-image.jpg';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-
-import 'firebase/app'
-import 'firebase/storage'
 
 export default {
   name: 'TripList',
@@ -118,9 +116,11 @@ export default {
   },
   methods: {
     getTripImage(trip) {
+      // get trip image for each trip 
       if (trip.image) {
         return trip.image; // If image URL exists, return it directly
       } else {
+        // if image URL does not exist (none of the users have set group image), return default trip image 
         return defaultTripImage;
       } 
   },
@@ -129,6 +129,7 @@ export default {
       if (trip) {
       trip.dropdownVisible = !trip.dropdownVisible;
       }
+      // ensure that dropdown for all other trip cards does not appear 
       this.trips.forEach(t => {
         if (t.UID !== uid) {
           t.dropdownVisible = false;
@@ -218,12 +219,11 @@ export default {
       this.showChangeGroupImage = false;
     },
     async leaveGroup(trip) {
-      //logic to leave group 
-      console.log("leaving group:", trip.TripName);
+ 
       this.showLeaveGroupConfirmation = false;
       this.selectedTrip = null; 
 
-      // remove the user from the group trip's members array 
+      // remove the user from the group trip's members array in the database 
       const tripDocRef = doc(db, "Trips", trip.UID);
       try { 
         await updateDoc(tripDocRef, { 
@@ -234,7 +234,7 @@ export default {
         console.error(error);
       }
 
-      // remove the tripID from the user's trips array 
+      // remove the tripID from the user's GroupTrips array in the database
       const userDocRef = doc(db, "Users", this.user.uid);
       try { 
         await updateDoc(userDocRef, { 
@@ -255,10 +255,11 @@ export default {
       this.selectedTrip = null; 
     },
     addNewTrip() {
-       // Logic to add new trip
+      // display the add new trip pop-up 
        this.isPopupVisible = !this.isPopupVisible
      }, 
-    async fetchUserTrips(newTripID) { 
+    async updateUserTrips(newTripID) { 
+      // update the this.trips array to reflect newly added trip 
       const tripDocRef = doc(db, "Trips", newTripID); 
       try { 
         const docSnap = await getDoc(tripDocRef); 
@@ -275,7 +276,8 @@ export default {
         console.error("Error fetching user data:", error);
       }
     },
-    async fetchUserData() {
+    async fetchUserTrips() {
+      // fetch all trips that user is in 
       const docRef = doc(db, "Users", this.user.uid);
       try {
         const userDoc = await getDoc(docRef);
@@ -301,8 +303,6 @@ export default {
             console.error("Error retrieving trip ", error);
           }
         }
-
-
         } else {
           console.error("User document does not exist.");
         }
@@ -313,10 +313,10 @@ export default {
     },
   mounted() {
     const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.user = user;
-        this.fetchUserData(); 
+        await this.fetchUserTrips(); 
       }
     })
   }, 
