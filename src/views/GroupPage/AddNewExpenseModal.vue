@@ -19,7 +19,7 @@
             <option value="Shopping">🛍️</option>
             <option value="Transport">🚌</option>
             <option value="Entertainment">🎭</option>
-            <option value="Accomodations">🏨</option>
+            <option value="Accommodations">🏨</option>
             <option value="Miscellaneous">📦</option>
           </select>
           <input class="expense-title" type="text" v-model="expense.title" placeholder="Description"><br>
@@ -368,8 +368,8 @@ export default {
                         this.expense.category = "Food";
                       } else if (category === "transport" || category === "parking") { 
                         this.expense.category = "Transport";
-                      } else if (category === "accomodation") { 
-                        this.expense.category = "Accomodations";
+                      } else if (category === "accommodation") { 
+                        this.expense.category = "Accommodations";
                       } else if (category === "miscellaneous") { 
                         this.expense.category = "Miscellaneous";
                       } 
