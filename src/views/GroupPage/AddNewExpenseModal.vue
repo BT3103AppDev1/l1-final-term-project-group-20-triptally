@@ -84,7 +84,6 @@ export default {
     return {
       showSuccessMessage: false,
       showErrorMessage: false,
-      selectedCurrency: "", 
       user: false, 
       tempSelectedImage: null,
       tempSelectedPhotoName: null,
@@ -182,7 +181,6 @@ export default {
         this.trip.Currency = data.Currency; 
         this.trip.Members = data.Members;
         this.trip.UID = this.$route.params.tripID; 
-        this.initializeCurrency();
       } else { 
         console.log("Error");
       }
@@ -228,7 +226,7 @@ export default {
             // means the paid member currently owes this member money - minus off this member's debt to the paid member from there 
 
             const paidMemberData = memberDocSnapshot.data();
-            if (paidMemberData.totalAmount > amountOwed) { 
+            if (paidMemberData.totalAmount > 0 && paidMemberData.totalAmount > amountOwed) { 
               // if the amount that the payer currently owes the ower is greater than the amount that the ower owes the payer, then 
               //  we will minus away amountOwed from paidMemberData.totalAmount 
               try { 
@@ -245,7 +243,7 @@ export default {
                 console.error(error);
               }
               
-            } else { 
+            } else if (paidMemberData.totalAmount >= 0 && paidMemberData.totalAmount <= amountOwed) { 
               // if the amount that the payer currently owes the ower is smaller than the the amount that the ower owes the payer, then 
               // we will minus away the amount that the payer currently owes the ower, 
               // and record in firebase the remaining amount that the ower owes the payer 
@@ -253,9 +251,10 @@ export default {
 
                 const paidMemberUserOwesWhoDoc = doc(paidMemberUserOwesWhoRef, member.UID);
                 const owedMemberWhoOwesUserDoc = doc(owedMemberWhoOwesUserRef, this.expense.paidBy);
+                // delete this debt document for the paid member
                 await deleteDoc(paidMemberUserOwesWhoDoc);
 
-                // delete all the expenses in here!
+                // delete this debt document for the owing member
                 await deleteDoc(owedMemberWhoOwesUserDoc);
 
                 const oweUserDoc = doc(owedMemberUserOwesWhoRef, this.expense.paidBy); 
@@ -265,7 +264,8 @@ export default {
                 let updates = {
                   expenses: { [`expenses.${expenseID}`]: increment(amountOwed - paidMemberData.totalAmount) },
                   totalAmount: increment(amountOwed - paidMemberData.totalAmount),
-                  currency: this.trip.Currency
+                  currency: this.trip.Currency,
+                  reminder: false
                 };
 
                 if (!docData || docData.reminder === undefined) { 
@@ -415,8 +415,6 @@ export default {
       const tripRef = doc(db, "Trips", this.trip.UID);
       const expenseDocRef = doc(collection(tripRef, "Expenses")); 
       const expenseID = expenseDocRef.id; 
-      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
-      await this.updateDebts(expenseID); 
 
       // writing the expense data into firestore database 
       try { 
@@ -432,6 +430,9 @@ export default {
         })
         this.showSuccessMessage = true;
         console.log("Expense added successfully!");
+
+        // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
+        await this.updateDebts(expenseID); 
 
         // Update the used amount in the corresponding budget category
         const budgetRef = collection(tripRef, "Budgets"); 

@@ -131,7 +131,7 @@ import SideNavBar from './SideNavBar.vue';
 import ClearDebtPage from './ClearDebtPage.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AddNewExpenseModal from './AddNewExpenseModal.vue';
-import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc, deleteDoc, deleteField, increment, setDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy, updateDoc, deleteDoc, deleteField, increment, setDoc, where } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
@@ -333,7 +333,12 @@ export default {
 
       // fetch all debts that the user owes others in this trip
       const userOwesWhoRef = collection(userDebtRef, "User Owes Who");
-      const userOwesWhoSnapshot = await getDocs(userOwesWhoRef);
+
+      // Add a where clause to filter documents where 'totalAmount' is greater than 0
+      const queryWithCondition = query(userOwesWhoRef, where("totalAmount", ">", 0));
+
+      // Get the documents based on the query with the condition
+      const userOwesWhoSnapshot = await getDocs(queryWithCondition);
       this.debtsYouOwe = [];
       this.reminders = [];
       const userOwesWhoPromises = userOwesWhoSnapshot.docs.map(async (document) => { 
