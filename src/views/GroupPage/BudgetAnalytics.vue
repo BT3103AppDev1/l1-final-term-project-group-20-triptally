@@ -24,7 +24,6 @@ import { doc, collection, getDocs, getDoc, query } from 'firebase/firestore';
 import { setBlockTracking } from 'vue';
 Chart.register(...registerables);
 
-
 export default {
   name: 'BudgetAnalytics',
   props: ['tripID', 'Currency'],
@@ -86,6 +85,7 @@ export default {
   },
   methods: {
     async fetchTripData() { 
+      // fetch trip data from database 
       const tripDocRef = doc(db, "Trips", this.tripID); 
       const docSnap = await getDoc(tripDocRef); 
       if (docSnap.exists()) {
@@ -94,6 +94,7 @@ export default {
       }
     },
     async fetchAndPlotExpenses() {
+      // fetch expenses data for this trip from database 
       if (!this.tripID) {
         console.error("TripID is not provided in BudgetAnalytics.");
         return;
@@ -117,10 +118,13 @@ export default {
       console.log("Expenses by category:", expensesByCategory);
       console.log("Total expenses:", this.totalExpense); // Use this.totalExpense
 
+      // using the expenses data, which has been sorted by category, plot pie chart 
       this.plotChart(Object.keys(expensesByCategory), Object.values(expensesByCategory));
     },
     
     async fetchBudgetItems() {
+      // fetch budget data from database 
+
       // Ensuring that tripID is available
       if (!this.tripID) {
         console.error("TripID is not provided for fetching budget items.");

@@ -83,11 +83,12 @@ export default {
   },
   methods: {
   toggleAddMember() {
+    // display add member search dropdown
     this.showAddNewMemberInput = !this.showAddNewMemberInput;
   },
   async fetchMembers() {
+    // fetch data of all members in group trip
     try {
-      console.log("trying to fetch members")
       const tripRef = doc(db, 'Trips', this.$route.params.tripID); 
       const tripDocSnap = await getDoc(tripRef); 
       
@@ -110,7 +111,6 @@ export default {
               name: memberData.FirstName + " " + memberData.LastName,
               UID:  memberId
             };
-            console.log("this user exists:", memberObject)
             return memberObject;
           } else {
             console.error(`Member document with ID ${memberId} does not exist`);
@@ -136,7 +136,7 @@ export default {
   },
   async handleDeleteConfirmation(member) {
     try {
-    // remove tripID from the user's GroupTrips array 
+    // remove tripID from the user's GroupTrips array in database
     const userDocRef = doc(db, "Users", member.UID); 
     
     await updateDoc(userDocRef, { 
@@ -145,7 +145,7 @@ export default {
 
     console.log("Trip ID removed from user's GroupTrips array");
 
-    // remove userID from trip's Members array 
+    // remove userID from trip's Members array in database
     const tripDocRef = doc(db, "Trips", this.trip.UID); 
     
     await updateDoc(tripDocRef, { 
@@ -167,69 +167,8 @@ export default {
   console.log('Member deleted:', member);
   this.closeDeleteMemberModal();
 },
-/*async handleAddMember() {
-  if (this.newMemberUsername.trim()) {
-    const usernameTemp = this.newMemberUsername.trim();  
-
-    const tripID = this.$route.params.tripID;
-    try {
-      // check if this username exists 
-      const usernameDocRef = doc(db, 'Usernames', usernameTemp);
-      const usernameDocSnap = await getDoc(usernameDocRef);
-      
-      if (usernameDocSnap.exists()) { 
-        console.log(usernameDocSnap.data().UID);
-        // username exists, now fetch user data and check if it is already in the group 
-        // check if user is in group already 
-        if (this.trip.Members.includes(usernameDocSnap.data().UID)) { 
-          // user is in this group already! 
-          alert("This user is already in the group!")
-        } else { 
-          // can add user to the group
-          // fetch user data first 
-          const userDocRef = doc(db, 'Users', usernameDocSnap.data().UID); 
-          const userDocSnap = await getDoc(userDocRef); 
-          const memberData = userDocSnap.data();
-
-          this.trip.Members.push(usernameDocSnap.data().UID);
-
-          this.Members.push( { 
-            initials: memberData.FirstName[0] + memberData.LastName[0],
-            username: memberData.Username,
-            name: memberData.FirstName + memberData.LastName,
-            email: memberData.Email, 
-            UID:  usernameDocSnap.data().UID
-          })
-
-          // add the trip ID to the user's GroupTrips array 
-          await updateDoc(userDocRef, { 
-            GroupTrips: arrayUnion(this.trip.UID)
-          })
-
-          // add the userID to the trip's Members array 
-          const tripDocRef = doc(db, "Trips", this.trip.UID); 
-          
-          await updateDoc(tripDocRef, { 
-            Members: arrayUnion(usernameDocSnap.data().UID)
-          })
-
-          console.log("User added"); 
-          console.log(this.Members); 
-          console.log(this.trip.Members);
-        }
-        this.newMemberUsername = "";
-        
-      } else { 
-        // username does not exist. 
-        alert("Username does not exist");
-      }
-
-    } catch (error) { 
-      console.error(error);
-    }
-  } 
-},*/
 async fetchTripData() {
+  // feetch trip data from database
   const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
   try {
     const docSnap = await getDoc(tripDocRef);
@@ -246,7 +185,6 @@ async fetchTripData() {
     console.error("Error fetching trip data:", error);
   }
 }
-
 }, 
 mounted() {
     const auth = getAuth();

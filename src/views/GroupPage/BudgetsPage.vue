@@ -117,6 +117,7 @@ export default {
       return `${percentageUsed}%`;
     },
     getCategoryIcon(category) {
+      // get the corresponding icon based on the category of the budget 
       const icons = {
         'Food': '🍽️',
         'Shopping': '🛍️',
@@ -139,6 +140,7 @@ export default {
       return colors[category] || '#cccccc'; // Default color if the category is not found
     },
     editBudget() {
+      // navigate users to the EditBudgetPage
       this.$router.push({
         name: 'EditBudgetPage',
         params: { tripID: this.$route.params.tripID }, 
@@ -146,6 +148,7 @@ export default {
       });
     },
     checkBudgetExceeded() {
+      // for each budget category, check if the budget has been exceeded 
       this.budget.forEach((item, index) => {
         this.budgetExceeded[index] = item.used > item.allocated;
       });
@@ -165,6 +168,7 @@ export default {
       });
     },
     async fetchBudgetItems() {
+      // fetch budget data from database 
       this.isLoading = true; // Make sure to set it to true when starting to fetch
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets");
       const queryRef = query(budgetsRef, orderBy("order"));
@@ -173,7 +177,7 @@ export default {
         const querySnapshot = await getDocs(queryRef);
         let budgets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Loop through each budget category to calculate the used amount
+        // Loop through each budget category to calculate the total used amount fort that category
         for (let i = 0; i < budgets.length; i++) {
           let usedAmount = 0;
           const expensesRef = collection(db, "Trips", this.tripID, "Expenses");

@@ -26,7 +26,7 @@
         </div>
         <div class="third-row">
           <div class="currency-category">
-            <p>{{ selectedCurrency }}</p>
+            <p>{{ this.trip.Currency }}</p>
           </div>
           <input class="expense-amount" type="number" v-model="expense.amount" placeholder="0.00"><br>
         </div>
@@ -77,7 +77,6 @@ import { db } from '@/firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, increment, query, where, getDocs, Timestamp, arrayUnion, FieldValue, deleteField, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from 'vue3-toastify';
-import axios from 'axios';
 
 export default { 
   name: 'AddNewExpenseModal',
@@ -134,12 +133,6 @@ export default {
     },
   },
   methods: { 
-    initializeCurrency() {
-      // Assuming 'trip.Currency' is loaded here or via a prop
-      if (this.trip.Currency) {
-        this.selectedCurrency = this.trip.Currency;
-      }
-    },
     addSelectedMember(event) {
     const selectedUserID = event.target.value;
     if (selectedUserID === "Everyone") { 
@@ -168,7 +161,7 @@ export default {
         this.currentUser.FirstName = userData.FirstName;
         this.currentUser.LastName = userData.LastName;
         this.currentUser.UID = uid;
-        // Set the default paidBy to the user's UID
+        // Set the default paid member to the user
         this.expense.paidBy = uid;
       } else {
         console.error("No user found with UID:", uid);
@@ -179,7 +172,7 @@ export default {
       this.$emit('returnToMainPage');
     },
     async fetchTripData() { 
-      // fetch trip data from firebase 
+      // fetch trip data from firestore database  
       const tripDocRef = doc(db, "Trips", this.$route.params.tripID); 
   
       const docSnap = await getDoc(tripDocRef); 
@@ -328,6 +321,7 @@ export default {
       this.tempDisplayPhoto(event);
     },
     async handlePhotoChange(event) {
+      // post the image via the mindee API 
       const file = event.target.files[0];
       if (file) {
         const formData = new FormData();
@@ -381,7 +375,6 @@ export default {
                         this.expense.category = "Shopping"
                       }
                     }
-
                 } catch (error) {
                     console.error('Error parsing response:', error);
                 }
@@ -392,32 +385,6 @@ export default {
           xhr.setRequestHeader("Authorization", "Token 293bd60719c7abd1fae2ac2bfae60745");
           xhr.send(formData);
 
-          // const response = await axios.post("https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict", formData, { 
-          //   headers: { 
-          //     'Content-Type': 'multipart/form-data',
-          //     { Authorization: 'Token 293bd60719c7abd1fae2ac2bfae60745'}
-          //   }
-          // })
-          // // const response = await axios.post("https://us-central1-trip-tally-c943b.cloudfunctions.net/api/upload", formData);
-
-          // if (response.status !== 200) {
-          //   // Handle non-2xx HTTP status errors
-          //   throw new Error(`HTTP error! Status: ${response.status}`);
-          // }
-
-          // // const contentType = response.headers.get('content-type');
-          // // if (!contentType || !contentType.includes('application/json')) {
-          // //   // Handle unexpected content type
-          // //   throw new Error('Invalid content-type. Expected application/json, but received ' + contentType);
-          // // }
-
-          // const data = await response.json();
-          // console.log('Received data:', data);
-          // if (data && data.totalAmount !== undefined) {
-          //   this.expense.amount = data.totalAmount.toFixed(2);
-          // } else {
-          //   alert('Receipt processing failed. No amount returned.');
-          // }
         } catch (error) {
           console.error('Error uploading and processing image:', error);
           alert('Error processing the receipt: ' + error.message);
@@ -425,6 +392,7 @@ export default {
       }
     },
     tempDisplayPhoto(event){
+      // displays the uploaded photo on the form 
       const file = event.target.files[0];
       if (file) {
         try {
@@ -443,12 +411,14 @@ export default {
       }
     },
     async addExpense() {
-      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
+      // add the new expense to the "Expense" collection within the trip document in the database 
       const tripRef = doc(db, "Trips", this.trip.UID);
       const expenseDocRef = doc(collection(tripRef, "Expenses")); 
       const expenseID = expenseDocRef.id; 
+      // call the updateDebts method, which will update the debts of each member in this group trip based on this expense
       await this.updateDebts(expenseID); 
 
+      // writing the expense data into firestore database 
       try { 
         await setDoc(expenseDocRef, { 
           title: this.expense.title, 
@@ -462,7 +432,6 @@ export default {
         })
         this.showSuccessMessage = true;
         console.log("Expense added successfully!");
-        
 
         // Update the used amount in the corresponding budget category
         const budgetRef = collection(tripRef, "Budgets"); 
@@ -489,7 +458,6 @@ export default {
     }
   }, 
   mounted() { 
-    this.initializeCurrency();
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {

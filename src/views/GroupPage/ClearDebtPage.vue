@@ -220,11 +220,11 @@ export default {
 }
 
 .debt-description {
-  margin-left: 18vw;
+  margin-left: auto;
+  margin-right: 170px;
   color: #e61b1b;
   font-weight: bold;
   text-align: center;
-  font-size: 15px;
 }
 
 .debt-details::before {
@@ -238,11 +238,9 @@ export default {
   border-radius: 50%;
   position: absolute;
   left: 10px; 
+  top: 50%;
+  transform: translateY(-50%);
   font-weight: bold;
-}
-
-.you-owe {
-  margin-right: 8px;
 }
 
 .debt-info {
@@ -259,6 +257,7 @@ export default {
 
 .debt-name {
   font-weight: bold;
+  margin-bottom: 4px; 
 }
 
 .user-email {
@@ -272,7 +271,7 @@ export default {
   padding: 10px 10px;
   border-radius: 15px;
   width: auto;
-  margin-left: 10px; 
+  margin-left: auto; 
   font-family: 'Montserrat', sans-serif;
 }
 

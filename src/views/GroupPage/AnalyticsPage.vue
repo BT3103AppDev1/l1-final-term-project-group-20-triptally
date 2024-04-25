@@ -1,6 +1,5 @@
 <template>
   <div class="main-container">
-  <!-- <SideNavBar :tripName="tripName"></SideNavBar> -->
   <div v-if="user">
     <SideNavBar :tripName="$route.query.tripName" :tripID="$route.params.tripID"></SideNavBar>
   </div>
