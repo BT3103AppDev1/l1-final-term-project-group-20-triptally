@@ -12,8 +12,8 @@
             <span class="member-name">{{ member.name }}</span>
             <span class="member-email">{{ member.email }}</span>
           </div>
-          <span class="member-trip">from {{ tripName }} ?</span>
         </div>
+        <span class="member-trip">from {{ tripName }} ?</span>
       </div>
       <div class="modal-footer">
         <button class="confirm-button" @click="confirmDelete">Yes</button>
@@ -80,7 +80,9 @@ export default {
 .member-info {
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .member-initials {
@@ -119,7 +121,7 @@ export default {
 }
 
 .modal-footer {
-  margin-top: 30px;
+  margin-top: 10px;
 }
 
 .confirm-button, .cancel-button {
