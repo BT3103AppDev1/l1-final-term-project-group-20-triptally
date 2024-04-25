@@ -60,6 +60,7 @@ import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase
 import { useRouter } from 'vue-router'; // Import useRouter
 import _ from 'lodash';
 
+
 const email = ref(""); 
 const password = ref("");
 const currency = ref(""); 
@@ -75,6 +76,7 @@ const UID = ref('');
 const router = useRouter(); // Use the useRouter hook
 
 const checkUsername = async () => {
+  // this function checks whether the username that user has entered has already been taken 
   usernameTaken.value = false;
 
   const usernameDocRef = doc(db, "Usernames", username.value);
@@ -90,6 +92,7 @@ const checkUsername = async () => {
 const debouncedCheckUsername = _.debounce(checkUsername, 500);
 
 const checkEmail = async () => {
+  // this function checks whether the email that user has entered is already registered 
   emailTaken.value = false; // Reset the state before checking
   console.log("Checking email:", email.value);
 
@@ -109,8 +112,8 @@ const checkEmail = async () => {
 // Debounce the checkEmail function to avoid too many calls
 const debouncedCheckEmail = _.debounce(checkEmail, 500);
 
-
 function checkPassword() {
+  // this function checks the validity of the password 
   passwordError.value = false; // Reset the error state
   if (password.value.length < 6) {
     passwordError.value = true;
@@ -129,12 +132,15 @@ function checkPassword() {
 
 
 function containsSpecialCharacters(str) {
+  // helper function that checks whether string input contains any special character
+
   // This regex matches any character that is not a letter (a-zA-Z) or a number (0-9)
   const specialCharactersRegex = /[^a-zA-Z0-9]/;
   return specialCharactersRegex.test(str);
 }
 
 function checkUpperLowerCase(password) {
+  // helper function that checks whether the string input contains any upper or lower case letters 
   const containsUppercase = /[A-Z]/.test(password);
   const containsLowercase = /[a-z]/.test(password);
 
@@ -146,18 +152,20 @@ function checkUpperLowerCase(password) {
 }
 
 function containsNumber(password) {
+  // helper function that checks whether the string input (password) contains any numbers
   // This regex matches any digit from 0 to 9
   const numberRegex = /\d/;
   return numberRegex.test(password);
 }
 
 async function submitHandler() { 
-  console.log("submitHandler function called");
+  // submit handler - called when user clicks on 'Lets Tally'!
+
   usernameTaken.value = false;
   emailTaken.value = false;
   passwordError.value = false;
 
-  // Check if email is unique
+  // Check if email entered by user is unique
   await debouncedCheckEmail();
   if (emailTaken.value) {
     // If the email is taken, don't proceed with form submission
@@ -178,7 +186,7 @@ async function submitHandler() {
     return; // Stop the submission if the password is invalid
   }
 
-  // If all checks pass, proceed with Firebase authentication
+  // If all checks pass, proceed with creating a user account using Firebase authentication
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     console.log('User created with UID:', userCredential.user.uid);
@@ -188,15 +196,17 @@ async function submitHandler() {
     await writeUserData(UID.value, email.value, username.value, currency.value, firstName.value, lastName.value);
     console.log('User data written to Firestore');
 
-    // Add the username to the Firebase collection
+    // Add the username to the Firebase "Usernames" collection
     await setDoc(doc(db, "Usernames", username.value), {
       UID: UID.value 
     });
 
-    // Navigate to the home page after successful signup
-    router.push('/');
+    // Navigate to the login page after successful signup
+    router.push('/login');
   } catch (error) {
-    // Handle errors from createUserWithEmailAndPassword
+
+    // Handle potential errors from createUserWithEmailAndPassword 
+    // These errors should have been caught already before even trying to create an account with Firebase! 
     if (error.code === "auth/email-already-in-use") {
       console.log("Email already in use. Please use another email!");
     } else if (error.code === "auth/weak-password") {
@@ -209,6 +219,8 @@ async function submitHandler() {
 }
 
 async function writeUserData(userID, email, username, currency, firstName, lastName) { 
+  // write user data into Firebase database 
+
   await setDoc(doc(db, "Users", userID), { 
     Email: email, 
     Username: username, 
@@ -223,13 +235,13 @@ async function writeUserData(userID, email, username, currency, firstName, lastN
 
 <style scoped> 
 .container {
-    padding: 20px;
-    min-height: 100vh;
-    text-align: center;
-    align-items: center;
-    background: url('@/assets/singapore.jpg') no-repeat center center fixed;
-    background-size: cover;
-    background-color: rgba(88, 85, 79, 0.2);
+  padding: 20px;
+  min-height: 100vh;
+  text-align: center;
+  align-items: center;
+  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: rgba(88, 85, 79, 0.2);
 }
 
 button { 

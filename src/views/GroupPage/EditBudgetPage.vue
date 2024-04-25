@@ -84,13 +84,12 @@ export default {
   },
   methods: {
     async fetchTripData() { 
-      // Ensure you're fetching the trip data based on the correct tripID. This could come from the prop or the route.
+      // Fetch trip data from database 
       const tripID = this.tripID || this.$route.params.tripID;
       const tripDocRef = doc(db, "Trips", tripID); 
       try { 
         const docSnap = await getDoc(tripDocRef); 
         if (docSnap.exists()) {
-          // Update the trip data
           this.trip.TripName = docSnap.data().TripName; 
           this.trip.Currency = docSnap.data().Currency; 
           this.trip.Members = docSnap.data().Members;
@@ -103,6 +102,7 @@ export default {
       }
     },
     async fetchBudgetItems() {
+      // Fetch budget details for this trip from database 
       const budgetsRef = collection(db, "Trips", this.tripID, "Budgets"); // Ensure this uses the tripID correctly
       try {
         const querySnapshot = await getDocs(budgetsRef);

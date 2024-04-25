@@ -59,7 +59,7 @@
             <option value="USD">USD</option>
             <option value="ZAR">ZAR</option>  
           </select>
-          <div v-if="saveButtonClicked" >
+          <div v-if="saveButtonClicked">
             <template v-if="updateCurrSuccess && currencyChanged">
                 <p class="error-message-success-b">Currency successfully updated!</p>
             </template>
@@ -89,7 +89,6 @@ export default {
   data() {
     return {
       user: false,
-      userID: "",
       enteredUsername: "",
       selectedCurrency: "",
       profile: {
@@ -103,8 +102,7 @@ export default {
       usernameTaken: { value: false },
       saveButtonClicked: false,
       updateSuccess: false,
-      updateCurrSuccess: false,
-      change: false
+      updateCurrSuccess: false
     };
   },
   
@@ -136,7 +134,7 @@ export default {
           await deleteDoc(doc(db, "Usernames", this.profile.username)); 
           this.profile.username = this.enteredUsername;
           await setDoc(doc(db, "Usernames", this.enteredUsername), { 
-            UID: this.userID
+            UID: this.user.uid
           });
          
           eventBus.emit('usernameUpdated', this.enteredUsername);
@@ -197,7 +195,6 @@ export default {
       const user = auth.currentUser;
       console.log(user);
       if (user) {
-        this.userID = user.uid; 
         const docRef = doc(db, "Users", user.uid);
         try {
           const userDoc = await getDoc(docRef);

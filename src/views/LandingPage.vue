@@ -27,16 +27,6 @@ export default {
   height: 95vh;
   background: url('@/assets/singapore.jpg') no-repeat center center fixed;
   background-size: cover;
-  /* padding: 20px;
-  padding-bottom: 70px;
-  min-height: 100vh;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  background: url('@/assets/singapore.jpg') no-repeat center center fixed;
-  background-size: cover;
-  background-color: rgba(88, 85, 79, 0.2); */
 }
 
 .tt_logo {

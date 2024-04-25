@@ -18,7 +18,6 @@ import {
   plugins
 } from 'chart.js';
 import Chart from 'chart.js/auto';
-import { Line } from 'vue-chartjs';
 
 
 ChartJS.register(
@@ -60,9 +59,6 @@ export default {
   props: {
     tripID: String,
     tripCurrency: String
-  },
-  components: {
-    Line
   },
   methods: { 
     async fetchExpensesData() {
@@ -153,11 +149,11 @@ export default {
         return sortedAcc;
       }, {});
 
-      // Update your component state or data object
-      console.log(this.groupedExpenses);
+      // Now that our data is grouped according to date, calculate the daily total expenses
       this.calculateDailyTotals();
     },
     async fetchTripData() { 
+      // fetch trip data from database
       const tripDocRef = doc(db, "Trips", this.tripID); 
       try { 
         const docSnap = await getDoc(tripDocRef); 
@@ -170,6 +166,7 @@ export default {
       }
     }, 
     calculateDailyTotals() { 
+      // Helper function to calculate the daily total expensees 
       const totals = {};
       for (const date in this.groupedExpenses) {
         totals[date] = this.groupedExpenses[date].reduce((sum, expense) => {
@@ -177,15 +174,12 @@ export default {
         }, 0);
       }
 
-      // Store the totals in the component state if needed or handle them as needed
-      console.log("Daily Totals:", totals);
+      // using the daily total expenses, plot a line graph over time 
       this.plotLineGraph(totals);
     }, 
     plotLineGraph(totals) { 
       const dates = Object.keys(totals);
       const expenses = Object.values(totals);
-      console.log(dates);
-      console.log(expenses); 
 
       this.chartData = { 
         labels: dates, 
@@ -200,8 +194,6 @@ export default {
           }
         ]
       }
-
-      console.log(this.chartData);
 
     }
   }, 
@@ -286,7 +278,6 @@ export default {
           canvasTag,
           config
         )
-
       }
     })
   }
