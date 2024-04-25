@@ -10,10 +10,6 @@
 </template>
   
   <script>
-  import { ref } from 'vue';
-  import { auth, db } from '@/firebase';
-  import { doc, getDoc } from "firebase/firestore";
-  import { getAuth, onAuthStateChanged } from "firebase/auth";
   export default {
     name: 'NavBar'
   }

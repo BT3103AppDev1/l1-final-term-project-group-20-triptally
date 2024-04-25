@@ -54,6 +54,7 @@ export default {
   },
 
   created() {
+    // automatically update the username displayed in the top nav bar when user edits username 
     eventBus.on('usernameUpdated', (newUsername) => {
       this.Username = newUsername;
     });
@@ -78,12 +79,15 @@ export default {
       }
     },
     toggleDropdown() {
+      // display dropdown menu 
       this.isDropdownOpen = true;
     },
     closeDropdown() {
+      // hide dropdown menu 
       this.isDropdownOpen = false;
     },
     generateInitials(FirstName, LastName) {
+      // helper function that generates user's initials for display in the top nav bar 
       return FirstName[0] + LastName[0];
     },
     logout(event) {
