@@ -341,40 +341,7 @@ export default {
                       const amount = parseFloat(data.document.inference.prediction.total_amount.value).toFixed(2);
                       this.expense.amount = amount;
                     }
-                    // get the date
-                    if (data.document.inference.prediction.date.value) { 
-                      const d = new Date(data.document.inference.prediction.date.value);
-                      const year = d.getFullYear();
-                      const month = ('0' + (d.getMonth() + 1)).slice(-2); // Adding 1 because months are zero-indexed
-                      const day = ('0' + d.getDate()).slice(-2);
-                      this.expense.date = `${year}-${month}-${day}`;
-                    } else { 
-                      const d = new Date();
-                      const year = d.getFullYear();
-                      const month = ('0' + (d.getMonth() + 1)).slice(-2); // Adding 1 because months are zero-indexed
-                      const day = ('0' + d.getDate()).slice(-2);
-                      this.expense.date = `${year}-${month}-${day}`;
-                    }
-                    // get the category
-                    if (data.document.inference.prediction.category.value) { 
-                      const category = data.document.inference.prediction.category.value; 
-                      if (category === "food") { 
-                        this.expense.category = "Food";
-                      } else if (category === "transport" || category === "parking") { 
-                        this.expense.category = "Transport";
-                      } else if (category === "accommodation") { 
-                        this.expense.category = "Accommodations";
-                      } else if (category === "miscellaneous") { 
-                        this.expense.category = "Miscellaneous";
-                      } 
-                    }
-                    // get subcategory 
-                    if (data.document.inference.prediction.subcategory.value) { 
-                      const subcategory = data.document.inference.prediction.subcategory.value; 
-                      if (subcategory === "shopping") { 
-                        this.expense.category = "Shopping"
-                      }
-                    }
+
                 } catch (error) {
                     console.error('Error parsing response:', error);
                 }
